@@ -1,0 +1,4 @@
+option_name,option_value
+freeman_core_db_version,1.10.16
+freeman_core_modules,"a:9:{s:15:""category_slider"";b:1;s:26:""cheapest_default_variation"";b:1;s:15:""infinite_scroll"";b:1;s:10:""my_account"";b:1;s:12:""product_feed"";b:1;s:14:""product_slider"";b:1;s:14:""restock_notify"";b:1;s:18:""variable_stock_fix"";b:1;s:18:""variation_swatches"";b:1;}"
+freeman_core_productfeed_last_generated,"2026-04-28 21:31:00"

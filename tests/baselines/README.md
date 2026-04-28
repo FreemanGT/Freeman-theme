@@ -34,15 +34,25 @@ If you regenerate locally without `LC_ALL=C` set in your shell, the script still
 
 ## Regenerating the live options baseline
 
-The live baseline requires WP-CLI and a real WordPress install with both plugins activated. Capture it manually after material changes (e.g., a new release that adds option keys):
+The live baseline requires WP-CLI and a real WordPress install with both plugins activated. Capture it manually after material changes (e.g., a new release that adds option keys). Use this exact pipeline so the result is comparable to the committed file:
 
 ```bash
 # On a WP install with freeman-core + freeman-digital activated:
-wp option list --search='freeman_*' --format=csv \
-    | sort > /path/to/repo/tests/baseline-options.txt
+{
+    wp option list --search='freeman_*' --format=csv 2>/dev/null | head -n 1
+    wp option list --search='freeman_*' --format=csv 2>/dev/null | tail -n +2 | LC_ALL=C sort
+} > /path/to/repo/tests/baseline-options.txt
 ```
 
-This file is **not** asserted by CI — it's a human-curated reference snapshot.
+Three details matter:
+
+1. **`2>/dev/null`** — suppresses environment-specific PHP startup warnings (e.g. missing `imagick.so` on Local-by-Flywheel) that would otherwise pollute the file and produce machine-dependent diffs.
+2. **Header preserved on line 1** — the CSV header (`option_name,option_value`) is split out before `sort` so it doesn't end up alphabetically buried among the data rows.
+3. **`LC_ALL=C sort`** — same byte-order locking as the static baselines, so a refresh on Linux matches a refresh on macOS.
+
+This file is **not** asserted by CI — it's a human-curated reference snapshot. Wave 2.2 (VariationSwatches migration) will diff against it manually as part of its rollout drill.
+
+The current snapshot is intentionally minimal (3 rows): a fresh activation only writes `freeman_core_db_version`, `freeman_core_modules`, and `freeman_core_productfeed_last_generated`. Most `freeman_*` identifiers in the static `baseline-options-declared.txt` are hook names, AJAX action slugs, transients, or nonces — not WP options. The two files complement each other rather than overlap.
 
 ## How CI enforces this
 

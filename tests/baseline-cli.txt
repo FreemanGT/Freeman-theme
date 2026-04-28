@@ -1,0 +1,1 @@
+freeman-digital/includes/class-fd-cli.php:271:WP_CLI::add_command('fd', 'FD_CLI');

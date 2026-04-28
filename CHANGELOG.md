@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.10.15] — 2026-04-29
+
+- Wave 0.3 - Settings export/import tool with auto-backup, halt-on-error import, and last-5 rolling backups
+
 ## [1.10.14] — 2026-04-28
 
 - Wave 0.2 - Feature_Flags helper with explicit boolean parsing and dynamic filter hook

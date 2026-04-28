@@ -87,7 +87,24 @@ final class Module extends Module_Base {
 		require_once __DIR__ . '/legacy/includes/class-rsn-database.php';
 		\RSN_Database::create_tables();
 		update_option( 'rsn_db_version', FREEMAN_CORE_VERSION );
-		foreach ( $this->option_defaults() as $key => $value ) {
+		$this->seed_locale_defaults();
+	}
+
+	/**
+	 * Seed any missing `rsn_*` options from the active locale's defaults.
+	 *
+	 * Existing values are NOT overwritten (per `/docs/decisions-2026-04-28.md`
+	 * §4.2): a Hebrew install that activated under the pre-1.11.2 hardcoded
+	 * Hebrew defaults keeps its values untouched even after this method runs
+	 * under a different locale.
+	 *
+	 * Extracted from `on_activate()` so tests can drive the seeding without
+	 * spinning up a real `$wpdb` for `RSN_Database::create_tables()`.
+	 *
+	 * @since 1.11.2
+	 */
+	public function seed_locale_defaults() {
+		foreach ( self::defaults() as $key => $value ) {
 			if ( false === get_option( 'rsn_' . $key, false ) ) {
 				update_option( 'rsn_' . $key, $value );
 			}
@@ -188,34 +205,35 @@ final class Module extends Module_Base {
 	}
 
 	/**
-	 * Static accessor for the defaults (used by the legacy function shim).
+	 * Static accessor for the per-locale defaults (used by the legacy
+	 * function shim `rsn_option_defaults()`).
 	 *
+	 * Returns the option-key → default-value map for the requested locale,
+	 * loaded from `locales/<locale>.php`. Falls back to `en_US.php` for any
+	 * unknown locale. Strings inside the locale files are literals — they
+	 * are the per-locale source, not translatable copy.
+	 *
+	 * Existing callers passing no argument get the active site's locale via
+	 * `get_locale()` (or `en_US` if WP isn't loaded).
+	 *
+	 * @since 1.11.2 Locale-aware. Pre-1.11.2 the method returned hardcoded
+	 *               Hebrew defaults regardless of locale.
+	 *
+	 * @param string|null $locale Locale code, or null to detect via `get_locale()`.
 	 * @return array
 	 */
-	public static function defaults() {
-		return array(
-			'auto_inject'            => 'yes',
-			'form_heading'           => __( 'עדכנו אותי כשיחזור למלאי', 'freeman-core' ),
-			'form_description'       => __( 'השאירו את הפרטים שלכם ונעדכן אתכם ברגע שהמוצר יחזור למלאי.', 'freeman-core' ),
-			'form_button_text'       => __( 'הרשמה לעדכון', 'freeman-core' ),
-			'form_success_message'   => __( 'נרשמת בהצלחה! נשלח לך מייל כשהמוצר יחזור למלאי.', 'freeman-core' ),
-			'form_duplicate_message' => __( 'כבר נרשמת לקבלת עדכון על מוצר זה.', 'freeman-core' ),
-			'enable_confirmation'    => 'yes',
-			'enable_gdpr'            => 'no',
-			'gdpr_text'              => __( 'אני מסכים/ה לקבל התראות במייל על מוצר זה.', 'freeman-core' ),
-			'confirm_subject'        => __( 'נרשמת לרשימת ההמתנה!', 'freeman-core' ),
-			'confirm_heading'        => __( 'נעדכן אותך', 'freeman-core' ),
-			/* translators: {product_name} placeholder is replaced at send time. */
-			'confirm_body'           => __( 'נרשמת לרשימת ההמתנה עבור <strong>{product_name}</strong>. נשלח לך מייל ברגע שהמוצר יחזור למלאי.', 'freeman-core' ),
-			/* translators: {product_name} placeholder is replaced at send time. */
-			'notify_subject'         => __( 'חדשות טובות — {product_name} חזר למלאי!', 'freeman-core' ),
-			'notify_heading'         => __( 'המוצר חזר!', 'freeman-core' ),
-			/* translators: {product_name} placeholder is replaced at send time. */
-			'notify_body'            => __( '<strong>{product_name}</strong> חזר למלאי ומחכה לך. כדאי לתפוס לפני שייגמר שוב!', 'freeman-core' ),
-			'notify_button_text'     => __( 'לרכישה', 'freeman-core' ),
-			'from_name'              => '',
-			'from_email'             => '',
-		);
+	public static function defaults( $locale = null ) {
+		if ( null === $locale ) {
+			$locale = function_exists( 'get_locale' ) ? get_locale() : 'en_US';
+		}
+
+		$dir       = __DIR__ . '/locales/';
+		$candidate = $dir . $locale . '.php';
+		if ( ! is_readable( $candidate ) ) {
+			$candidate = $dir . 'en_US.php';
+		}
+
+		return (array) require $candidate;
 	}
 
 	/**

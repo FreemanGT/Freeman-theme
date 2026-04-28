@@ -205,6 +205,14 @@ if ( ! function_exists( 'get_query_var' ) ) {
 	}
 }
 
+// Smart get_locale: reads from $GLOBALS['fr_locale'] so tests can drive locale-
+// dependent code (e.g. RestockNotify::seed_locale_defaults). Defaults to en_US.
+if ( ! function_exists( 'get_locale' ) ) {
+	function get_locale() {
+		return $GLOBALS['fr_locale'] ?? 'en_US';
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Blanket null-return stubs for every other WP function used in the codebase.
 // Only runs for functions NOT already defined above.

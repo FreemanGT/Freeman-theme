@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.10.14] — 2026-04-28
+
+- Wave 0.2 - Feature_Flags helper with explicit boolean parsing and dynamic filter hook
+
 ## [1.10.13] — 2026-04-28
 
 - Wave 0.1: add freeman_core/logger/entry filter and freeman_core/logger/written action inside Logger::log() (D8)

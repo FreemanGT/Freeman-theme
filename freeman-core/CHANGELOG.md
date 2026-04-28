@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.0] — 2026-04-29
+
+- Wave 1.1a: add cheapest_variation/should_apply, cheapest_variation/chosen, variable_stock_fix/should_check filters
+
 ## [1.10.17] — 2026-04-29
 
 - Add snapshot harness (Wave 0.5): SnapshotTestCase trait, Scrubber utility, and three example tests (HTML, XML, JSON) with committed goldens

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.10.16] — 2026-04-29
+
+- Wave 0.4: regression baselines (hooks, REST, CLI, freeman_/etucart_ identifiers) + tools/capture-baselines.sh + BaselinesIntegrityTest
+
 ## [1.10.15] — 2026-04-29
 
 - Wave 0.3 - Settings export/import tool with auto-backup, halt-on-error import, and last-5 rolling backups

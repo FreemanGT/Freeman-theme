@@ -1,5 +1,17 @@
 # Freeman Core — Changelog
 
+## [1.10.16] — 2026-04-29
+
+- Wave 0.4: regression baselines (hooks, REST, CLI, freeman_/etucart_ identifiers) + tools/capture-baselines.sh + BaselinesIntegrityTest
+
+## [1.10.15] — 2026-04-29
+
+- Wave 0.3 - Settings export/import tool with auto-backup, halt-on-error import, and last-5 rolling backups
+
+## [1.10.14] — 2026-04-28
+
+- Wave 0.2 - Feature_Flags helper with explicit boolean parsing and dynamic filter hook
+
 ## [1.10.13] — 2026-04-28
 
 - Wave 0.1: add freeman_core/logger/entry filter and freeman_core/logger/written action inside Logger::log() (D8)

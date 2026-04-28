@@ -166,7 +166,13 @@ if ( ! function_exists( 'get_option' ) ) {
 	function get_option( $k, $d = false ) { return $GLOBALS['fr_opts'][ $k ] ?? $d; }
 }
 if ( ! function_exists( 'update_option' ) ) {
-	function update_option( $k, $v ) { $GLOBALS['fr_opts'][ $k ] = $v; return true; }
+	function update_option( $k, $v, $autoload = null ) {
+		if ( ! empty( $GLOBALS['fr_update_option_fail_keys'] ) && in_array( $k, $GLOBALS['fr_update_option_fail_keys'], true ) ) {
+			return false;
+		}
+		$GLOBALS['fr_opts'][ $k ] = $v;
+		return true;
+	}
 }
 if ( ! function_exists( 'delete_option' ) ) {
 	function delete_option( $k ) { unset( $GLOBALS['fr_opts'][ $k ] ); return true; }
@@ -218,6 +224,34 @@ foreach ( $stubs as $fn ) {
 	if ( ! function_exists( $fn ) ) {
 		eval( "function {$fn}() { return null; }" );
 	}
+}
+
+// Minimal $wpdb stub: returns option keys matching the freeman_core_/freeman_digital_
+// prefixes from the in-memory option store. Settings_Tools::freeman_option_keys()
+// is its only consumer in the test suite.
+if ( ! isset( $GLOBALS['wpdb'] ) ) {
+	$GLOBALS['wpdb'] = new class {
+		public $options = 'wp_options';
+		public function get_col( $sql ) {
+			$keys = array_keys( $GLOBALS['fr_opts'] ?? array() );
+			return array_values( array_filter( $keys, static function ( $k ) {
+				return strpos( $k, 'freeman_core_' ) === 0 || strpos( $k, 'freeman_digital_' ) === 0;
+			} ) );
+		}
+	};
+}
+
+if ( ! function_exists( 'wp_json_encode' ) ) {
+	function wp_json_encode( $v, $opts = 0 ) { return json_encode( $v, $opts ); }
+}
+if ( ! function_exists( '__return_true' ) ) {
+	function __return_true() { return true; }
+}
+if ( ! function_exists( '__return_false' ) ) {
+	function __return_false() { return false; }
+}
+if ( ! function_exists( 'nocache_headers' ) ) {
+	function nocache_headers() {}
 }
 
 // PSR-4 autoloader mirroring the plugin's own.

@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.10.13] — 2026-04-28
+
+- Wave 0.1: add freeman_core/logger/entry filter and freeman_core/logger/written action inside Logger::log() (D8)
+
 ## [1.10.12] — 2026-04-27
 
 - Variation +N badge: add .etucart-shop-pick__more[hidden] display:none !important rule to fix the root cause that made the badge stay visible whenever JS tried to hide it. The class rule .etucart-shop-pick__more had display:inline-flex !important which silently overrode the browser user-agent [hidden] display:none, so moreBtn.hidden=true from refreshOverflow was a no-op. Result: badge visible with zero chips marked .is-overflow so clicking did nothing. Mirrors the existing .etucart-shop-pick__opt[hidden] rule that already worked for chips.

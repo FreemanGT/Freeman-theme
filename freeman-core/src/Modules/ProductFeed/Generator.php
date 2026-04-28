@@ -145,6 +145,22 @@ final class Generator {
 			update_option( self::OPT_LAST_GEN, current_time( 'mysql' ), false );
 			$elapsed = round( microtime( true ) - $start, 2 );
 			Logger::info( "ProductFeed generated in {$elapsed}s" );
+
+			/**
+			 * Fires after a successful feed generation, once the new file is
+			 * in place and the last-generated timestamp has been written.
+			 * Use cases: ping Merchant Center / Facebook Catalog webhooks,
+			 * invalidate a CDN, push the file to S3.
+			 *
+			 * Does NOT fire on a failed run — the catch block above handles
+			 * cleanup but never reaches this point.
+			 *
+			 * @since 1.11.1
+			 *
+			 * @param string $feed_file Path to the freshly written feed file.
+			 * @param float  $elapsed   Generation time in seconds.
+			 */
+			do_action( 'freeman_core/product_feed/after_generate', $this->feed_file(), $elapsed );
 		} catch ( \Throwable $e ) {
 			Logger::error( 'ProductFeed error: ' . $e->getMessage() );
 			if ( file_exists( $tmp ) ) {
@@ -193,7 +209,20 @@ final class Generator {
 
 		$offset = 0;
 		while ( true ) {
-			$ids = get_posts(
+			/**
+			 * Filter the `get_posts()` args used to page through products
+			 * during feed generation. Use to scope the feed (e.g. only
+			 * a specific category, or exclude a hidden taxonomy).
+			 *
+			 * Fires once per batch — the `offset` argument changes each tick.
+			 *
+			 * @since 1.11.1
+			 *
+			 * @param array $args   Args about to be passed to `get_posts()`.
+			 * @param int   $offset Current paging offset.
+			 */
+			$args = (array) apply_filters(
+				'freeman_core/product_feed/query_args',
 				array(
 					'post_type'      => 'product',
 					'post_status'    => 'publish',
@@ -203,8 +232,10 @@ final class Generator {
 					'no_found_rows'  => true,
 					'orderby'        => 'ID',
 					'order'          => 'ASC',
-				)
+				),
+				$offset
 			);
+			$ids  = get_posts( $args );
 			if ( empty( $ids ) ) {
 				break;
 			}
@@ -216,7 +247,20 @@ final class Generator {
 				if ( ! $product || ! $product->is_visible() ) {
 					continue;
 				}
-				$write( $this->product_xml( $product ) );
+				/**
+				 * Filter the rendered XML block for a single product before
+				 * it is written to the gzipped feed. Receives the XML string
+				 * built by `product_xml()` and the source product object.
+				 *
+				 * Returning an empty string skips the product silently.
+				 *
+				 * @since 1.11.1
+				 *
+				 * @param string      $xml     XML block for this product.
+				 * @param \WC_Product $product Source product.
+				 */
+				$xml = (string) apply_filters( 'freeman_core/product_feed/item', $this->product_xml( $product ), $product );
+				$write( $xml );
 				wp_cache_delete( $pid, 'posts' );
 			}
 			$offset += self::BATCH;

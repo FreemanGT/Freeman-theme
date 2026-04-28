@@ -82,6 +82,17 @@ final class Server {
 			return;
 		}
 
+		/**
+		 * Fires when a request is about to be served from the /product-feed
+		 * endpoint, before any headers are emitted. Use cases: custom auth
+		 * gate, request logging, rate limiting, cache-purge integration.
+		 *
+		 * Does NOT fire when the rewrite rule misses (the early return above).
+		 *
+		 * @since 1.11.1
+		 */
+		do_action( 'freeman_core/product_feed/before_serve' );
+
 		$file = $this->generator->feed_file();
 		if ( ! file_exists( $file ) ) {
 			$this->generator->generate();

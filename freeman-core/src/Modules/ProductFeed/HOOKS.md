@@ -1,5 +1,63 @@
 # Product Feed — Public API
 
+## Shipped hooks (1.11.1+)
+
+### `freeman_core/product_feed/query_args` (filter, since 1.11.1)
+```php
+apply_filters(
+    'freeman_core/product_feed/query_args',
+    array $args,
+    int   $offset
+);
+```
+Filters the args passed to `get_posts()` inside `Generator::write_feed()`.
+Fires once per batch (offset advances by `Generator::BATCH` each tick) so
+listeners that scope the feed (e.g. by category) must apply the same scope
+on every call.
+
+### `freeman_core/product_feed/item` (filter, since 1.11.1)
+```php
+apply_filters(
+    'freeman_core/product_feed/item',
+    string      $xml,
+    \WC_Product $product
+);
+```
+Filters the rendered XML block for a single product before it is gzipped
+and written to the feed file. Returning an empty string skips the product
+silently. Use to inject custom fields, prepend metadata, or rewrite the
+canonical fields that `Generator::product_xml()` emits by default.
+
+## Shipped actions (1.11.1+)
+
+### `freeman_core/product_feed/before_serve` (action, since 1.11.1)
+```php
+do_action( 'freeman_core/product_feed/before_serve' );
+```
+Fires when a request to the `/product-feed` endpoint is about to be served,
+before any headers are emitted. Does NOT fire when the rewrite rule misses
+(the early `get_query_var()` guard returns first). Use cases: custom auth
+gate, request logging, rate limiting, cache-purge integration.
+
+### `freeman_core/product_feed/after_generate` (action, since 1.11.1)
+```php
+do_action(
+    'freeman_core/product_feed/after_generate',
+    string $feed_file,
+    float  $elapsed
+);
+```
+Fires after a successful feed generation, once the new file is in place
+and the last-generated timestamp option has been written. Does NOT fire on
+a failed run — the catch block in `Generator::generate()` handles cleanup
+but never reaches this point. Use cases: ping Merchant Center / Facebook
+Catalog webhooks, invalidate a CDN, push the file to S3.
+
+## Planned hooks (NOT YET SHIPPED)
+
+The hooks below are documented for planning but are not yet wired into the
+code. Treat as "do not rely on" until `@since` tags appear in the source.
+
 ## Filters
 
 ### `freeman_core/product_feed/product_query_args`

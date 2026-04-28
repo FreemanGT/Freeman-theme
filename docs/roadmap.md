@@ -100,18 +100,9 @@ Standards for both:
 - Each hook: at least one test verifying the filter mutates output / the action fires
 - With no listeners attached, output must be byte-identical to current
 
-### Deferred from 1.1 (proposed — pending approval)
+### Deferred from 1.1
 
-> The three new wave entries below are proposed during Wave 1.1 pre-flight to give the deferred hooks a documented home. They are NOT committed work until Yiftach approves and merges them into the active roadmap.
-
-**2.3 — RestockNotify legacy migration (proposed)**
-Parallels Wave 2.2's VariationSwatches migration. Required before the three deferred RestockNotify hooks (`should_inject`, `email_args`, `before_send`) can be added — all three call sites currently live in `legacy/includes/class-rsn-*.php`, which hard rule #3 forbids editing without a migration plan.
-
-**3.1 — InfiniteScroll trigger modes (Roadmap #5) — expanded scope**
-Three deferred Wave-1.1 hooks fold in: `freeman_core/infinite_scroll/selector` (filter), `freeman_core/infinite_scroll/before_render` (action), `freeman_core/infinite_scroll/after_render` (action). All three require PHP-side render logic that 3.1 is already adding (selector override, history API, trigger modes).
-
-**3.4 — MyAccount endpoint extensibility (proposed)**
-Required before the two deferred MyAccount hooks (`endpoints` filter, `sidebar_html` filter) can be added — current MyAccount module is CSS-only with no PHP render path. May be dropped instead of shipped if no internal need surfaces.
+Wave 2.3 and the Wave 3.1 expansion below are committed work, approved 2026-04-29 alongside Wave 1.1a. Wave 3.4 remains proposed (not yet approved); promote only once an internal MyAccount extension need surfaces.
 
 **1.2 — RestockNotify locale bootstrapper (Roadmap #2)**
 - Per `/docs/decisions-2026-04-28.md` §4.2: English defaults, Hebrew opt-in
@@ -143,17 +134,33 @@ Required before the two deferred MyAccount hooks (`endpoints` filter, `sidebar_h
   - Version-skew handling during rollout
 - After approval: split into 4a (settings migration), 4b (image swatches), 4c (tooltip), each its own PR
 
+**2.3 — RestockNotify legacy migration (committed 2026-04-29)**
+- Parallels Wave 2.2's VariationSwatches migration. Required before the three deferred Wave-1.1 RestockNotify hooks (`should_inject`, `email_args`, `before_send`) can be added — call sites live in `legacy/includes/class-rsn-*.php`, which hard rule #3 forbids editing without a migration plan.
+- **STOP after writing the plan.** Wait for human approval before coding.
+- Plan must cover:
+  - Inventory of `legacy/includes/class-rsn-frontend.php`, `class-rsn-email.php`, `class-rsn-stock-monitor.php`, `class-rsn-ajax.php`, `class-rsn-admin.php`, `class-rsn-database.php`
+  - Existing legacy filters preserved (e.g. `rsn_should_enqueue` at `class-rsn-frontend.php:75`)
+  - Option-key inventory (`rsn_*` keys must keep working — no rename)
+  - Subscriber table (`{prefix}rsn_subscribers`) preservation guarantee
+  - The 3 hooks land in the migration PR or its successor — confirm in plan
+- After approval: split into sub-PRs per legacy class group; the 3 hooks land in whichever PR brings their call site out of `legacy/`.
+
 ---
 
 ## Wave 3 — P1 functional improvements
 
 Each item is its own PR with its own feature flag. Order within wave doesn't matter.
 
-**3.1 — InfiniteScroll trigger modes (Roadmap #5)**
+**3.1 — InfiniteScroll trigger modes (Roadmap #5) — expanded scope (committed 2026-04-29)**
 - Setting: `auto` / `button` / `hybrid` (auto first 2 pages, button after)
 - Selector override (currently hardcoded to `.products`)
 - History API integration toggle (push state on each page load)
 - Flag: `freeman_core_infinite_scroll_trigger_modes_enabled`
+- **Folds in 3 hooks deferred from Wave 1.1**:
+  - `freeman_core/infinite_scroll/selector` (filter) — replaces the hardcoded `.products` selector. Lands together with the JS-side read so the hook actually controls behavior.
+  - `freeman_core/infinite_scroll/before_render` (action) — fires before the PHP-side render that this wave introduces (the module is JS-only today).
+  - `freeman_core/infinite_scroll/after_render` (action) — fires after.
+  - Each hook gets `@since` matching the version this wave ships in, plus a hook test asserting firing + payload.
 
 **3.2 — Slider autoplay/loop/dots/lazy (Roadmap #6)**
 - New Elementor controls: autoplay, autoplay delay, loop, pagination dots
@@ -165,6 +172,10 @@ Each item is its own PR with its own feature flag. Order within wave doesn't mat
 - Per-product opt-out via product meta box
 - New filter: `freeman_core/cheapest_variation/strategy`
 - Flag: `freeman_core_cheapest_variation_strategy_enabled`
+
+**3.4 — MyAccount endpoint extensibility (PROPOSED, NOT YET APPROVED)**
+- Proposed during Wave 1.1 pre-flight to home the two deferred MyAccount hooks (`endpoints` filter, `sidebar_html` filter). MyAccount today is CSS-only — no PHP render path exists.
+- Promote to committed only when an internal MyAccount extension need surfaces; until then this stays out of scope and may be dropped entirely.
 
 ---
 

@@ -790,6 +790,21 @@ final class Widget extends Widget_Base {
 			$args['exclude'] = $exclude;
 		}
 
+		/**
+		 * Filter the `wc_get_products()` args used by the Product Slider widget.
+		 *
+		 * Only fires on the standard query path. The early-return branches for
+		 * `current_query` (read $wp_query directly) and `related` (delegate to
+		 * `wc_get_related_products()`) bypass this filter — those code paths
+		 * never build `$args`.
+		 *
+		 * @since 1.11.1
+		 *
+		 * @param array $args     Args about to be passed to `wc_get_products()`.
+		 * @param array $settings Resolved widget settings.
+		 */
+		$args = (array) apply_filters( 'freeman_core/product_slider/query_args', $args, $s );
+
 		$products = wc_get_products( $args );
 		if ( ! is_array( $products ) ) {
 			return array();

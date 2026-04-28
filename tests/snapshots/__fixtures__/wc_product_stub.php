@@ -10,7 +10,7 @@
  * and its helpers Generator::common_fields() / stock_fields() /
  * price_fields()):
  *
- *   is_type, get_id, get_sku, get_name, get_slug, get_status,
+ *   is_type, is_visible, get_id, get_sku, get_name, get_slug, get_status,
  *   get_catalog_visibility, get_description, get_short_description,
  *   get_date_created, get_date_modified, get_weight, get_length,
  *   get_width, get_height, get_tax_class, get_tax_status, get_image_id,
@@ -43,6 +43,10 @@ if ( ! class_exists( '\WC_Product' ) ) {
 
 		public function is_type( $type ) {
 			return 'simple' === $type;
+		}
+
+		public function is_visible() {
+			return true;
 		}
 
 		public function get_id() {

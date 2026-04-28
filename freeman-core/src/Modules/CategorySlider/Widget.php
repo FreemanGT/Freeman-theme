@@ -528,6 +528,16 @@ final class Widget extends Widget_Base {
 			$args['exclude'] = $exclude;
 		}
 
+		/**
+		 * Filter the `get_terms()` args used by the Category Slider widget.
+		 *
+		 * @since 1.11.1
+		 *
+		 * @param array $args     Args about to be passed to `get_terms()`.
+		 * @param array $settings Resolved widget settings.
+		 */
+		$args = (array) apply_filters( 'freeman_core/category_slider/query_args', $args, $s );
+
 		$terms = get_terms( $args );
 		if ( is_wp_error( $terms ) || empty( $terms ) ) {
 			return array();
@@ -710,6 +720,7 @@ final class Widget extends Widget_Base {
 					$count = (int) $term->count;
 					$thumb = $this->get_thumbnail_url( $term->term_id );
 					$hue   = $this->hue_from( $term->slug );
+					ob_start();
 					?>
 					<a
 						href="<?php echo esc_url( $url ); ?>"
@@ -747,7 +758,32 @@ final class Widget extends Widget_Base {
 							<?php endif; ?>
 						</div>
 					</a>
-				<?php endforeach; ?>
+					<?php
+					$card_html = (string) ob_get_clean();
+					/**
+					 * Filter the rendered HTML for a single Category Slider card.
+					 *
+					 * @since 1.11.1
+					 *
+					 * @param string   $card_html Rendered card HTML (already escaped).
+					 * @param \WP_Term $term      Source term.
+					 * @param array    $context   Render context: url, count, thumb, hue, shape, show_count.
+					 */
+					echo apply_filters(
+						'freeman_core/category_slider/render_card',
+						$card_html,
+						$term,
+						array(
+							'url'        => $url,
+							'count'      => $count,
+							'thumb'      => $thumb,
+							'hue'        => $hue,
+							'shape'      => $shape,
+							'show_count' => $show_count,
+						)
+					); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $card_html already escaped; filter contract documented above.
+				endforeach;
+				?>
 			</div>
 
 			<?php if ( $show_progress ) : ?>

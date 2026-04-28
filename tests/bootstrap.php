@@ -196,6 +196,15 @@ if ( ! function_exists( 'is_plugin_active' ) ) {
 	function is_plugin_active( $x ) { return false; }
 }
 
+// Smart get_query_var: reads from $GLOBALS['fr_query_vars'] so tests can drive
+// rewrite-dependent code paths (e.g. ProductFeed Server::serve_feed). Defaults
+// to '' which matches WP behavior for missing query vars.
+if ( ! function_exists( 'get_query_var' ) ) {
+	function get_query_var( $key, $default = '' ) {
+		return $GLOBALS['fr_query_vars'][ $key ] ?? $default;
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Blanket null-return stubs for every other WP function used in the codebase.
 // Only runs for functions NOT already defined above.
@@ -216,7 +225,7 @@ $stubs = array(
 	'deactivate_plugins', 'delete_plugins',
 	'register_rest_route', 'rest_ensure_response',
 	'wp_safe_redirect', 'wp_send_json_success', 'wp_send_json_error',
-	'add_rewrite_rule', 'flush_rewrite_rules', 'get_query_var',
+	'add_rewrite_rule', 'flush_rewrite_rules',
 	'current_time', 'date_i18n', 'wp_date',
 	'site_url', 'rest_url',
 );

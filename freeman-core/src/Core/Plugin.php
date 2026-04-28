@@ -156,6 +156,7 @@ final class Plugin {
 			$this->hub->boot();
 			( new \Freeman\Core\Admin\Dashboard( $this ) )->boot();
 			$this->importer->boot();
+			( new Settings_Tools() )->boot();
 		}
 
 		$this->booted = true;

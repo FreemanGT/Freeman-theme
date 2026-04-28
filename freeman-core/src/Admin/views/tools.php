@@ -115,6 +115,8 @@ if ( $just_deleted_flag ) {
 		<?php endif; ?>
 	</form>
 
+	<?php include FREEMAN_CORE_PATH . 'src/Admin/views/settings-tools-section.php'; ?>
+
 	<hr style="margin:32px 0;"/>
 
 	<h2><?php esc_html_e( 'Recent log', 'freeman-core' ); ?></h2>

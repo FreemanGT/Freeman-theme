@@ -1,0 +1,245 @@
+# Copyright (C) 2026 Freeman Digital
+# This file is distributed under the GPL v3.
+msgid ""
+msgstr ""
+"Project-Id-Version: Freeman Digital 1.7.2\n"
+"Report-Msgid-Bugs-To: https://freeman.digital\n"
+"POT-Creation-Date: 2026-04-23 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
+"X-Domain: freeman-digital\n"
+
+#. Plugin Name
+msgid "Freeman Digital"
+msgstr ""
+
+#. Plugin URI
+msgid "https://freeman.digital"
+msgstr ""
+
+#. Description
+msgid "All-in-one WordPress & WooCommerce optimization — database indexes, query tuning, autoload optimizer, security hardening, speed tuning, transient management, and bloat removal. Built for Elementor + WooCommerce stores."
+msgstr ""
+
+# NOTE: This .pot is a stub. Regenerate the full catalog with:
+#   wp i18n make-pot . languages/freeman-digital.pot --domain=freeman-digital --slug=freeman-digital
+# The stub exists so translators have a location to contribute, and so the plugin
+# self-check passes on WordPress.org submission.
+
+msgid "Settings"
+msgstr ""
+
+msgid "Revert before uninstall"
+msgstr ""
+
+msgid "Revert deep indexes before uninstalling for a clean removal."
+msgstr ""
+
+msgid "WordPress & WooCommerce Optimization Suite"
+msgstr ""
+
+msgid "💾 Save Settings"
+msgstr ""
+
+msgid "Active Optimizations"
+msgstr ""
+
+msgid "Database Size"
+msgstr ""
+
+msgid "Total Posts"
+msgstr ""
+
+msgid "Postmeta Rows"
+msgstr ""
+
+msgid "Products"
+msgstr ""
+
+msgid "Orders"
+msgstr ""
+
+msgid "Autoloaded Options"
+msgstr ""
+
+msgid "Autoload Size"
+msgstr ""
+
+msgid "⚠️ Autoload Warning:"
+msgstr ""
+
+msgid "⚠️ MyISAM Tables Detected:"
+msgstr ""
+
+msgid "Quick Actions"
+msgstr ""
+
+msgid "🗂️ Manage Indexes"
+msgstr ""
+
+msgid "🧹 Run Cleanup"
+msgstr ""
+
+msgid "📦 Audit Autoload"
+msgstr ""
+
+msgid "Query Optimization"
+msgstr ""
+
+msgid "Remove SQL_CALC_FOUND_ROWS (Front-end)"
+msgstr ""
+
+msgid "WooCommerce Admin Bloat"
+msgstr ""
+
+msgid "WooCommerce Performance"
+msgstr ""
+
+msgid "WooCommerce Frontend"
+msgstr ""
+
+msgid "Phone Home Blocker"
+msgstr ""
+
+msgid "Block Non-wp.org Outbound HTTP (Admin Context)"
+msgstr ""
+
+msgid "WP Admin Caching"
+msgstr ""
+
+msgid "🔥 Tier 1: Deep Reindex (PRIMARY KEY Restructuring)"
+msgstr ""
+
+msgid "📎 Tier 2: Secondary Indexes (Additional Coverage)"
+msgstr ""
+
+msgid "⚡ Apply Deep Reindex"
+msgstr ""
+
+msgid "↩️ Revert to WordPress Standard"
+msgstr ""
+
+msgid "✅ Update Secondary Indexes"
+msgstr ""
+
+msgid "❌ Drop All Secondary"
+msgstr ""
+
+msgid "🔴 Database user lacks CREATE/ALTER privileges."
+msgstr ""
+
+msgid "Security Hardening"
+msgstr ""
+
+msgid "Add Security Headers (Frontend Only)"
+msgstr ""
+
+msgid "Add Cross-Origin-Opener-Policy Header (Opt-in)"
+msgstr ""
+
+msgid "Frontend Speed"
+msgstr ""
+
+msgid "Header Cleanup"
+msgstr ""
+
+msgid "Heartbeat API"
+msgstr ""
+
+msgid "Post Revisions"
+msgstr ""
+
+msgid "Elementor Optimization"
+msgstr ""
+
+msgid "Font Optimization"
+msgstr ""
+
+msgid "Resource Hints & Preloading"
+msgstr ""
+
+msgid "Asset Cleanup"
+msgstr ""
+
+msgid "Database Cleanup"
+msgstr ""
+
+msgid "Automatic Cleanup"
+msgstr ""
+
+msgid "🧹 Run Cleanup Now"
+msgstr ""
+
+msgid "⚡ Optimize Tables Now"
+msgstr ""
+
+msgid "Autoload Optimizer"
+msgstr ""
+
+msgid "🔍 Audit Top 30 Largest Autoloaded Options"
+msgstr ""
+
+msgid "Fix Large Autoloaded Options"
+msgstr ""
+
+msgid "MyISAM → InnoDB Conversion"
+msgstr ""
+
+msgid "🔄 Convert All to InnoDB"
+msgstr ""
+
+msgid "🔬 Query Profiler"
+msgstr ""
+
+msgid "✅ Profiler is ACTIVE"
+msgstr ""
+
+msgid "⚪ Profiler is OFF"
+msgstr ""
+
+msgid "▶ Start Profiler"
+msgstr ""
+
+msgid "⏹ Stop Profiler"
+msgstr ""
+
+msgid "📊 Captured Data"
+msgstr ""
+
+msgid "📊 No Data Yet"
+msgstr ""
+
+msgid "Bloat Removal"
+msgstr ""
+
+msgid "Export Settings"
+msgstr ""
+
+msgid "Import Settings"
+msgstr ""
+
+msgid "Changelog"
+msgstr ""
+
+msgid "Invalid login credentials."
+msgstr ""
+
+msgid "WooCommerce %s or newer is required. The WooCommerce optimization module has been disabled for safety."
+msgstr ""
+
+msgid "Activity"
+msgstr ""
+
+msgid "Activity Log"
+msgstr ""
+
+msgid "Clear log"
+msgstr ""
+
+msgid "Activity log cleared."
+msgstr ""

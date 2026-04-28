@@ -1,0 +1,16 @@
+{
+    "name": "freeman-workspace",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Freeman Theme + Freeman Core shared build tooling",
+    "scripts": {
+        "build": "bash tools/build.sh",
+        "release": "bash tools/release.sh"
+    },
+    "devDependencies": {
+        "esbuild": "^0.23.0",
+        "postcss": "^8.4.38",
+        "postcss-cli": "^11.0.0",
+        "autoprefixer": "^10.4.19"
+    }
+}

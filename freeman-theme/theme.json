@@ -1,0 +1,87 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/theme.json",
+    "version": 2,
+    "settings": {
+        "appearanceTools": true,
+        "color": {
+            "palette": [
+                { "slug": "accent",        "color": "#111111", "name": "Accent" },
+                { "slug": "accent-soft",   "color": "#f1efea", "name": "Accent Soft" },
+                { "slug": "accent-text",   "color": "#ffffff", "name": "Accent Text" },
+                { "slug": "ink",           "color": "#1b1b1b", "name": "Ink" },
+                { "slug": "ink-soft",      "color": "#3a3a3a", "name": "Ink Soft" },
+                { "slug": "ink-muted",     "color": "#6b6b6b", "name": "Ink Muted" },
+                { "slug": "paper",         "color": "#ffffff", "name": "Paper" },
+                { "slug": "paper-soft",    "color": "#faf9f7", "name": "Paper Soft" },
+                { "slug": "paper-dim",     "color": "#f1efea", "name": "Paper Dim" },
+                { "slug": "hairline",      "color": "#e6e6e2", "name": "Hairline" },
+                { "slug": "danger",        "color": "#b11226", "name": "Danger" },
+                { "slug": "success",       "color": "#0e7c66", "name": "Success" },
+                { "slug": "warning",       "color": "#a8630a", "name": "Warning" },
+                { "slug": "info",          "color": "#225e8f", "name": "Info" },
+                { "slug": "gold",          "color": "#b68a3a", "name": "Gold" }
+            ]
+        },
+        "typography": {
+            "fluid": true,
+            "fontFamilies": [
+                {
+                    "slug": "body",
+                    "name": "Body",
+                    "fontFamily": "'Heebo', 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                },
+                {
+                    "slug": "display",
+                    "name": "Display",
+                    "fontFamily": "'Assistant', 'Heebo', 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                },
+                {
+                    "slug": "mono",
+                    "name": "Mono",
+                    "fontFamily": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+                }
+            ],
+            "fontSizes": [
+                { "slug": "xs",   "size": "12px", "name": "Extra Small" },
+                { "slug": "sm",   "size": "14px", "name": "Small" },
+                { "slug": "md",   "size": "16px", "name": "Medium" },
+                { "slug": "lg",   "size": "20px", "name": "Large" },
+                { "slug": "xl",   "size": "28px", "name": "Extra Large" },
+                { "slug": "xxl",  "size": "40px", "name": "Huge" },
+                { "slug": "hero", "size": "60px", "name": "Hero" }
+            ]
+        },
+        "spacing": {
+            "units": ["px", "rem", "em", "%", "vh", "vw"],
+            "spacingSizes": [
+                { "slug": "xxs", "size": "2px",  "name": "2XS" },
+                { "slug": "xs",  "size": "4px",  "name": "XS" },
+                { "slug": "sm",  "size": "8px",  "name": "SM" },
+                { "slug": "md",  "size": "16px", "name": "MD" },
+                { "slug": "lg",  "size": "24px", "name": "LG" },
+                { "slug": "xl",  "size": "40px", "name": "XL" },
+                { "slug": "xxl", "size": "64px", "name": "XXL" },
+                { "slug": "3xl", "size": "96px", "name": "3XL" }
+            ]
+        },
+        "layout": {
+            "contentSize": "760px",
+            "wideSize": "1360px"
+        },
+        "custom": {
+            "radius": {
+                "xs": "2px",
+                "sm": "4px",
+                "md": "6px",
+                "lg": "12px",
+                "xl": "20px",
+                "pill": "999px"
+            },
+            "motion": {
+                "fast": "180ms",
+                "base": "280ms",
+                "slow": "480ms"
+            }
+        }
+    }
+}

@@ -1,0 +1,124 @@
+/* ==========================================================================
+   Restock Notify — Frontend — RTL Hebrew
+   NOTE: Critical styles are also inlined in the form HTML as a fallback.
+   This file adds polish, transitions, and full styling.
+   ========================================================================== */
+
+.rsn-form-wrap {
+    margin: 24px 0;
+    direction: rtl;
+    text-align: right;
+    animation: rsnFadeIn 0.4s ease-out;
+}
+
+.rsn-hidden { display: none !important; }
+
+.rsn-form-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 32px 28px;
+    max-width: 480px;
+    position: relative;
+    transition: border-color 0.2s ease;
+    direction: rtl;
+    text-align: right;
+}
+.rsn-form-card:hover { border-color: #ccc; }
+
+.rsn-form-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: #000;
+    border-radius: 50%;
+    margin-bottom: 16px;
+    color: #fff;
+}
+
+.rsn-form-heading {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #111;
+    line-height: 1.4;
+}
+
+.rsn-form-desc {
+    margin: 0 0 20px;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+}
+
+.rsn-form-fields { display: flex; flex-direction: column; gap: 12px; }
+.rsn-field-row { display: flex; gap: 10px; }
+.rsn-field { flex: 1; }
+
+.rsn-input {
+    display: block;
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #111;
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+    direction: rtl;
+    text-align: right;
+}
+.rsn-input::placeholder { color: #aaa; text-align: right; }
+.rsn-input:focus { background: #fff; border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
+
+.rsn-input.rsn-email { direction: ltr; text-align: right; }
+.rsn-input.rsn-email:focus,
+.rsn-input.rsn-email:not(:placeholder-shown) { text-align: left; }
+
+.rsn-gdpr-label {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12.5px; color: #666; cursor: pointer; line-height: 1.4;
+}
+.rsn-gdpr-label input[type="checkbox"] { margin-top: 2px; accent-color: #000; }
+
+.rsn-submit-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 12px 20px;
+    font-size: 14px; font-weight: 600; font-family: inherit;
+    color: #fff; background: #111; border: none; border-radius: 8px;
+    cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.rsn-submit-btn:hover { background: #333; }
+.rsn-submit-btn:active { transform: scale(0.985); }
+.rsn-submit-btn.rsn-loading { pointer-events: none; opacity: 0.7; }
+.rsn-submit-btn .rsn-btn-spinner { display: none; }
+.rsn-submit-btn.rsn-loading .rsn-btn-text { display: none; }
+.rsn-submit-btn.rsn-loading .rsn-btn-spinner { display: inline-flex; animation: rsnSpin 0.8s linear infinite; }
+
+.rsn-form-success { text-align: center; padding: 8px 0; animation: rsnFadeIn 0.4s ease-out; }
+.rsn-success-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 52px; height: 52px; background: #f0f0f0; border-radius: 50%; margin-bottom: 12px; color: #111;
+}
+.rsn-success-text { margin: 0; font-size: 14px; color: #444; line-height: 1.6; }
+
+.rsn-form-error { animation: rsnFadeIn 0.3s ease-out; }
+.rsn-error-text {
+    margin: 0; padding: 10px 14px; font-size: 13px; color: #c00;
+    background: #fff5f5; border: 1px solid #fdd; border-radius: 8px; text-align: right;
+}
+
+@keyframes rsnFadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes rsnSpin { from { transform:rotate(0); } to { transform:rotate(360deg); } }
+
+@media (max-width: 480px) {
+    .rsn-form-card { padding: 24px 20px; }
+    .rsn-field-row { flex-direction: column; }
+    .rsn-form-heading { font-size: 16px; }
+    .rsn-form-desc { font-size: 13px; }
+}

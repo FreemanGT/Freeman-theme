@@ -1,0 +1,734 @@
+/* =============================================================================
+   Etucart Variation Swatches — shop / archive compact picker (1.6.0)
+
+   Fully scoped under .etucart-shop-pick. Design tokens are kept parallel
+   to etucart-swatches.css so the picker reads as the same product family:
+     - Pills / circles with heavy rounding (999px).
+     - Color swatches: 28px outer circle, 22px inner dot.
+     - Size buttons: 36px tall pills.
+     - Add-to-cart: solid dark pill, full-width inside the card.
+   Everything is marked !important because WC themes aggressively style
+   .button / .add_to_cart_button / inputs inside product loops.
+   ============================================================================= */
+
+.etucart-shop-pick,
+.etucart-shop-pick * {
+	box-sizing: border-box !important;
+}
+
+.etucart-shop-pick {
+	--eshop-text: #111111;
+	--eshop-muted: #6b6b6b;
+	--eshop-border: #e0e0e0;
+	--eshop-border-strong: #111111;
+	--eshop-bg: #ffffff;
+	--eshop-bg-soft: #f2f2f2;
+	--eshop-accent: #111111;
+	--eshop-success: #0f8a4a;
+	--eshop-danger: #ca2b1d;
+	--eshop-radius-pill: 999px;
+	--eshop-gap: 6px;
+	--eshop-transition: 140ms ease;
+	--eshop-font: "Ploni", "Ploni ML v2 AAA", "Ploni ML", "Assistant",
+		"Rubik", "Heebo", "Noto Sans Hebrew", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", system-ui, Arial, sans-serif;
+
+	direction: rtl !important;
+	text-align: right !important;
+	font-family: var(--eshop-font) !important;
+	color: var(--eshop-text) !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 8px !important;
+	padding: 10px 0 0 0 !important;
+	margin: 8px 0 0 0 !important;
+	width: 100% !important;
+	background: transparent !important;
+	border: 0 !important;
+}
+
+.etucart-shop-pick,
+.etucart-shop-pick * {
+	font-family: var(--eshop-font) !important;
+}
+
+.etucart-shop-pick button {
+	-webkit-appearance: none !important;
+	-moz-appearance: none !important;
+	appearance: none !important;
+	text-transform: none !important;
+	letter-spacing: normal !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+	line-height: 1 !important;
+	font-family: inherit !important;
+	-webkit-tap-highlight-color: transparent !important;
+}
+
+.etucart-shop-pick button:focus {
+	outline: none !important;
+}
+
+.etucart-shop-pick button:focus-visible {
+	outline: 2px solid var(--eshop-text) !important;
+	outline-offset: 2px !important;
+}
+
+/* ---------- Price (החל מ: ₪X) ----------
+   1.7.8: archive cards centre the price line + lock value typography so
+   the selected/unselected states render at the same size. PDP buy-box
+   stays right-aligned per QA — see etucart-swatches.css.
+   1.7.10: bumped base to 18px (was 13px — too small for the editorial
+   card design); font-family inherited explicitly so the currency glyph
+   renders the same in both selected and unselected states (was
+   switching shape between WC's `variation.price_html` and our
+   `wc_price()` because some downstream rule was forcing a fallback
+   font on `.woocommerce-Price-currencySymbol`). */
+.etucart-shop-pick__price {
+	display: flex !important;
+	align-items: baseline !important;
+	justify-content: center !important;
+	text-align: center !important;
+	gap: 4px !important;
+	font-size: 18px !important;
+	line-height: 1.2 !important;
+	color: var(--eshop-text) !important;
+	font-family: inherit !important;
+	margin: 0 0 2px 0 !important;
+	min-height: 22px;
+}
+
+.etucart-shop-pick__price-prefix {
+	color: var(--eshop-muted) !important;
+	font-weight: 400 !important;
+	font-family: inherit !important;
+	font-size: .65em !important;
+}
+
+.etucart-shop-pick__price-value {
+	font-weight: 700 !important;
+	color: var(--eshop-text) !important;
+}
+
+/* Universal descendant selector — catches every WC sub-element (and any
+   plugin wrappers) so the value renders at the parent's 18px regardless
+   of what variation.price_html injects. The selected vs unselected
+   states were drifting because the JS-injected markup contained a
+   wrapper my class-list didn't cover. font-family is locked too so the
+   currency glyph (e.g. ₪) renders identically in both states. */
+.etucart-shop-pick__price-value,
+.etucart-shop-pick__price-value * {
+	font-size: inherit !important;
+	font-weight: 700 !important;
+	font-family: inherit !important;
+	color: var(--eshop-text) !important;
+	text-decoration: none !important;
+	background: transparent !important;
+	line-height: inherit !important;
+}
+
+.etucart-shop-pick__price-value del {
+	color: var(--eshop-muted) !important;
+	opacity: .7 !important;
+	font-weight: 400 !important;
+	margin-inline-end: 6px !important;
+}
+
+/* ---------- Attribute row ---------- */
+.etucart-shop-pick__attrs {
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 6px !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+.etucart-shop-pick__attr {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+.etucart-shop-pick__attr-head {
+	display: flex !important;
+	align-items: baseline !important;
+	gap: 6px !important;
+	margin: 0 0 4px 0 !important;
+	font-size: 12px !important;
+	line-height: 1.2 !important;
+}
+
+.etucart-shop-pick__attr-label {
+	font-weight: 600 !important;
+	color: var(--eshop-text) !important;
+}
+
+/* OPT_SHOP_HIDE_ATTR_LABELS (1.7.8): when the shop owner enables "Hide
+   attribute labels", the picker wrapper gets `--no-labels` and the label
+   span vanishes. */
+.etucart-shop-pick--no-labels .etucart-shop-pick__attr-label {
+	display: none !important;
+}
+
+/* OPT_SHOP_HIDE_SELECTED (1.7.9): hide the "selected option" text row
+   above the swatches — the swatch's active state already shows what's
+   picked. */
+.etucart-shop-pick--no-selected .etucart-shop-pick__attr-selected {
+	display: none !important;
+}
+
+/* When BOTH the label and the selected-text are hidden, the head row
+   itself becomes empty whitespace — collapse it. */
+.etucart-shop-pick--no-labels.etucart-shop-pick--no-selected .etucart-shop-pick__attr-head {
+	display: none !important;
+}
+
+.etucart-shop-pick__attr-selected {
+	color: var(--eshop-muted) !important;
+	font-weight: 400 !important;
+}
+
+.etucart-shop-pick__attr-selected:empty::before {
+	content: attr(data-default-text);
+	color: var(--eshop-muted);
+}
+
+.etucart-shop-pick__opts {
+	display: flex !important;
+	flex-wrap: nowrap !important;
+	gap: var(--eshop-gap) !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	list-style: none !important;
+	justify-content: flex-start !important;
+	/* Anything that doesn't fit on the single line is hidden — the JS
+	   overflow scanner re-tags items as `is-overflow` to keep the visible
+	   set in sync with the `+N` button. `overflow: hidden` is the
+	   declarative safety net so a flash of overflowing chips never paints
+	   while the JS hasn't yet run (e.g. during slow first paint). */
+	overflow: hidden !important;
+	min-width: 0 !important;
+}
+
+/* Expanded state — `+N` was tapped. Switch to wrap so the revealed
+   overflow chips flow onto a new row underneath the visible row,
+   instead of being pushed inline and clipped. The card height grows
+   downward; width is unaffected so the shop grid stays put. */
+.etucart-shop-pick__opts.is-expanded {
+	flex-wrap: wrap !important;
+	overflow: visible !important;
+	row-gap: var(--eshop-gap) !important;
+}
+
+/* Overflow options hidden until +N is clicked. `hidden` attr is our primary
+   mechanism; the class is a fallback for themes that unset [hidden]. */
+.etucart-shop-pick__opt[hidden],
+.etucart-shop-pick__opt.is-overflow:not(.is-revealed) {
+	display: none !important;
+}
+
+/* Explicit show rule for revealed overflow chips — without this, the
+   `:not(.is-revealed)` exclusion above is technically enough, but the
+   per-chip `display: inline-flex` declaration on `__opt--color` /
+   `__opt--button` has lower selector specificity than the `[hidden]` /
+   `.is-overflow` selectors that hide it. When the JS click handler
+   removes `[hidden]` and adds `.is-revealed`, we want a guaranteed
+   show with the highest specificity in this stylesheet. */
+.etucart-shop-pick__opt.is-overflow.is-revealed,
+.etucart-shop-pick__opts.is-expanded .etucart-shop-pick__opt.is-overflow {
+	display: inline-flex !important;
+}
+
+/* ---------- Color swatch (circle) ---------- */
+.etucart-shop-pick__opt--color {
+	width: 28px !important;
+	height: 28px !important;
+	min-width: 28px !important;
+	border-radius: 50% !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	background: transparent !important;
+	border: 2px solid transparent !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	cursor: pointer !important;
+	transition: border-color var(--eshop-transition), transform var(--eshop-transition) !important;
+	position: relative !important;
+}
+
+.etucart-shop-pick__dot {
+	display: block !important;
+	width: 22px !important;
+	height: 22px !important;
+	border-radius: 50% !important;
+	background: #e5e7eb;
+	border: 1.5px solid var(--eshop-border) !important;
+	box-sizing: border-box !important;
+	transition: transform var(--eshop-transition) !important;
+}
+
+.etucart-shop-pick__opt--color.is-light .etucart-shop-pick__dot {
+	border-color: #b5b5b5 !important;
+}
+
+.etucart-shop-pick__opt--color:hover:not(.is-unavailable):not(.is-out-of-stock) .etucart-shop-pick__dot {
+	transform: scale(1.05);
+}
+
+.etucart-shop-pick__opt--color.is-selected {
+	border-color: var(--eshop-border-strong) !important;
+}
+
+/* ---------- Size / text pill ---------- */
+.etucart-shop-pick__opt--button {
+	min-width: 36px !important;
+	height: 32px !important;
+	padding: 0 12px !important;
+	border-radius: var(--eshop-radius-pill) !important;
+	border: 1.5px solid var(--eshop-border) !important;
+	background: var(--eshop-bg) !important;
+	color: var(--eshop-text) !important;
+	font-size: 12px !important;
+	font-weight: 500 !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	cursor: pointer !important;
+	white-space: nowrap !important;
+	transition: background var(--eshop-transition), border-color var(--eshop-transition), color var(--eshop-transition) !important;
+}
+
+.etucart-shop-pick__opt--button:hover:not(.is-unavailable):not(.is-out-of-stock) {
+	border-color: var(--eshop-text) !important;
+}
+
+.etucart-shop-pick__opt--button.is-selected {
+	background: var(--eshop-text) !important;
+	color: #fff !important;
+	border-color: var(--eshop-text) !important;
+}
+
+/* ---------- Unavailable / OOS ----------
+ * Hide OOS / unavailable chips ENTIRELY on shop archive cards. Two
+ * reasons this is the right call:
+ *   1) Visual / count consistency: the +N badge counts in-stock chips
+ *      via the JS overflow filter, and OOS chips occupying visual
+ *      space gave the badge a phantom "wrong number" feel ("I see 6
+ *      chips but +N says 1?"). Removing them from view keeps the row
+ *      and the badge in lockstep.
+ *   2) The compact archive picker is the wrong place to surface
+ *      sold-out variants — picking one would just show a generic
+ *      "cannot add" toast. The PDP / quick-view buy box can still
+ *      show greyed OOS chips because the customer there has more
+ *      context to act on.
+ *
+ * PHP's OPT_SHOP_HIDE_OOS pre-filters OOS attribute values whose
+ * EVERY matching variation is sold out (default ON). This rule
+ * additionally hides chips that go OOS for the current cross-attribute
+ * selection — e.g., when the user picks "red" and only two sizes are
+ * stocked for red, the unstocked sizes get `.is-out-of-stock` from
+ * `refreshAvailability()` and disappear here, so the +N count and
+ * the visible row stay accurate without any per-render bookkeeping.
+ */
+.etucart-shop-pick__opt.is-unavailable,
+.etucart-shop-pick__opt.is-out-of-stock {
+	display: none !important;
+}
+
+.etucart-shop-pick__opt--button {
+	position: relative !important;
+}
+
+/* ---------- +N / − reveal pill ----------
+ * IMPORTANT: the rule below sets `display: inline-flex !important`. With
+ * `!important` it overrides the browser's user-agent `[hidden] { display:
+ * none }`, so `moreBtn.hidden = true` from JS would NOT hide the button.
+ * The `[hidden]` override below restores the expected behaviour, mirroring
+ * the explicit `.etucart-shop-pick__opt[hidden]` rule above. Without this,
+ * the `+N` badge stays visible whenever JS computes "no in-stock overflow"
+ * (zero chips with `.is-overflow`), and clicking it does nothing because
+ * `qsa('.is-overflow')` finds nothing to reveal — exactly the bug the QA
+ * reported in 1.10.11.
+ */
+.etucart-shop-pick__more[hidden] {
+	display: none !important;
+}
+
+.etucart-shop-pick__more {
+	min-width: 32px !important;
+	height: 32px !important;
+	padding: 0 10px !important;
+	border-radius: var(--eshop-radius-pill) !important;
+	border: 1px dashed var(--eshop-border) !important;
+	background: var(--eshop-bg-soft) !important;
+	color: var(--eshop-muted) !important;
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	cursor: pointer !important;
+	transition: background var(--eshop-transition), color var(--eshop-transition), border-color var(--eshop-transition) !important;
+}
+
+.etucart-shop-pick__more:hover {
+	background: #e6e6e6 !important;
+	color: var(--eshop-text) !important;
+	border-color: var(--eshop-text) !important;
+	border-style: solid !important;
+}
+
+.etucart-shop-pick__more[aria-expanded="true"] {
+	border-style: solid !important;
+	border-color: var(--eshop-text) !important;
+	color: var(--eshop-text) !important;
+	background: transparent !important;
+}
+
+/* ---------- Add to cart ---------- */
+.etucart-shop-pick__add {
+	width: 100% !important;
+	min-height: 40px !important;
+	padding: 0 16px !important;
+	border-radius: var(--eshop-radius-pill) !important;
+	border: 0 !important;
+	background: var(--eshop-text) !important;
+	color: #fff !important;
+	font-size: 14px !important;
+	font-weight: 700 !important;
+	cursor: pointer !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	gap: 6px !important;
+	margin: 4px 0 0 0 !important;
+	transition: background var(--eshop-transition), color var(--eshop-transition), opacity var(--eshop-transition) !important;
+	text-decoration: none !important;
+	line-height: 1 !important;
+}
+
+.etucart-shop-pick__add:hover:not(:disabled):not(.is-busy) {
+	background: #000 !important;
+}
+
+.etucart-shop-pick__add:disabled,
+.etucart-shop-pick__add[aria-disabled="true"] {
+	background: var(--eshop-bg-soft) !important;
+	color: var(--eshop-muted) !important;
+	cursor: not-allowed !important;
+}
+
+.etucart-shop-pick__add.is-busy {
+	opacity: .7 !important;
+	cursor: wait !important;
+}
+
+.etucart-shop-pick__add.is-success {
+	background: var(--eshop-success) !important;
+	color: #fff !important;
+}
+
+.etucart-shop-pick__add.is-error {
+	background: var(--eshop-danger) !important;
+	color: #fff !important;
+}
+
+/* ---------- Simple-product picker (1.6.7) ----------
+ *
+ * Simple products show a qty stepper + Add-to-cart button in one row.
+ * No swatches, no "+N" reveal, no variation price flicker — so the
+ * layout is just [qty] [add]. Reuses the same pill button styling as
+ * the variable picker; only the row wrapper and qty input need new
+ * rules.
+ */
+.etucart-shop-pick--simple .etucart-shop-pick__row {
+	display: flex !important;
+	align-items: stretch !important;
+	gap: 6px !important;
+	margin-top: 4px !important;
+}
+
+.etucart-shop-pick--simple .etucart-shop-pick__add {
+	flex: 1 1 auto !important;
+	margin: 0 !important;
+}
+
+.etucart-shop-pick__qty {
+	flex: 0 0 56px !important;
+	width: 56px !important;
+	min-height: 40px !important;
+	padding: 0 8px !important;
+	border-radius: var(--eshop-radius-pill) !important;
+	border: 1px solid var(--eshop-border, rgba(0, 0, 0, .12)) !important;
+	background: var(--eshop-bg, #fff) !important;
+	color: var(--eshop-text) !important;
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	text-align: center !important;
+	line-height: 1 !important;
+	box-sizing: border-box !important;
+	-moz-appearance: textfield !important;
+	appearance: textfield !important;
+}
+
+.etucart-shop-pick__qty::-webkit-inner-spin-button,
+.etucart-shop-pick__qty::-webkit-outer-spin-button {
+	-webkit-appearance: none !important;
+	margin: 0 !important;
+}
+
+.etucart-shop-pick__qty:focus {
+	outline: none !important;
+	border-color: var(--eshop-text) !important;
+}
+
+/* ---------- Shop-picker quantity stepper (1.2.1) --------------------
+ * Mirrors the PDP buy-box stepper: [+] [value] [−] in RTL visual order,
+ * pill-shaped wrapper, borderless inner input so the group looks like
+ * one control. Input keeps its appearance: textfield so the native
+ * spinner arrows are hidden on desktop too.
+ */
+.etucart-shop-pick__qty-wrap {
+	display: inline-flex !important;
+	align-items: stretch !important;
+	flex: 0 0 auto !important;
+	border: 1px solid var(--eshop-border, rgba(0, 0, 0, .12)) !important;
+	border-radius: var(--eshop-radius-pill) !important;
+	overflow: hidden !important;
+	background: var(--eshop-bg, #fff) !important;
+	min-height: 40px !important;
+}
+
+.etucart-shop-pick__qty-wrap .etucart-shop-pick__qty {
+	border: 0 !important;
+	border-radius: 0 !important;
+	background: transparent !important;
+	flex: 0 0 36px !important;
+	width: 36px !important;
+	min-height: 0 !important;
+	padding: 0 !important;
+}
+
+.etucart-shop-pick__qty-btn {
+	border: 0 !important;
+	background: transparent !important;
+	color: var(--eshop-text) !important;
+	width: 28px !important;
+	min-height: 0 !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	font-size: 16px !important;
+	line-height: 1 !important;
+	font-weight: 600 !important;
+	cursor: pointer !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	user-select: none !important;
+}
+
+.etucart-shop-pick__qty-btn:hover {
+	background: rgba(0, 0, 0, .06) !important;
+}
+
+.etucart-shop-pick__qty-btn:focus-visible {
+	outline: 2px solid var(--eshop-text, #111) !important;
+	outline-offset: -2px !important;
+}
+
+/* ---------- Toast notifications (1.6.4 → restyled in 1.6.5) ----------
+ *
+ * Visual language matches the PDP's `.etucart-toast` (dark pill, bottom-left,
+ * green circular check on success, soft shadow, slide-up from below). The
+ * shop picker emits the same toast kind so the user's experience is
+ * consistent across archive → product.
+ *
+ * Stack is fixed-position, bottom-left of the viewport, appended to
+ * document.body — completely outside the product grid so message length
+ * can never resize a card or push neighbours around.
+ *
+ * Pointer events on the stack are off, so toasts never accidentally block
+ * clicks on the page underneath. Only the toast bodies themselves receive
+ * clicks (for the close button and for their own dismiss tap).
+ */
+.etucart-shop-toast-stack {
+	position: fixed;
+	bottom: 24px;
+	left: 24px;
+	z-index: 10000;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: min(360px, calc(100% - 24px));
+	pointer-events: none;
+	direction: rtl;
+	font-family: var(--etucart-font, inherit);
+}
+
+.etucart-shop-toast {
+	pointer-events: auto;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 220px;
+	max-width: 100%;
+	padding: 12px 18px;
+	background: #111111;
+	color: #ffffff;
+	border-radius: 14px;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.3;
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+	text-align: right;
+	word-wrap: break-word;
+	overflow-wrap: anywhere; /* hard-wrap long words/URLs so width is bounded */
+	transform: translateY(140%);
+	opacity: 0;
+	transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms ease;
+}
+
+.etucart-shop-toast.is-visible {
+	transform: translateY(0);
+	opacity: 1;
+}
+
+.etucart-shop-toast.is-leaving {
+	transform: translateY(140%);
+	opacity: 0;
+}
+
+/* Success: green circular check mark — identical treatment to PDP .etucart-toast__check. */
+.etucart-shop-toast__check {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--etucart-success, #0f8a4a);
+	color: #ffffff;
+	font-size: 14px;
+	flex: 0 0 auto;
+}
+
+.etucart-shop-toast__check::before {
+	content: "";
+	display: block;
+	width: 6px;
+	height: 11px;
+	border: solid #ffffff;
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/* Error: red circular "!" on the same dark pill. */
+.etucart-shop-toast__bang {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--eshop-danger, #d14c4c);
+	color: #ffffff;
+	font-size: 14px;
+	font-weight: 700;
+	flex: 0 0 auto;
+	line-height: 1;
+}
+
+.etucart-shop-toast__text {
+	flex: 1 1 auto;
+	min-width: 0; /* allow text to wrap inside the flex row */
+}
+
+.etucart-shop-toast__close {
+	flex: 0 0 auto;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	font-size: 18px;
+	line-height: 1;
+	color: rgba(255, 255, 255, 0.75);
+	padding: 0 4px;
+	margin: -2px -6px -2px 0;
+	font-family: inherit;
+}
+.etucart-shop-toast__close:hover,
+.etucart-shop-toast__close:focus {
+	color: #ffffff;
+	outline: none;
+}
+
+@media (max-width: 768px) {
+	/* Sit the toast above any sticky bottom bar so they don't overlap,
+	   mirroring the PDP toast behaviour. */
+	.etucart-shop-toast-stack {
+		bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+		left: 12px;
+		right: 12px;
+		width: auto;
+	}
+	.etucart-shop-toast {
+		min-width: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.etucart-shop-toast {
+		transition-duration: 120ms !important;
+	}
+}
+
+/* ---------- Narrow card adjustments ---------- */
+@media (max-width: 480px) {
+	.etucart-shop-pick__opt--color {
+		width: 26px !important;
+		height: 26px !important;
+		min-width: 26px !important;
+	}
+	.etucart-shop-pick__dot {
+		width: 20px !important;
+		height: 20px !important;
+	}
+	.etucart-shop-pick__opt--button {
+		height: 30px !important;
+		padding: 0 10px !important;
+		font-size: 11px !important;
+	}
+	.etucart-shop-pick__more {
+		height: 30px !important;
+	}
+	.etucart-shop-pick__add {
+		min-height: 38px !important;
+		font-size: 13px !important;
+	}
+}
+
+/* ---------- screen reader text (duplicated so we don't rely on the theme) --- */
+.etucart-shop-pick .screen-reader-text {
+	border: 0 !important;
+	clip: rect(1px, 1px, 1px, 1px) !important;
+	-webkit-clip-path: inset(50%) !important;
+	clip-path: inset(50%) !important;
+	height: 1px !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	padding: 0 !important;
+	position: absolute !important;
+	width: 1px !important;
+	word-wrap: normal !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Accessibility: visible focus outline on every interactive swatch element.
+   Uses :focus-visible so mouse users don't see it, keyboard users do.
+   --------------------------------------------------------------------------- */
+.etucart-shop-pick__opt:focus-visible,
+.etucart-shop-pick__more:focus-visible,
+.etucart-shop-pick__add:focus-visible {
+	outline: 2px solid #111 !important;
+	outline-offset: 2px !important;
+	box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.12) !important;
+}

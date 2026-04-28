@@ -1,0 +1,434 @@
+/*
+ * Freeman Theme — shared chrome + primitive component classes.
+ *
+ * Scoped under .freeman-theme so nothing leaks if this file is accidentally
+ * loaded elsewhere. Business components (cards, swatches, restock forms) live
+ * in Freeman Core modules. This file provides the primitives that those
+ * modules (and Elementor widgets) can compose.
+ */
+
+/* -------------------------------------------------------------------------
+ * 0. Defensive horizontal-overflow guard
+ *
+ * Any single rogue child wider than 100vw (a flex/grid container with
+ * `min-width: auto`, an unbroken long word, an absolutely-positioned
+ * element with negative inset, an Elementor section with `width: 100vw`
+ * inside a padded parent) makes the entire page horizontally scrollable.
+ * The QA reported the My Account mobile nav doing exactly that: the
+ * pill row's flex-nowrap min-content was wider than the phone, the grid
+ * track grew to fit, and the whole page started scrolling sideways.
+ *
+ * `overflow-x: clip` blocks page-level horizontal scroll without creating
+ * a scroll container — so `position: sticky` on descendants still works
+ * (which `overflow-x: hidden` would silently break). Legitimately-
+ * scrollable rails (product slider, My Account mobile nav, etc.) own
+ * their own inner scroll, which is unaffected. This is a safety net,
+ * not a substitute for fixing the underlying cause — but without it,
+ * one subtle sizing bug rotates straight into a visible page glitch.
+ * ------------------------------------------------------------------------- */
+html,
+body {
+    overflow-x: clip;
+}
+
+/* -------------------------------------------------------------------------
+ * 1. Base typography + body chrome
+ * ------------------------------------------------------------------------- */
+
+.freeman-theme {
+    font-family: var(--fm-font-body);
+    font-size: var(--fm-text-md);
+    line-height: var(--fm-leading-base);
+    color: var(--fm-color-ink);
+    background-color: var(--fm-color-paper);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.freeman-theme h1,
+.freeman-theme h2,
+.freeman-theme h3,
+.freeman-theme h4,
+.freeman-theme h5,
+.freeman-theme h6 {
+    font-family: var(--fm-font-display);
+    line-height: var(--fm-leading-tight);
+    font-weight: var(--fm-weight-semi);
+    letter-spacing: var(--fm-tracking-tight);
+    margin: 0 0 var(--fm-space-md);
+    color: var(--fm-color-ink);
+}
+
+.freeman-theme h1 { font-size: var(--fm-text-hero); }
+.freeman-theme h2 { font-size: var(--fm-text-xxl); }
+.freeman-theme h3 { font-size: var(--fm-text-xl); }
+.freeman-theme h4 { font-size: var(--fm-text-lg); }
+.freeman-theme h5 { font-size: var(--fm-text-md); font-weight: var(--fm-weight-bold); }
+.freeman-theme h6 { font-size: var(--fm-text-sm); font-weight: var(--fm-weight-bold); text-transform: uppercase; letter-spacing: var(--fm-tracking-wide); }
+
+.freeman-theme p {
+    margin: 0 0 var(--fm-space-md);
+}
+
+.freeman-theme small,
+.freeman-theme .fm-text-sm { font-size: var(--fm-text-sm); }
+.freeman-theme .fm-text-xs { font-size: var(--fm-text-xs); }
+.freeman-theme .fm-text-muted { color: var(--fm-color-ink-muted); }
+
+.freeman-theme code,
+.freeman-theme pre,
+.freeman-theme kbd {
+    font-family: var(--fm-font-mono);
+    font-size: 0.95em;
+}
+
+/* -------------------------------------------------------------------------
+ * 2. Links + focus
+ * ------------------------------------------------------------------------- */
+
+.freeman-theme a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color var(--fm-motion-fast) var(--fm-ease);
+}
+
+/* No global hover-opacity. The previous `a:hover { opacity: 0.75 }`
+   rule (and even a `:has()`-based override that exempted image
+   anchors) read as a grey wash over product cards / category cards
+   / gallery thumbs / slider cards. Components that genuinely want a
+   text-link hover effect now opt in via `.fm-link--dim` or their own
+   class — keeps the default crisp for image content. */
+.freeman-theme a.fm-link--dim {
+    transition: opacity var(--fm-motion-fast) var(--fm-ease),
+                color var(--fm-motion-fast) var(--fm-ease);
+}
+.freeman-theme a.fm-link--dim:hover {
+    opacity: 0.75;
+}
+
+.freeman-theme :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--fm-color-accent);
+    outline-offset: 2px;
+    border-radius: var(--fm-radius-sm);
+}
+
+/* -------------------------------------------------------------------------
+ * 3. Layout helpers
+ * ------------------------------------------------------------------------- */
+
+.freeman-theme .fm-container {
+    max-width: var(--fm-container-max);
+    margin-inline: auto;
+    padding-inline: var(--fm-container-pad);
+}
+
+.freeman-theme .fm-stack > * + * {
+    margin-top: var(--fm-space-md);
+}
+.freeman-theme .fm-stack-lg > * + * {
+    margin-top: var(--fm-space-lg);
+}
+.freeman-theme .fm-stack-xl > * + * {
+    margin-top: var(--fm-space-xl);
+}
+
+.freeman-theme .fm-cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fm-space-sm);
+    align-items: center;
+}
+
+/* WooCommerce / Elementor grid gutters share the card gap token. */
+.freeman-theme .elementor-products,
+.freeman-theme .woocommerce ul.products {
+    gap: var(--fm-card-gap);
+}
+
+/* Hide the "View cart" link WooCommerce auto-injects next to the add-to-cart
+   button after a successful AJAX add. The cart is reachable from the header
+   utilities — the inline link clutters the loop card and confuses the eye. */
+.freeman-theme .woocommerce a.added_to_cart,
+.freeman-theme a.added_to_cart.wc-forward {
+    display: none !important;
+}
+
+/* -------------------------------------------------------------------------
+ * 4. Button primitive (.fm-btn)
+ * ------------------------------------------------------------------------- */
+
+.freeman-theme .fm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--fm-space-sm);
+    min-height: var(--fm-button-height);
+    padding: 0 var(--fm-button-padding-x);
+    border-radius: var(--fm-button-radius);
+    background: var(--fm-color-accent);
+    color: var(--fm-color-accent-text);
+    border: 1px solid var(--fm-color-accent);
+    font-family: inherit;
+    font-size: var(--fm-text-sm);
+    font-weight: var(--fm-button-font-weight);
+    letter-spacing: var(--fm-button-tracking);
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background var(--fm-motion-fast) var(--fm-ease),
+        color var(--fm-motion-fast) var(--fm-ease),
+        transform var(--fm-motion-fast) var(--fm-ease);
+}
+
+.freeman-theme .fm-btn:hover {
+    transform: translateY(-1px);
+    opacity: 1;
+}
+
+.freeman-theme .fm-btn:disabled,
+.freeman-theme .fm-btn[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.freeman-theme .fm-btn--ghost {
+    background: transparent;
+    color: var(--fm-color-ink);
+    border-color: var(--fm-color-hairline);
+}
+
+.freeman-theme .fm-btn--ghost:hover {
+    border-color: var(--fm-color-ink);
+    background: var(--fm-color-paper-soft);
+}
+
+.freeman-theme .fm-btn--link {
+    background: transparent;
+    border: none;
+    color: var(--fm-color-ink);
+    min-height: 0;
+    padding: 0;
+    text-transform: none;
+    letter-spacing: var(--fm-tracking-normal);
+    text-decoration: underline;
+}
+
+.freeman-theme .fm-btn--sm {
+    min-height: var(--fm-button-height-sm);
+    padding: 0 var(--fm-space-md);
+    font-size: var(--fm-text-xs);
+}
+
+.freeman-theme .fm-btn--block {
+    display: flex;
+    width: 100%;
+}
+
+/* -------------------------------------------------------------------------
+ * 5. Input primitive (.fm-input, .fm-select, .fm-textarea)
+ * ------------------------------------------------------------------------- */
+
+.freeman-theme .fm-input,
+.freeman-theme .fm-select,
+.freeman-theme .fm-textarea {
+    display: block;
+    width: 100%;
+    min-height: var(--fm-input-height);
+    padding: 0 var(--fm-input-padding-x);
+    border: var(--fm-input-border);
+    border-radius: var(--fm-input-radius);
+    background: var(--fm-input-bg);
+    color: var(--fm-color-ink);
+    font: inherit;
+    transition:
+        border-color var(--fm-motion-fast) var(--fm-ease),
+        box-shadow var(--fm-motion-fast) var(--fm-ease);
+}
+
+.freeman-theme .fm-textarea {
+    min-height: calc(var(--fm-input-height) * 2.5);
+    padding: var(--fm-space-sm) var(--fm-input-padding-x);
+    resize: vertical;
+}
+
+.freeman-theme .fm-input:hover,
+.freeman-theme .fm-select:hover,
+.freeman-theme .fm-textarea:hover {
+    border: var(--fm-input-border-hover);
+}
+
+.freeman-theme .fm-input:focus,
+.freeman-theme .fm-select:focus,
+.freeman-theme .fm-textarea:focus {
+    outline: none;
+    border-color: var(--fm-color-accent);
+    box-shadow: var(--fm-input-focus-ring);
+}
+
+.freeman-theme .fm-input[aria-invalid="true"],
+.freeman-theme .fm-input.is-error {
+    border-color: var(--fm-color-danger);
+}
+
+.freeman-theme .fm-label {
+    display: inline-block;
+    font-size: var(--fm-text-sm);
+    font-weight: var(--fm-weight-medium);
+    color: var(--fm-color-ink-soft);
+    margin-bottom: var(--fm-space-xs);
+}
+
+/* -------------------------------------------------------------------------
+ * 6. Badge primitive (.fm-badge)
+ * ------------------------------------------------------------------------- */
+
+.freeman-theme .fm-badge {
+    display: inline-flex;
+    align-items: center;
+    height: var(--fm-badge-height);
+    padding: var(--fm-badge-padding);
+    border-radius: var(--fm-badge-radius);
+    background: var(--fm-color-paper-soft);
+    color: var(--fm-color-ink);
+    font-size: var(--fm-badge-font);
+    font-weight: var(--fm-weight-semi);
+    letter-spacing: var(--fm-tracking-wide);
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.freeman-theme .fm-badge--success { background: var(--fm-color-success-soft); color: var(--fm-color-success); }
+.freeman-theme .fm-badge--danger  { background: var(--fm-color-danger-soft);  color: var(--fm-color-danger); }
+.freeman-theme .fm-badge--warning { background: var(--fm-color-warning-soft); color: var(--fm-color-warning); }
+.freeman-theme .fm-badge--info    { background: var(--fm-color-info-soft);    color: var(--fm-color-info); }
+.freeman-theme .fm-badge--accent  { background: var(--fm-color-accent);       color: var(--fm-color-accent-text); }
+
+/* -------------------------------------------------------------------------
+ * 7. Card primitive (.fm-card)
+ * ------------------------------------------------------------------------- */
+
+.freeman-theme .fm-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--fm-card-bg);
+    border: var(--fm-card-border);
+    border-radius: var(--fm-card-radius);
+    box-shadow: var(--fm-card-shadow);
+    overflow: hidden;
+    transition:
+        transform var(--fm-motion-base) var(--fm-ease),
+        box-shadow var(--fm-motion-base) var(--fm-ease),
+        border-color var(--fm-motion-base) var(--fm-ease);
+}
+
+.freeman-theme .fm-card:hover {
+    transform: translateY(var(--fm-card-hover-shift));
+    border: var(--fm-card-border-hover);
+    box-shadow: var(--fm-card-shadow-hover);
+}
+
+.freeman-theme .fm-card__media {
+    aspect-ratio: var(--fm-card-aspect);
+    background: var(--fm-color-paper-dim);
+    overflow: hidden;
+}
+
+.freeman-theme .fm-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--fm-motion-slow) var(--fm-ease);
+}
+
+.freeman-theme .fm-card:hover .fm-card__media img {
+    transform: scale(1.03);
+}
+
+.freeman-theme .fm-card__body {
+    padding: var(--fm-space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--fm-space-xs);
+}
+
+.freeman-theme .fm-card__title {
+    font-size: var(--fm-text-md);
+    font-weight: var(--fm-weight-medium);
+    line-height: var(--fm-leading-snug);
+    margin: 0;
+}
+
+.freeman-theme .fm-card__meta {
+    color: var(--fm-color-ink-muted);
+    font-size: var(--fm-text-sm);
+}
+
+/* -------------------------------------------------------------------------
+ * 8. Motion utilities
+ * ------------------------------------------------------------------------- */
+
+.freeman-theme .fm-fade-in {
+    animation: fm-fade-in var(--fm-motion-base) var(--fm-ease) both;
+}
+.freeman-theme .fm-slide-up {
+    animation: fm-slide-up var(--fm-motion-base) var(--fm-ease-out) both;
+}
+
+@keyframes fm-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes fm-slide-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* -------------------------------------------------------------------------
+ * 9. Loading state helpers
+ * ------------------------------------------------------------------------- */
+
+.freeman-theme.is-loading {
+    cursor: progress;
+}
+
+.freeman-theme .fm-skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--fm-color-paper-soft) 0%,
+        var(--fm-color-paper-dim) 40%,
+        var(--fm-color-paper-soft) 80%
+    );
+    background-size: 200% 100%;
+    animation: fm-shimmer 1.4s linear infinite;
+    border-radius: var(--fm-radius-sm);
+}
+
+@keyframes fm-shimmer {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+}
+
+/* -------------------------------------------------------------------------
+ * 10. Hebrew + Latin letter-form tuning
+ * ------------------------------------------------------------------------- */
+
+:root:lang(he) .freeman-theme,
+.freeman-theme:lang(he) {
+    --fm-tracking-tight:  0;
+    --fm-tracking-normal: 0;
+    --fm-tracking-wide:   0;
+}
+
+.freeman-theme:lang(he) h1,
+.freeman-theme:lang(he) h2,
+.freeman-theme:lang(he) h3,
+.freeman-theme:lang(he) h4 {
+    line-height: var(--fm-leading-snug);
+}

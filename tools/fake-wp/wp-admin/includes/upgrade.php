@@ -1,0 +1,1 @@
+<?php function dbDelta($q){ return array(); } 

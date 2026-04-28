@@ -1,0 +1,1121 @@
+/* =============================================================================
+   Etucart Variation Swatches — RTL-first buy box.
+   Design system (from spec):
+     - Shape language: heavily rounded — circles, pills (999px), soft rectangles.
+     - Colors: circular swatches with a ring-outline on selected.
+     - Sizes: text pills; selected = filled black / white text; unselected = light bg + border.
+     - Qty stepper: pill container, ghost -/+ buttons consistent with pill language.
+     - Add to cart: wide rounded rectangle, light-grey bg, lower emphasis.
+     - Buy now: full-width strong-colored pill, high contrast white text.
+
+   Every visually critical property is marked !important because WooCommerce
+   themes routinely style `.button`, `.single_add_to_cart_button`, and
+   `input.qty` with square corners, borders, colored backgrounds, etc. This
+   file is the source of truth for the buy box look — we defeat theme CSS
+   deliberately rather than depending on load order.
+   ============================================================================= */
+
+/* ---------- "Starting from" PDP price line (1.7.6 → 1.7.8) ----------
+   Sits ABOVE .etucart-buy-box, replaces WC's default range price.
+
+   1.7.8: previous attempts (display:flex + justify-content:center + inherit
+   typography) were defeated by theme + Elementor cascades — Hello Elementor
+   styles `.product .price .amount` at higher specificity than our class
+   names, so the unselected state (server-rendered `wc_price($min)`) and
+   the selected state (JS-injected `variation.price_html`) ended up at
+   different sizes. Fix locks the value typography aggressively. PDP price
+   stays right-aligned (RTL default — `justify-content: flex-start` keeps
+   the bold price snug against the right edge of the buy-box, matching the
+   editorial layout the QA wants). The archive picker's price line is
+   centred separately in etucart-shop-swatches.css. */
+/* The parent .etucart-pdp-price gets an EXPLICIT base font-size in rem so
+   sub-elements inheriting at 1em land at a predictable pixel value. The
+   previous attempt used `1.4em` on sub-elements, which compounded with
+   whatever the theme had set on .price — Hello Elementor sets .price huge,
+   so 1.4em of huge = enormous. Hard-coding 1.5rem here gives ~24px on a
+   16px root regardless of theme. */
+.etucart-pdp-price[data-pdp-price] {
+	display: flex !important;
+	flex-direction: row !important;
+	flex-wrap: wrap !important;
+	align-items: baseline !important;
+	justify-content: flex-start !important;
+	width: 100% !important;
+	gap: .4em !important;
+	margin: 0 0 1em !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	font-size: 1.5rem !important;
+	line-height: 1.2 !important;
+	font-family: inherit !important;
+}
+
+.etucart-pdp-price[data-pdp-price] .etucart-pdp-price__prefix,
+.etucart-pdp-price[data-pdp-price] .etucart-pdp-price__prefix * {
+	font-size: .65em !important;
+	font-weight: 400 !important;
+	opacity: .7 !important;
+	letter-spacing: .02em !important;
+	white-space: nowrap !important;
+}
+.etucart-pdp-price[data-pdp-price] .etucart-pdp-price__prefix[hidden] {
+	display: none !important;
+}
+
+/* Universal descendant selector (`*`) catches every span/bdi/wrapper WC
+   might emit, including ones we haven't class-named yet (e.g. plugins
+   that wrap price in extra elements). All inherit 1em from the parent's
+   1.5rem above — both selected and unselected states render identically. */
+.etucart-pdp-price[data-pdp-price] .etucart-pdp-price__value,
+.etucart-pdp-price[data-pdp-price] .etucart-pdp-price__value * {
+	font-size: 1em !important;
+	font-weight: 700 !important;
+	font-family: inherit !important;
+	color: inherit !important;
+	text-decoration: none !important;
+	background: transparent !important;
+	line-height: 1.2 !important;
+}
+.etucart-pdp-price[data-pdp-price] .etucart-pdp-price__value {
+	display: inline-block !important;
+}
+
+/* Sale price: <del> for the struck price, <ins> for the new. Restore the
+   strikethrough explicitly (the universal selector above wiped it). */
+.etucart-pdp-price[data-pdp-price] .etucart-pdp-price__value del,
+.etucart-pdp-price[data-pdp-price] .etucart-pdp-price__value del * {
+	font-size: .8em !important;
+	font-weight: 400 !important;
+	opacity: .55 !important;
+	text-decoration: line-through !important;
+	margin-inline-end: .35em !important;
+}
+
+/* WC's per-variation .single_variation pane still renders below the swatches
+   when a variation is picked — it's where stock + variation description go.
+   Hide just its inline price (already shown in our top line) so we don't
+   duplicate. */
+.etucart-buy-box .single_variation .price { display: none !important; }
+
+/* WPC Smart Quick View (WooSQ) modal — suppress every `.price` element
+   inside the modal that ISN'T our `.etucart-pdp-price`. WooSQ AJAX-injects
+   the single-product summary into its own popup and (depending on its
+   render hooks) emits a second `<p class="price">` alongside our line,
+   so the modal ends up with two prices that drift apart on variation
+   pick. The :not() exception preserves our intended price line. */
+.woosq-product .price:not(.etucart-pdp-price),
+.woosq-wrap    .price:not(.etucart-pdp-price) {
+	display: none !important;
+}
+
+/* ---------- Theme reset (scoped) ----------
+   Zap any inherited button / input styling the theme might push down onto our
+   controls. We do this WITHOUT touching typography so the site font carries
+   through. */
+.etucart-buy-box,
+.etucart-buy-box * {
+	box-sizing: border-box !important;
+}
+
+.etucart-buy-box button,
+.etucart-buy-box input[type="button"],
+.etucart-buy-box input[type="submit"] {
+	-webkit-appearance: none !important;
+	-moz-appearance: none !important;
+	appearance: none !important;
+	text-transform: none !important;
+	letter-spacing: normal !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+	font-family: inherit !important;
+	line-height: 1 !important;
+}
+
+.etucart-buy-box button:focus {
+	outline: none !important;
+}
+
+/* ---------- Visually hidden (no layout impact) ----------
+   Replaces the `left: -10000px` trick which in RTL creates a phantom
+   scroll area far off to the left. This pattern clips the element to a
+   1x1 box so WC's variations.js can still read/write the <select>s while
+   it contributes nothing to document flow. */
+.etucart-buy-box .etucart-hidden-variations,
+.etucart-buy-box .variations.etucart-hidden-variations {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+	pointer-events: none !important;
+	/* Stay inside the form so we never contribute to the page's scroll width. */
+	inset-inline-start: 0 !important;
+	top: 0 !important;
+	max-width: 1px !important;
+	max-height: 1px !important;
+}
+
+/* ---------- Host ---------- */
+.etucart-buy-box {
+	/* Hebrew-first font stack. Ploni is the primary request; we fall back
+	   through other common Hebrew-friendly webfonts before landing on
+	   sensible system defaults so the module reads correctly even if Ploni
+	   hasn't loaded yet (FOUT guard) or on environments where it's not
+	   installed at all. */
+	--etucart-font: "Ploni", "Ploni ML v2 AAA", "Ploni ML", "Assistant",
+		"Rubik", "Heebo", "Noto Sans Hebrew", -apple-system,
+		BlinkMacSystemFont, "Segoe UI", system-ui, Arial, sans-serif;
+
+	--etucart-text: #111111;
+	--etucart-muted: #6b6b6b;
+	--etucart-border: #d9d9d9;
+	--etucart-border-strong: #111111;
+	--etucart-bg: #ffffff;
+	/* Add-to-cart background — darker than the page (#F4F4F4) for clear
+	   definition while staying in "light grey / low emphasis" territory. */
+	--etucart-bg-soft: #e0e0e0;
+	--etucart-bg-soft-hover: #d1d1d1;
+	--etucart-bg-soft-active: #c7c7c7;
+	--etucart-accent: #111111;
+	--etucart-primary: #ca2b1d;
+	--etucart-primary-hover: #a8241a;
+	--etucart-primary-active: #8f1e15;
+	--etucart-success: #0f8a4a;
+	--etucart-radius: 999px;
+	--etucart-radius-sm: 24px;
+	--etucart-gap: 10px;
+	--etucart-transition: 160ms ease;
+
+	direction: rtl !important;
+	text-align: right !important;
+	font-family: var(--etucart-font) !important;
+	color: var(--etucart-text) !important;
+	max-width: 640px;
+	width: 100% !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	background: transparent !important;
+	border: 0 !important;
+	box-shadow: none !important;
+	-webkit-tap-highlight-color: transparent !important;
+	position: relative !important;
+	/* IMPORTANT: do NOT use `overflow-x: hidden` on this element.
+	   Per the CSS Overflow spec, when one overflow axis is `hidden` and
+	   the other is `visible`, the `visible` one is promoted to `auto` —
+	   which would make the whole buy box vertically scrollable. The hidden
+	   variations fix below already prevents the horizontal-overflow bug at
+	   its root, so no containment is needed here.
+	   Also do NOT use `contain: paint` — it creates a new containing block
+	   for `position: fixed` descendants, which would pin the sticky mobile
+	   bar to the buy box instead of the viewport. */
+}
+
+/* Inherit the Hebrew-first stack into every descendant so theme CSS that
+   sets fonts on buttons/inputs doesn't override it. */
+.etucart-buy-box,
+.etucart-buy-box * {
+	font-family: var(--etucart-font) !important;
+}
+
+/* Kill the mobile tap-highlight overlay (the "bright blue flash" on press).
+   Also neutralise any :active / :focus styles themes push through. Keep
+   :focus-visible intact for keyboard accessibility (defined per-button below). */
+.etucart-buy-box button,
+.etucart-buy-box input,
+.etucart-buy-box a {
+	-webkit-tap-highlight-color: transparent !important;
+	-webkit-touch-callout: none !important;
+}
+
+.etucart-buy-box button:focus,
+.etucart-buy-box input:focus,
+.etucart-buy-box a:focus {
+	outline: none !important;
+}
+
+/* ---------- Variations stack ---------- */
+.etucart-buy-box .etucart-variations {
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 24px !important;
+	margin: 0 0 24px 0 !important;
+	padding: 0 !important;
+	list-style: none !important;
+}
+
+.etucart-buy-box .etucart-variation {
+	margin: 0 !important;
+	padding: 0 !important;
+	background: transparent !important;
+	border: 0 !important;
+}
+
+.etucart-buy-box .etucart-variation__head {
+	display: flex !important;
+	align-items: baseline !important;
+	justify-content: flex-start !important;
+	gap: 8px !important;
+	margin: 0 0 12px 0 !important;
+	font-size: 15px !important;
+	line-height: 1.4 !important;
+}
+
+.etucart-buy-box .etucart-variation__label {
+	font-weight: 700 !important;
+	color: var(--etucart-text) !important;
+}
+
+.etucart-buy-box .etucart-variation__selected {
+	color: var(--etucart-muted) !important;
+	font-weight: 400 !important;
+}
+
+.etucart-buy-box .etucart-variation__selected:empty::before {
+	content: attr(data-default-text);
+	color: var(--etucart-muted);
+}
+
+.etucart-buy-box .etucart-variation__options {
+	display: flex !important;
+	flex-wrap: wrap !important;
+	gap: var(--etucart-gap) !important;
+	justify-content: flex-start !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	list-style: none !important;
+}
+
+/* ---------- Color swatches (circles) ---------- */
+.etucart-buy-box .etucart-swatch {
+	-webkit-appearance: none !important;
+	appearance: none !important;
+	background: transparent !important;
+	border: none;
+	padding: 0 !important;
+	margin: 0 !important;
+	cursor: pointer !important;
+	font: inherit !important;
+	color: inherit !important;
+	line-height: 1 !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+.etucart-buy-box .etucart-swatch:focus {
+	outline: none !important;
+}
+
+.etucart-buy-box .etucart-swatch:focus-visible {
+	outline: 2px solid var(--etucart-primary) !important;
+	outline-offset: 2px !important;
+}
+
+.etucart-buy-box .etucart-swatch--color {
+	width: 44px !important;
+	height: 44px !important;
+	border-radius: 50% !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	border: 2px solid transparent !important;
+	transition: border-color var(--etucart-transition), transform var(--etucart-transition) !important;
+	background: transparent !important;
+}
+
+.etucart-buy-box .etucart-swatch--color .etucart-swatch__dot {
+	width: 34px !important;
+	height: 34px !important;
+	border-radius: 50% !important;
+	background: #e5e7eb;
+	border: 1.5px solid var(--etucart-border) !important;
+	display: block !important;
+	transition: transform var(--etucart-transition) !important;
+	box-sizing: border-box !important;
+}
+
+.etucart-buy-box .etucart-swatch--color.is-light .etucart-swatch__dot {
+	border-color: #b5b5b5 !important;
+}
+
+.etucart-buy-box .etucart-swatch--color:hover .etucart-swatch__dot {
+	transform: scale(1.04);
+}
+
+/* Selected color swatch: strong black ring around the colored dot. */
+.etucart-buy-box .etucart-swatch--color.is-selected {
+	border-color: var(--etucart-border-strong) !important;
+}
+
+.etucart-buy-box .etucart-swatch--color.is-unavailable,
+.etucart-buy-box .etucart-swatch--color.is-out-of-stock {
+	cursor: not-allowed !important;
+	position: relative;
+}
+
+.etucart-buy-box .etucart-swatch--color.is-unavailable {
+	opacity: 0.35 !important;
+}
+
+.etucart-buy-box .etucart-swatch--color.is-out-of-stock {
+	opacity: 0.55 !important;
+}
+
+.etucart-buy-box .etucart-swatch--color.is-out-of-stock .etucart-swatch__dot {
+	filter: grayscale(1) brightness(1.05);
+}
+
+.etucart-buy-box .etucart-swatch--color.is-out-of-stock:hover .etucart-swatch__dot {
+	transform: none;
+}
+
+.etucart-buy-box .etucart-swatch--color.is-unavailable::after,
+.etucart-buy-box .etucart-swatch--color.is-out-of-stock::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	right: 50%;
+	width: 40px;
+	height: 1px;
+	background: var(--etucart-muted);
+	transform: translate(50%, -50%) rotate(-45deg);
+	pointer-events: none;
+}
+
+/* ---------- Size / text pill buttons ---------- */
+.etucart-buy-box .etucart-swatch--button {
+	min-width: 60px !important;
+	height: 44px !important;
+	padding: 0 18px !important;
+	border-radius: 999px !important;             /* full pill */
+	border: 1.5px solid var(--etucart-border) !important;
+	background: var(--etucart-bg) !important;
+	color: var(--etucart-text) !important;
+	font-size: 14px !important;
+	font-weight: 500 !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	cursor: pointer !important;
+	line-height: 1 !important;
+	text-decoration: none !important;
+	white-space: nowrap !important;
+	transition: background var(--etucart-transition), border-color var(--etucart-transition), color var(--etucart-transition) !important;
+}
+
+.etucart-buy-box .etucart-swatch--button:hover {
+	border-color: var(--etucart-text) !important;
+	background: var(--etucart-bg) !important;
+	color: var(--etucart-text) !important;
+}
+
+/* Selected size pill: fill inversion — black bg, white text. */
+.etucart-buy-box .etucart-swatch--button.is-selected {
+	background: var(--etucart-text) !important;
+	border-color: var(--etucart-text) !important;
+	color: #ffffff !important;
+}
+
+.etucart-buy-box .etucart-swatch--button.is-selected:hover {
+	background: var(--etucart-text) !important;
+	color: #ffffff !important;
+}
+
+.etucart-buy-box .etucart-swatch--button.is-unavailable {
+	opacity: 0.45 !important;
+	color: var(--etucart-muted) !important;
+	text-decoration: line-through !important;
+	cursor: not-allowed !important;
+	background: var(--etucart-bg) !important;
+	border-color: var(--etucart-border) !important;
+}
+
+.etucart-buy-box .etucart-swatch--button.is-out-of-stock {
+	background: var(--etucart-bg-soft) !important;
+	border-color: var(--etucart-border) !important;
+	color: var(--etucart-muted) !important;
+	text-decoration: line-through !important;
+	cursor: not-allowed !important;
+	opacity: 0.75 !important;
+}
+
+.etucart-buy-box .etucart-swatch--button.is-out-of-stock:hover {
+	border-color: var(--etucart-border) !important;
+	background: var(--etucart-bg-soft) !important;
+	color: var(--etucart-muted) !important;
+}
+
+/* ---------- Single variation (price / stock messages) ---------- */
+.etucart-buy-box .etucart-single-variation {
+	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+.etucart-buy-box .etucart-single-variation:empty {
+	display: none !important;
+}
+
+.etucart-buy-box .etucart-single-variation .price {
+	font-size: 20px !important;
+	font-weight: 700 !important;
+	color: var(--etucart-text) !important;
+	margin: 0 0 12px !important;
+}
+
+.etucart-buy-box .etucart-single-variation .stock {
+	font-size: 13px !important;
+	color: var(--etucart-muted) !important;
+	margin: 0 0 12px !important;
+}
+
+.etucart-buy-box .etucart-single-variation .woocommerce-variation-description p:last-child {
+	margin-bottom: 12px !important;
+}
+
+.etucart-buy-box .etucart-single-variation .woocommerce-variation-availability .stock.out-of-stock,
+.etucart-buy-box > .stock.out-of-stock {
+	color: #b91c1c !important;
+	font-size: 13px !important;
+	margin: 0 0 12px !important;
+}
+
+/* ---------- Actions row ---------- */
+.etucart-buy-box .etucart-actions {
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 12px !important;
+	margin-top: 12px !important;
+	padding: 0 !important;
+	background: transparent !important;
+	border: 0 !important;
+}
+
+.etucart-buy-box .single_variation_wrap {
+	display: block !important;
+	background: transparent !important;
+	padding: 0 !important;
+	border: 0 !important;
+	box-shadow: none !important;
+}
+
+.etucart-buy-box .etucart-actions__row {
+	display: flex !important;
+	gap: 12px !important;
+	align-items: stretch !important;
+	width: 100% !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+/* Add to cart — soft grey pill, flex-grows. Lower visual emphasis (secondary).
+   Darker than #F4F4F4 page bg so it still reads as a tappable control while
+   staying in "muted / secondary" territory. */
+.etucart-buy-box .etucart-add-to-cart,
+.etucart-buy-box button.etucart-add-to-cart {
+	flex: 1 1 auto !important;
+	height: 54px !important;
+	padding: 0 24px !important;
+	border-radius: 999px !important;
+	border: 0 !important;
+	background: var(--etucart-bg-soft) !important;
+	color: var(--etucart-text) !important;
+	font-size: 15px !important;
+	font-weight: 600 !important;
+	cursor: pointer !important;
+	line-height: 1 !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+	text-decoration: none !important;
+	position: relative !important;
+	overflow: hidden !important;
+	transition: background var(--etucart-transition), color var(--etucart-transition), opacity var(--etucart-transition), transform var(--etucart-transition) !important;
+}
+
+.etucart-buy-box .etucart-add-to-cart:hover:not(:disabled):not(.disabled):not([aria-disabled="true"]) {
+	background: var(--etucart-bg-soft-hover) !important;
+	color: var(--etucart-text) !important;
+}
+
+/* Explicit :active and :focus state so nothing flashes blue from theme CSS
+   or browser defaults. */
+.etucart-buy-box .etucart-add-to-cart:active:not(:disabled):not(.disabled):not([aria-disabled="true"]),
+.etucart-buy-box .etucart-add-to-cart:focus,
+.etucart-buy-box .etucart-add-to-cart:focus:active {
+	background: var(--etucart-bg-soft-active) !important;
+	color: var(--etucart-text) !important;
+	outline: none !important;
+	transform: scale(0.98) !important;
+}
+
+.etucart-buy-box .etucart-add-to-cart:focus-visible {
+	outline: 2px solid var(--etucart-primary) !important;
+	outline-offset: 2px !important;
+}
+
+.etucart-buy-box .etucart-add-to-cart:disabled,
+.etucart-buy-box .etucart-add-to-cart.disabled,
+.etucart-buy-box .etucart-add-to-cart[aria-disabled="true"] {
+	opacity: 0.55 !important;
+	cursor: not-allowed !important;
+	background: var(--etucart-bg-soft) !important;
+	color: var(--etucart-text) !important;
+}
+
+/* Qty stepper — rounded pill container, ghost -/+ buttons */
+.etucart-buy-box .quantity {
+	flex: 0 0 auto !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	height: 54px !important;
+	border: 1.5px solid var(--etucart-border) !important;
+	border-radius: 999px !important;
+	padding: 0 6px !important;
+	background: var(--etucart-bg) !important;
+	position: relative !important;
+	margin: 0 !important;
+}
+
+.etucart-buy-box .quantity label {
+	display: none !important;
+}
+
+.etucart-buy-box .quantity .etucart-qty__input,
+.etucart-buy-box .quantity input.qty,
+.etucart-buy-box input.qty {
+	width: 44px !important;
+	height: 44px !important;
+	border: 0 !important;
+	background: transparent !important;
+	text-align: center !important;
+	font-size: 16px !important;
+	font-weight: 600 !important;
+	color: var(--etucart-text) !important;
+	-moz-appearance: textfield !important;
+	appearance: textfield !important;
+	outline: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	line-height: 44px !important;
+}
+
+.etucart-buy-box .quantity input.qty::-webkit-inner-spin-button,
+.etucart-buy-box .quantity input.qty::-webkit-outer-spin-button {
+	-webkit-appearance: none !important;
+	margin: 0 !important;
+}
+
+.etucart-buy-box .etucart-qty__btn {
+	width: 32px !important;
+	height: 32px !important;
+	border-radius: 50% !important;
+	border: 0 !important;
+	background: transparent !important;
+	color: var(--etucart-text) !important;
+	cursor: pointer !important;
+	font-size: 18px !important;
+	font-weight: 500 !important;
+	line-height: 1 !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	box-shadow: none !important;
+	transition: background var(--etucart-transition), color var(--etucart-transition), opacity var(--etucart-transition) !important;
+}
+
+.etucart-buy-box .etucart-qty__btn:hover {
+	background: rgba(0, 0, 0, 0.04) !important;
+	color: var(--etucart-text) !important;
+}
+
+.etucart-buy-box .etucart-qty__btn:focus-visible {
+	outline: 2px solid var(--etucart-primary) !important;
+	outline-offset: 2px !important;
+}
+
+.etucart-buy-box .etucart-qty__btn:disabled {
+	opacity: 0.4 !important;
+	cursor: not-allowed !important;
+	background: transparent !important;
+}
+
+/* Buy now — full-width red pill, high contrast white text (PRIMARY CTA) */
+.etucart-buy-box .etucart-buy-now,
+.etucart-buy-box button.etucart-buy-now {
+	display: block !important;
+	width: 100% !important;
+	height: 58px !important;
+	padding: 0 24px !important;
+	border-radius: 999px !important;
+	border: 0 !important;
+	background: var(--etucart-primary) !important;
+	color: #ffffff !important;
+	font-size: 16px !important;
+	font-weight: 600 !important;
+	cursor: pointer !important;
+	line-height: 1 !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+	text-decoration: none !important;
+	text-align: center !important;
+	transition: background var(--etucart-transition), opacity var(--etucart-transition) !important;
+}
+
+.etucart-buy-box .etucart-buy-now:hover:not(:disabled):not(.disabled):not([aria-disabled="true"]) {
+	background: var(--etucart-primary-hover) !important;
+	color: #ffffff !important;
+}
+
+.etucart-buy-box .etucart-buy-now:active:not(:disabled):not(.disabled):not([aria-disabled="true"]),
+.etucart-buy-box .etucart-buy-now:focus,
+.etucart-buy-box .etucart-buy-now:focus:active {
+	background: var(--etucart-primary-active) !important;
+	color: #ffffff !important;
+	outline: none !important;
+	transform: scale(0.99) !important;
+}
+
+.etucart-buy-box .etucart-buy-now:focus-visible {
+	outline: 2px solid var(--etucart-text) !important;
+	outline-offset: 2px !important;
+}
+
+.etucart-buy-box .etucart-buy-now:disabled,
+.etucart-buy-box .etucart-buy-now.disabled,
+.etucart-buy-box .etucart-buy-now[aria-disabled="true"] {
+	opacity: 0.55 !important;
+	cursor: not-allowed !important;
+	background: var(--etucart-primary) !important;
+	color: #ffffff !important;
+}
+
+/* OOS / unpurchasable variation → no Buy Now pill at all. The [hidden]
+   attribute handles most browsers, but some themes set display on buttons
+   with higher specificity, so the modifier class reinforces it. */
+.etucart-buy-box .etucart-buy-now--hidden,
+.etucart-buy-box .etucart-buy-now[hidden] {
+	display: none !important;
+}
+
+/* ---------- Mobile tweaks ---------- */
+@media (max-width: 480px) {
+	.etucart-buy-box .etucart-variations {
+		gap: 18px !important;
+	}
+
+	.etucart-buy-box .etucart-variation__head {
+		flex-direction: row !important;
+	}
+
+	.etucart-buy-box .etucart-swatch--color {
+		width: 40px !important;
+		height: 40px !important;
+	}
+
+	.etucart-buy-box .etucart-swatch--color .etucart-swatch__dot {
+		width: 30px !important;
+		height: 30px !important;
+	}
+
+	.etucart-buy-box .etucart-swatch--button {
+		min-width: 56px !important;
+		height: 42px !important;
+		font-size: 13px !important;
+		padding: 0 16px !important;
+	}
+
+	.etucart-buy-box .etucart-actions__row {
+		flex-direction: column !important;
+	}
+
+	.etucart-buy-box .etucart-add-to-cart {
+		order: 2 !important;
+	}
+
+	.etucart-buy-box .quantity {
+		order: 1 !important;
+		align-self: flex-start !important;
+	}
+
+	.etucart-buy-box .etucart-add-to-cart,
+	.etucart-buy-box .etucart-buy-now {
+		height: 52px !important;
+	}
+}
+
+/* ---------- Sticky mobile bottom bar ---------- */
+.etucart-sticky-bar {
+	display: none;
+}
+
+@media (max-width: 768px) {
+	.etucart-sticky-bar {
+		display: block !important;
+		position: fixed !important;
+		left: 0 !important;
+		right: 0 !important;
+		bottom: 0 !important;
+		z-index: 9999 !important;
+		background: #ffffff !important;
+		border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+		box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08) !important;
+		padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+		transform: translateY(110%);
+		transition: transform 220ms ease, opacity 220ms ease !important;
+		opacity: 0;
+		pointer-events: none;
+		direction: rtl !important;
+	}
+
+	.etucart-sticky-bar.is-visible {
+		transform: translateY(0);
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.etucart-sticky-bar__inner {
+		display: flex !important;
+		align-items: center !important;
+		gap: 12px !important;
+		max-width: 640px !important;
+		margin: 0 auto !important;
+		padding: 0 !important;
+	}
+
+	.etucart-sticky-bar__price {
+		flex: 0 0 auto !important;
+		padding: 0 4px !important;
+		font-size: 16px !important;
+		font-weight: 700 !important;
+		color: var(--etucart-text, #111111) !important;
+		line-height: 1.2 !important;
+		white-space: nowrap !important;
+	}
+
+	.etucart-sticky-bar__price-value:empty {
+		display: none !important;
+	}
+
+	.etucart-sticky-bar__price del {
+		color: var(--etucart-muted, #6b6b6b) !important;
+		font-weight: 500 !important;
+		margin-left: 6px !important;
+		font-size: 13px !important;
+	}
+
+	.etucart-sticky-bar__price ins {
+		text-decoration: none !important;
+	}
+
+	.etucart-sticky-bar__buy,
+	.etucart-buy-box .etucart-sticky-bar__buy {
+		flex: 1 1 auto !important;
+		height: 52px !important;
+		padding: 0 18px !important;
+		border: 0 !important;
+		border-radius: 999px !important;
+		background: #ca2b1d !important;
+		color: #ffffff !important;
+		font-size: 16px !important;
+		font-weight: 600 !important;
+		cursor: pointer !important;
+		line-height: 1 !important;
+		text-shadow: none !important;
+		box-shadow: none !important;
+		text-decoration: none !important;
+		-webkit-appearance: none !important;
+		appearance: none !important;
+		-webkit-tap-highlight-color: transparent !important;
+		position: relative !important;
+		overflow: hidden !important;
+		transition: background 160ms ease, opacity 160ms ease, color 220ms ease !important;
+	}
+
+	.etucart-sticky-bar__buy:hover:not(:disabled):not(.disabled):not([aria-disabled="true"]) {
+		background: #a8241a !important;
+	}
+
+	.etucart-sticky-bar__buy:disabled,
+	.etucart-sticky-bar__buy.disabled,
+	.etucart-sticky-bar__buy[aria-disabled="true"] {
+		opacity: 0.55 !important;
+		cursor: not-allowed !important;
+	}
+
+	body.etucart-sticky-active {
+		padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
+	}
+}
+
+@media (min-width: 769px) {
+	body.etucart-sticky-active {
+		padding-bottom: 0 !important;
+	}
+}
+
+/* ---------- Custom add-to-cart animation ----------
+   Replaces WooCommerce's default `.loading` spinner + "View cart" slide-in
+   with an in-place sequence: click ripple → shimmer loading → success
+   checkmark → return to idle. Pairs with a slide-in toast.
+
+   Kill WC's own spinner so we don't get a double animation. WC themes render
+   the spinner via `.loading::after` on the button, or using ::before. We
+   neutralise both. */
+.etucart-buy-box .etucart-add-to-cart.loading::before,
+.etucart-buy-box .etucart-add-to-cart.loading::after,
+.etucart-buy-box .etucart-buy-now.loading::before,
+.etucart-buy-box .etucart-buy-now.loading::after {
+	display: none !important;
+	content: none !important;
+	animation: none !important;
+}
+
+/* Ripple layer — span injected by JS on click. Expands from the click point. */
+.etucart-buy-box .etucart-ripple {
+	position: absolute;
+	border-radius: 50%;
+	transform: scale(0);
+	background: rgba(0, 0, 0, 0.12);
+	pointer-events: none;
+	animation: etucart-ripple 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.etucart-buy-box .etucart-buy-now .etucart-ripple {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes etucart-ripple {
+	to { transform: scale(3); opacity: 0; }
+}
+
+/* Loading state — a sliding shimmer moves across the button. */
+.etucart-buy-box .etucart-add-to-cart.is-atc-loading {
+	color: transparent !important;
+	pointer-events: none !important;
+}
+
+.etucart-buy-box .etucart-add-to-cart.is-atc-loading::after {
+	content: "" !important;
+	display: block !important;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 22px;
+	height: 22px;
+	margin: -11px 0 0 -11px;
+	border: 2.5px solid rgba(0, 0, 0, 0.15);
+	border-top-color: var(--etucart-text);
+	border-radius: 50%;
+	animation: etucart-spin 720ms linear infinite;
+	box-sizing: border-box;
+}
+
+@keyframes etucart-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Success morph — button becomes green with a scaling check mark. */
+.etucart-buy-box .etucart-add-to-cart.is-atc-added {
+	background: var(--etucart-success) !important;
+	color: #ffffff !important;
+	transition: background 220ms ease, color 220ms ease !important;
+}
+
+.etucart-buy-box .etucart-add-to-cart.is-atc-added::after {
+	content: "" !important;
+	display: block !important;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 9px;
+	height: 16px;
+	margin: -10px 0 0 -4px;
+	border: solid #ffffff;
+	border-width: 0 2.5px 2.5px 0;
+	transform: rotate(45deg) scale(0);
+	transform-origin: center;
+	animation: etucart-check-in 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes etucart-check-in {
+	0%   { transform: rotate(45deg) scale(0); opacity: 0; }
+	60%  { transform: rotate(45deg) scale(1.25); opacity: 1; }
+	100% { transform: rotate(45deg) scale(1); opacity: 1; }
+}
+
+/* While success is showing, hide the original label. */
+.etucart-buy-box .etucart-add-to-cart.is-atc-added {
+	color: transparent !important;
+}
+
+/* Sticky bar Add-to-Cart: same loading/success choreography, but tuned for the
+   red-background button. The spinner/check need to be white so they stay legible
+   on the brand red and (post-morph) on green. Kill any WC-injected spinner. */
+.etucart-buy-box .etucart-sticky-bar__buy.loading::before,
+.etucart-buy-box .etucart-sticky-bar__buy.loading::after {
+	display: none !important;
+	content: none !important;
+	animation: none !important;
+}
+
+.etucart-buy-box .etucart-sticky-bar__buy .etucart-ripple {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+.etucart-buy-box .etucart-sticky-bar__buy.is-atc-loading {
+	color: transparent !important;
+	pointer-events: none !important;
+}
+
+.etucart-buy-box .etucart-sticky-bar__buy.is-atc-loading::after {
+	content: "" !important;
+	display: block !important;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 22px;
+	height: 22px;
+	margin: -11px 0 0 -11px;
+	border: 2.5px solid rgba(255, 255, 255, 0.35);
+	border-top-color: #ffffff;
+	border-radius: 50%;
+	animation: etucart-spin 720ms linear infinite;
+	box-sizing: border-box;
+}
+
+.etucart-buy-box .etucart-sticky-bar__buy.is-atc-added {
+	background: var(--etucart-success, #0f8a4a) !important;
+	color: transparent !important;
+}
+
+.etucart-buy-box .etucart-sticky-bar__buy.is-atc-added::after {
+	content: "" !important;
+	display: block !important;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 9px;
+	height: 16px;
+	margin: -10px 0 0 -4px;
+	border: solid #ffffff;
+	border-width: 0 2.5px 2.5px 0;
+	transform: rotate(45deg) scale(0);
+	transform-origin: center;
+	animation: etucart-check-in 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ---------- Toast ----------
+   Slide-in confirmation anchored bottom-right (RTL). On mobile it slides up
+   above the sticky buy bar. */
+.etucart-toast {
+	position: fixed;
+	bottom: 24px;
+	left: 24px;                           /* RTL: bottom-left visually = far side */
+	z-index: 10000;
+	min-width: 220px;
+	max-width: 90vw;
+	padding: 12px 18px;
+	background: #111111;
+	color: #ffffff;
+	border-radius: 14px;
+	font-family: var(--etucart-font, inherit);
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.3;
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+	transform: translateY(140%);
+	opacity: 0;
+	transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms ease;
+	direction: rtl;
+	text-align: right;
+	pointer-events: none;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.etucart-toast.is-visible {
+	transform: translateY(0);
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.etucart-toast__check {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--etucart-success, #0f8a4a);
+	color: #ffffff;
+	font-size: 14px;
+	flex: 0 0 auto;
+}
+
+.etucart-toast__check::before {
+	content: "";
+	display: block;
+	width: 6px;
+	height: 11px;
+	border: solid #ffffff;
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg) translate(-1px, -1px);
+}
+
+@media (max-width: 768px) {
+	/* Sit the toast above the sticky bottom bar so they don't overlap. */
+	.etucart-toast {
+		bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+		left: 12px;
+		right: 12px;
+		min-width: 0;
+	}
+}
+
+/* ---------- Screen-reader only ---------- */
+.etucart-buy-box .screen-reader-text {
+	border: 0 !important;
+	clip: rect(1px, 1px, 1px, 1px) !important;
+	height: 1px !important;
+	width: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	position: absolute !important;
+}
+
+/* Respect reduced motion preferences — skip decorative animations. */
+@media (prefers-reduced-motion: reduce) {
+	.etucart-buy-box .etucart-ripple,
+	.etucart-buy-box .etucart-add-to-cart.is-atc-loading::after,
+	.etucart-buy-box .etucart-add-to-cart.is-atc-added::after,
+	.etucart-buy-box .etucart-sticky-bar__buy.is-atc-loading::after,
+	.etucart-buy-box .etucart-sticky-bar__buy.is-atc-added::after,
+	.etucart-toast {
+		animation-duration: 0.001ms !important;
+		transition-duration: 120ms !important;
+	}
+}
+
+/* ---------------------------------------------------------------------------
+   Accessibility: visible focus outline on every interactive buy-box control.
+   Uses :focus-visible so only keyboard users see it.
+   --------------------------------------------------------------------------- */
+.etucart-buy-box button:focus-visible,
+.etucart-buy-box input:focus-visible,
+.etucart-buy-box [role="button"]:focus-visible,
+.etucart-sticky-bar__buy:focus-visible {
+	outline: 2px solid #111 !important;
+	outline-offset: 2px !important;
+	box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.12) !important;
+}

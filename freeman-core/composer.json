@@ -1,0 +1,14 @@
+{
+    "name": "freeman/freeman-core",
+    "description": "Unified WooCommerce modular plugin for the Freeman Theme",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "Freeman\\Core\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.4"
+    }
+}

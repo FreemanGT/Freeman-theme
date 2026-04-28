@@ -1,0 +1,26 @@
+/*
+Theme Name: Freeman Theme
+Theme URI: https://freemandigital.com/freeman-theme
+Description: Freeman is a WooCommerce-first child theme of Hello Elementor. It provides the design tokens, typography, RTL/Hebrew support, and WooCommerce template refinements. All business logic lives in the companion Freeman Core plugin — the theme handles presentation only.
+Author: Freeman Digital
+Author URI: https://freemandigital.com
+Template: hello-elementor
+Version: 1.10.8
+Requires at least: 6.0
+Tested up to: 6.8
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: freeman-theme
+Domain Path: /languages
+Tags: elementor, woocommerce, rtl-language-support, translation-ready, child-theme
+*/
+
+/*
+ * Theme CSS is split across separate files (enqueued by functions.php):
+ *   assets/css/freeman-tokens.css     (design tokens — all modules consume these)
+ *   assets/css/freeman.css            (theme components)
+ *   assets/css/freeman-rtl.css        (RTL overrides)
+ *
+ * Do not add rules here — this file exists only for the theme header.
+ */

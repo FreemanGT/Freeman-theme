@@ -1,0 +1,1813 @@
+# Copyright (C) 2026 Freeman Digital
+# This file is distributed under the GPL-2.0-or-later license.
+msgid ""
+msgstr ""
+"Project-Id-Version: Freeman Core 1.9.5\n"
+"Report-Msgid-Bugs-To: hello@freemandigital.com\n"
+"POT-Creation-Date: 2026-04-27 00:00+0000\n"
+"PO-Revision-Date: 2026-04-27 00:00+0000\n"
+"Last-Translator: Freeman Digital <hello@freemandigital.com>\n"
+"Language-Team: Freeman Digital <hello@freemandigital.com>\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: freeman-core\n"
+
+#: src/Admin/Dashboard.php:57
+msgid "Freeman Core — one or more modules failed to boot"
+msgstr ""
+
+#: src/Admin/Dashboard.php:86 src/Modules/RestockNotify/Module.php:43
+msgid "Restock Notify"
+msgstr "התראת חידוש מלאי"
+
+#: src/Admin/Dashboard.php:91 src/Modules/VariationSwatches/Module.php:44
+msgid "Variation Swatches"
+msgstr "דוגמאות וריאציה"
+
+#: src/Admin/Dashboard.php:103
+#, php-format
+msgid "Freeman Core — %s disabled"
+msgstr "פרימן קור — %s מושבת"
+
+#: src/Admin/Dashboard.php:104
+msgid ""
+"The module did not boot because its legacy plugin is still active. These "
+"class names already exist:"
+msgstr ""
+"המודול לא עלה מכיוון שהתוסף הישן שלו עדיין פעיל. שמות המחלקות הבאים כבר "
+"קיימים:"
+
+#: src/Admin/Dashboard.php:106
+msgid ""
+"Deactivate the legacy plugin in Plugins → Installed Plugins (or run Freeman "
+"→ Tools → Deactivate & delete legacy plugins) and reload."
+msgstr ""
+"בטלו את הפעלת התוסף הישן בתוספים → תוספים מותקנים (או הריצו פרימן → כלים → "
+"בטל ומחק תוספים ישנים) ורעננו."
+
+#: src/Admin/Dashboard.php:123 src/Core/Settings_Hub.php:79
+#: src/Core/Settings_Hub.php:80
+msgid "Freeman"
+msgstr "פרימן"
+
+#: src/Admin/Dashboard.php:170
+msgid "Disable"
+msgstr "השבת"
+
+#: src/Admin/Dashboard.php:170
+msgid "Enable"
+msgstr "הפעל"
+
+#: src/Admin/Dashboard.php:177
+msgid "Settings"
+msgstr "הגדרות"
+
+#: src/Admin/Dashboard.php:185
+msgid "Settings (legacy menu)"
+msgstr ""
+
+#: src/Admin/Dashboard.php:212
+msgid "missing"
+msgstr "חסר"
+
+#: src/Admin/Dashboard.php:213
+msgid "not installed"
+msgstr "לא מותקן"
+
+#: src/Admin/Dashboard.php:242
+msgid "Welcome to Freeman"
+msgstr "ברוכים הבאים לפרימן"
+
+#: src/Admin/Dashboard.php:243
+msgid ""
+"Freeman gives you seven WooCommerce super-powers in one plugin. Pick what "
+"you want now — you can change this any time from the Dashboard."
+msgstr ""
+
+#: src/Admin/Dashboard.php:265
+msgid "Save & continue"
+msgstr "שמור והמשך"
+
+#: src/Admin/Dashboard.php:271
+msgid "Skip onboarding"
+msgstr "דלג על ההדרכה"
+
+#: src/Admin/Dashboard.php:293
+msgid "Freeman Core is installed — pick which modules to activate."
+msgstr "פרימן קור הותקן — בחר אילו מודולים להפעיל."
+
+#: src/Admin/Dashboard.php:295
+msgid "Open the dashboard"
+msgstr "פתח את לוח הבקרה"
+
+#: src/Admin/views/tools.php:35
+msgid "Freeman Tools"
+msgstr "כלים של פרימן"
+
+#: src/Admin/views/tools.php:38
+msgid "Import complete."
+msgstr "הייבוא הסתיים."
+
+#: src/Admin/views/tools.php:41
+msgid "Legacy plugins deactivated and deleted."
+msgstr "התוספים הישנים בוטלו ונמחקו."
+
+#: src/Admin/views/tools.php:44
+msgid "Legacy plugin import"
+msgstr "ייבוא תוספים ישנים"
+
+#: src/Admin/views/tools.php:45
+msgid ""
+"Freeman Core can import data from the legacy plugins it replaces. Importing "
+"is non-destructive — legacy plugin files remain installed until you run the "
+"delete step below."
+msgstr ""
+
+#: src/Admin/views/tools.php:50
+msgid "Module"
+msgstr "מודול"
+
+#: src/Admin/views/tools.php:51
+msgid "Legacy plugin"
+msgstr "תוסף ישן"
+
+#: src/Admin/views/tools.php:52
+msgid "Status"
+msgstr "סטטוס"
+
+#: src/Admin/views/tools.php:53
+msgid "Imported"
+msgstr "יובא"
+
+#: src/Admin/views/tools.php:71
+msgid "No importer"
+msgstr "אין מייבא"
+
+#: src/Admin/views/tools.php:74
+msgid "Legacy plugin active"
+msgstr "התוסף הישן פעיל"
+
+#: src/Admin/views/tools.php:77
+msgid "Installed (inactive)"
+msgstr "מותקן (לא פעיל)"
+
+#: src/Admin/views/tools.php:80
+msgid "Not installed"
+msgstr "לא מותקן"
+
+#: src/Admin/views/tools.php:103
+msgid "Run legacy import"
+msgstr "הרץ ייבוא ישן"
+
+#: src/Admin/views/tools.php:107
+msgid ""
+"This will deactivate and permanently delete every detected legacy plugin. "
+"Continue?"
+msgstr ""
+
+#: src/Admin/views/tools.php:111
+msgid "Deactivate & delete legacy plugins"
+msgstr "בטל ומחק תוספים ישנים"
+
+#: src/Admin/views/tools.php:114
+msgid "No legacy plugins detected. Nothing to delete."
+msgstr "לא זוהו תוספים ישנים. אין מה למחוק."
+
+#: src/Admin/views/tools.php:120
+msgid "Recent log"
+msgstr "לוג אחרון"
+
+#: src/Admin/views/tools.php:123
+msgid "No log entries yet."
+msgstr "עדיין אין רשומות בלוג."
+
+#: src/Core/Module_Base.php:147
+msgid "Disabled"
+msgstr "מושבת"
+
+#: src/Core/Module_Base.php:150
+msgid "Missing dependency"
+msgstr "תלות חסרה"
+
+#: src/Core/Module_Base.php:152
+msgid "Active"
+msgstr "פעיל"
+
+#: src/Core/Security.php:26
+msgid "Security token missing."
+msgstr "חסר אסימון אבטחה."
+
+#: src/Core/Security.php:30 freeman-core/src/Core/Security.php:42
+msgid "Security check failed."
+msgstr "אימות האבטחה נכשל."
+
+#: src/Core/Security.php:53 freeman-core/src/Core/Security.php:64
+msgid "Insufficient permissions."
+msgstr "אין הרשאה."
+
+#: src/Core/Settings_Hub.php:90 src/Core/Settings_Hub.php:91
+msgid "Dashboard"
+msgstr "לוח בקרה"
+
+#: src/Core/Settings_Hub.php:113 src/Core/Settings_Hub.php:114
+msgid "Tools"
+msgstr "כלים"
+
+#: src/Core/Settings_Hub.php:253
+msgid "This module is disabled. Enable it from the Dashboard."
+msgstr "המודול הזה מושבת. אפשר להפעיל אותו דרך לוח הבקרה."
+
+#: src/Core/Settings_Hub.php:263
+msgid "General"
+msgstr "כללי"
+
+#: src/Modules/CategorySlider/Module.php:35
+msgid "Category Slider"
+msgstr ""
+
+#: src/Modules/CategorySlider/Module.php:42
+msgid ""
+"Editorial Elementor widget for WooCommerce product categories — drag-scroll "
+"slider with momentum, hover ring, progress bar."
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:30
+msgid "Freeman Category Slider"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:57
+#: src/Modules/ProductSlider/Widget.php:60
+msgid "Content"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:65
+#: src/Modules/CategorySlider/Widget.php:335
+#: src/Modules/ProductSlider/Widget.php:68
+#: src/Modules/ProductSlider/Widget.php:361
+msgid "Eyebrow"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:67
+msgid "Shop by category"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:74
+#: src/Modules/CategorySlider/Widget.php:344
+#: src/Modules/ProductSlider/Widget.php:77
+#: src/Modules/ProductSlider/Widget.php:370
+msgid "Headline"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:76
+msgid "The Spring Edit."
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:83
+#: src/Modules/ProductSlider/Widget.php:86
+msgid "Headline subtext"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:85
+msgid "Curated essentials, season-led."
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:92
+msgid "Max categories"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:103
+#: src/Modules/ProductSlider/Widget.php:117
+msgid "Order by"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:107
+msgid "Name"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:108
+msgid "Product count"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:109
+msgid "Slug"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:110
+#: src/Modules/ProductSlider/Widget.php:125
+msgid "Menu order"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:118
+#: src/Modules/ProductSlider/Widget.php:135
+msgid "Order"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:123
+#: src/Modules/ProductSlider/Widget.php:140
+msgid "Ascending"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:124
+#: src/Modules/ProductSlider/Widget.php:141
+msgid "Descending"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:132
+msgid "Hide empty categories"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:142
+msgid "Top-level only"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:146
+msgid "Ignored if \"Child of\" or \"Include only\" is set."
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:155
+msgid "Child of"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:158
+msgid "— Any —"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:159
+msgid "Show only sub-categories of this parent term."
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:167
+msgid "Include only these"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:173
+msgid ""
+"When set, only these categories appear (overrides Top-level / Child of)."
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:180
+msgid "Exclude these"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:195
+#: src/Modules/ProductSlider/Widget.php:206
+msgid "Layout"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:203
+#: src/Modules/ProductSlider/Widget.php:214
+msgid "Cards per view"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:214
+#: src/Modules/ProductSlider/Widget.php:225
+msgid "Cards per view (tablet)"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:225
+#: src/Modules/ProductSlider/Widget.php:236
+msgid "Cards per view (mobile)"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:236
+#: src/Modules/ProductSlider/Widget.php:248
+msgid "Gap"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:247
+msgid "Card height"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:261
+#: src/Modules/ProductSlider/Widget.php:274
+msgid "Card style"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:269
+msgid "Shape"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:274
+msgid "Circle"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:275
+#: src/Modules/ProductSlider/Widget.php:287
+msgid "Soft"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:276
+#: src/Modules/ProductSlider/Widget.php:288
+msgid "Rect"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:277
+msgid "Pill"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:285
+msgid "Show product count"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:290
+msgid "On hover"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:291
+msgid "Always"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:292
+msgid "Hidden"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:300
+#: src/Modules/ProductSlider/Widget.php:326
+msgid "Accent color"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:312
+#: src/Modules/ProductSlider/Widget.php:338
+msgid "Hover ring color"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:315
+#: src/Modules/ProductSlider/Widget.php:341
+msgid "Outline drawn around a card on hover."
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:325
+#: src/Modules/ProductSlider/Widget.php:351
+msgid "Typography"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:353
+msgid "Card name"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:361
+msgid "Card name color"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:375
+#: src/Modules/ProductSlider/Widget.php:401
+msgid "Behavior"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:383
+#: src/Modules/ProductSlider/Widget.php:424
+msgid "Direction"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:388
+#: src/Modules/ProductSlider/Widget.php:429
+msgid "Auto (follow site)"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:389
+#: src/Modules/ProductSlider/Widget.php:430
+msgid "Force LTR"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:390
+#: src/Modules/ProductSlider/Widget.php:431
+msgid "Force RTL"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:392
+#: src/Modules/ProductSlider/Widget.php:433
+msgid "RTL flips arrows, drag direction, and progress bar."
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:399
+#: src/Modules/ProductSlider/Widget.php:441
+msgid "Scroll snap"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:404
+#: src/Modules/ProductSlider/Widget.php:446
+msgid "Free-scroll"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:405
+#: src/Modules/ProductSlider/Widget.php:447
+msgid "Per card"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:406
+#: src/Modules/ProductSlider/Widget.php:448
+msgid "Per page"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:414
+#: src/Modules/ProductSlider/Widget.php:457
+msgid "Enable mouse drag"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:418
+msgid ""
+"Drag cards left or right to scroll the row. Clicks still navigate normally — "
+"drag only engages after a deliberate horizontal motion. Turn off for pure "
+"click behavior."
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:425
+#: src/Modules/ProductSlider/Widget.php:469
+msgid "Show arrow buttons"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:435
+#: src/Modules/ProductSlider/Widget.php:480
+msgid "Show progress bar"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:652
+msgid ""
+"No product categories found. Adjust the Query controls or add a thumbnail to "
+"a category."
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:696
+msgid "Scroll categories"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:697
+#: src/Modules/ProductSlider/Widget.php:804
+msgid "Previous"
+msgstr ""
+
+#: src/Modules/CategorySlider/Widget.php:700
+#: src/Modules/ProductSlider/Widget.php:807
+msgid "Next"
+msgstr ""
+
+#. translators: 1: category name, 2: product count
+#: src/Modules/CategorySlider/Widget.php:720
+#, php-format
+msgid "%1$s — %2$s item"
+msgid_plural "%1$s — %2$s items"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s = product count
+#: src/Modules/CategorySlider/Widget.php:742
+#, php-format
+msgid "%s item"
+msgid_plural "%s items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Modules/CheapestDefaultVariation/Importer.php:49
+msgid "Cheapest-variation snippet adopted; nothing to migrate."
+msgstr "סקריפט הוריאציה הזולה אומץ במקום; אין מה להעביר."
+
+#: src/Modules/CheapestDefaultVariation/Module.php:46
+msgid "Cheapest Default Variation"
+msgstr "וריאציה זולה כברירת מחדל"
+
+#: src/Modules/CheapestDefaultVariation/Module.php:55
+msgid ""
+"Auto-selects the cheapest in-stock variation as the default so customers can "
+"add to cart without picking options."
+msgstr ""
+
+#: src/Modules/CheapestDefaultVariation/Module.php:66
+msgid "Respect manual defaults"
+msgstr "כבד ברירות מחדל ידניות"
+
+#: src/Modules/CheapestDefaultVariation/Module.php:68
+msgid "Leave defaults set in the product editor alone"
+msgstr "השאר ברירות מחדל שהוגדרו בעורך המוצר"
+
+#: src/Modules/CheapestDefaultVariation/Module.php:69
+msgid ""
+"When on, manually chosen defaults take precedence over this automatic "
+"selection."
+msgstr ""
+
+#: src/Modules/CheapestDefaultVariation/Module.php:73
+msgid "Apply on product pages only"
+msgstr ""
+
+#: src/Modules/CheapestDefaultVariation/Module.php:75
+msgid "Skip this auto-selection on shop / archive / loop contexts"
+msgstr ""
+
+#: src/Modules/CheapestDefaultVariation/Module.php:76
+msgid ""
+"When on, archive and shop-loop swatches/pickers render with no pre-selected "
+"variation — the customer has to actively pick one. The single-product page "
+"(PDP) still auto-selects the cheapest."
+msgstr ""
+
+#: src/Modules/InfiniteScroll/Importer.php:32
+msgid "Infinite Scroll migrated (legacy plugin had no settings)."
+msgstr ""
+
+#: src/Modules/InfiniteScroll/Module.php:39
+msgid "Infinite Scroll"
+msgstr "גלילה אינסופית"
+
+#: src/Modules/InfiniteScroll/Module.php:48
+msgid ""
+"Infinite scroll for WooCommerce product grids (shop, Elementor widgets, "
+"block grids) with skeleton placeholders and preserved /page/N/ URLs."
+msgstr ""
+
+#: src/Modules/InfiniteScroll/Module.php:59
+msgid "Skeleton cards"
+msgstr "כרטיסי שלד"
+
+#: src/Modules/InfiniteScroll/Module.php:61
+msgid "How many placeholder cards to show while loading."
+msgstr "כמה כרטיסי מלא-מקום להציג בזמן הטעינה."
+
+#: src/Modules/InfiniteScroll/Module.php:65
+msgid "Max pages"
+msgstr "מספר דפים מקסימלי"
+
+#: src/Modules/InfiniteScroll/Module.php:67
+msgid ""
+"Absolute safety limit — no more than this many pages will ever auto-load."
+msgstr ""
+
+#: src/Modules/InfiniteScroll/Module.php:71
+msgid "End-of-list message"
+msgstr "הודעת סוף רשימה"
+
+#: src/Modules/InfiniteScroll/Module.php:73
+msgid "Shown once there are no more products."
+msgstr "מוצגת כשנגמרו המוצרים."
+
+#: src/Modules/InfiniteScroll/Module.php:74
+#: src/Modules/InfiniteScroll/Module.php:127
+msgid "You have reached the end."
+msgstr "הגעת לסוף."
+
+#: src/Modules/InfiniteScroll/Module.php:128
+msgid "Could not load more."
+msgstr "לא ניתן לטעון עוד."
+
+#: src/Modules/InfiniteScroll/Module.php:129
+msgid "Load more"
+msgstr "טען עוד"
+
+#. translators: %d = number of products just loaded. Used for screen-reader aria-live announcement.
+#: src/Modules/InfiniteScroll/Module.php:131
+#, php-format
+msgid "Loaded %d more products."
+msgstr "נטענו %d מוצרים נוספים."
+
+#: src/Modules/ProductFeed/Importer.php:48
+msgid "Product Feed settings migrated — legacy cron cleared."
+msgstr "הגדרות פיד המוצרים הועברו — משימות ה-cron הישנות נוקו."
+
+#: src/Modules/ProductFeed/Module.php:86
+msgid "Product Feed"
+msgstr "פיד מוצרים"
+
+#: src/Modules/ProductFeed/Module.php:95
+msgid ""
+"Gzipped XML feed of every product (with variations, stock, pricing, "
+"attributes). Rebuilt hourly and within 30 seconds of any stock or price "
+"change. Exposed at /product-feed."
+msgstr ""
+
+#: src/Modules/ProductFeed/Module.php:106
+msgid "Instant updates"
+msgstr "עדכונים מיידיים"
+
+#: src/Modules/ProductFeed/Module.php:108
+msgid "Rebuild within ~30 seconds of any stock or price change"
+msgstr "בונה מחדש תוך כ-30 שניות מכל שינוי מלאי או מחיר"
+
+#: src/Modules/ProductFeed/Module.php:112
+msgid "Hourly fallback"
+msgstr "גיבוי שעתי"
+
+#: src/Modules/ProductFeed/Module.php:114
+msgid "Also run a full regeneration every hour (safety net)"
+msgstr ""
+
+#: src/Modules/ProductFeed/Module.php:302
+msgid "Feed status"
+msgstr "סטטוס הפיד"
+
+#: src/Modules/ProductFeed/Module.php:304
+msgid "Feed generated successfully."
+msgstr "הפיד נוצר בהצלחה."
+
+#: src/Modules/ProductFeed/Module.php:308
+msgid "Feed URL"
+msgstr "כתובת הפיד"
+
+#: src/Modules/ProductFeed/Module.php:313
+msgid "Not generated yet"
+msgstr "עדיין לא נוצר"
+
+#: src/Modules/ProductFeed/Module.php:318
+msgid "Last generated"
+msgstr "נוצר לאחרונה"
+
+#: src/Modules/ProductFeed/Module.php:319
+msgid "Never"
+msgstr "אף פעם"
+
+#: src/Modules/ProductFeed/Module.php:322
+msgid "File size (gzipped)"
+msgstr ""
+
+#: src/Modules/ProductFeed/Module.php:326
+msgid "Next hourly run"
+msgstr "ריצה שעתית הבאה"
+
+#: src/Modules/ProductFeed/Module.php:327
+msgid "Not scheduled"
+msgstr "לא מתוזמן"
+
+#: src/Modules/ProductFeed/Module.php:330
+msgid "Instant rebuild queued"
+msgstr "בנייה מחדש מיידית נכנסה לתור"
+
+#: src/Modules/ProductFeed/Module.php:331
+msgid "No"
+msgstr "לא"
+
+#: src/Modules/ProductFeed/Module.php:337
+msgid "Generate now"
+msgstr "צור עכשיו"
+
+#: src/Modules/ProductSlider/Module.php:40
+msgid "Product Slider"
+msgstr ""
+
+#: src/Modules/ProductSlider/Module.php:47
+msgid ""
+"Editorial Elementor widget for WooCommerce products — drag-scroll slider or "
+"static grid, with price, sale badge, and add-to-cart."
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:32
+msgid "Freeman Product Slider"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:70
+msgid "Featured"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:79
+msgid "New arrivals."
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:88
+msgid "Hand-picked for the season."
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:98
+msgid "Query"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:106
+msgid "Max products"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:121
+msgid "Date"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:122
+msgid "Price"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:123
+msgid "Popularity"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:124
+msgid "Rating"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:126
+msgid "Title"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:127
+msgid "Random"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:149
+msgid "Source"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:153
+msgid "All published products"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:154
+msgid "Featured only"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:155
+msgid "On-sale only"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:156
+msgid "By category"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:157
+msgid "By tag"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:166
+msgid "Categories"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:180
+msgid "Tags"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:193
+msgid "Exclude product IDs"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:196
+msgid "Comma-separated product IDs to exclude."
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:241
+msgid ""
+"Fractional values let the next card peek (e.g. 1.4 = one full card with ~30% "
+"of the next showing)."
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:259
+msgid "Image height"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:264
+msgid ""
+"Height of the image area. Meta and cart button stack below at natural height."
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:282
+msgid "Image shape"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:296
+msgid "Show add-to-cart button"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:306
+msgid "Show sale badge"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:316
+msgid "Sale badge label"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:318
+#: src/Modules/ProductSlider/Widget.php:754
+msgid "Sale"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:379
+msgid "Product name"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:387
+msgid "Product name color"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:409
+msgid "Display as"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:414
+msgid "Slider"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:415
+msgid "Grid"
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:417
+msgid ""
+"Slider = draggable horizontal row with progress bar. Grid = static layout "
+"(no drag, no arrows)."
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:461
+msgid ""
+"Drag cards left or right to scroll the row. Clicks still navigate normally — "
+"drag only engages after a deliberate horizontal motion."
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:739
+msgid "No products match the current Query settings."
+msgstr ""
+
+#: src/Modules/ProductSlider/Widget.php:803
+msgid "Scroll products"
+msgstr ""
+
+#: src/Modules/RestockNotify/Importer.php:33
+msgid "Restock Notify subscribers and settings adopted in place."
+msgstr "הנרשמים וההגדרות של Restock Notify אומצו במקום."
+
+#: src/Modules/RestockNotify/Module.php:52
+msgid ""
+"Customers subscribe to out-of-stock products and are emailed the moment "
+"stock returns. Hebrew-first UI, exportable subscriber list."
+msgstr ""
+
+#: src/Modules/RestockNotify/Module.php:198
+msgid "עדכנו אותי כשיחזור למלאי"
+msgstr "Notify me when it's back in stock"
+
+#: src/Modules/RestockNotify/Module.php:199
+msgid "השאירו את הפרטים שלכם ונעדכן אתכם ברגע שהמוצר יחזור למלאי."
+msgstr "Leave your details and we'll let you know the moment the product is back in stock."
+
+#: src/Modules/RestockNotify/Module.php:200
+msgid "הרשמה לעדכון"
+msgstr "Subscribe"
+
+#: src/Modules/RestockNotify/Module.php:201
+msgid "נרשמת בהצלחה! נשלח לך מייל כשהמוצר יחזור למלאי."
+msgstr "You're subscribed! We'll email you when the product is back in stock."
+
+#: src/Modules/RestockNotify/Module.php:202
+msgid "כבר נרשמת לקבלת עדכון על מוצר זה."
+msgstr "You're already subscribed for this product."
+
+#: src/Modules/RestockNotify/Module.php:205
+msgid "אני מסכים/ה לקבל התראות במייל על מוצר זה."
+msgstr "I agree to receive email notifications about this product."
+
+#: src/Modules/RestockNotify/Module.php:206
+msgid "נרשמת לרשימת ההמתנה!"
+msgstr "You've joined the waiting list!"
+
+#: src/Modules/RestockNotify/Module.php:207
+msgid "נעדכן אותך"
+msgstr "We'll let you know"
+
+#. translators: {product_name} placeholder is replaced at send time.
+#: src/Modules/RestockNotify/Module.php:209
+msgid ""
+"נרשמת לרשימת ההמתנה עבור <strong>{product_name}</strong>. נשלח לך מייל ברגע "
+"שהמוצר יחזור למלאי."
+msgstr ""
+
+#. translators: {product_name} placeholder is replaced at send time.
+#: src/Modules/RestockNotify/Module.php:211
+msgid "חדשות טובות — {product_name} חזר למלאי!"
+msgstr "Good news — {product_name} is back in stock!"
+
+#: src/Modules/RestockNotify/Module.php:212
+msgid "המוצר חזר!"
+msgstr "It's back!"
+
+#. translators: {product_name} placeholder is replaced at send time.
+#: src/Modules/RestockNotify/Module.php:214
+msgid ""
+"<strong>{product_name}</strong> חזר למלאי ומחכה לך. כדאי לתפוס לפני שייגמר "
+"שוב!"
+msgstr ""
+
+#: src/Modules/RestockNotify/Module.php:215
+msgid "לרכישה"
+msgstr "Buy now"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:15
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:88
+msgid "התראות מלאי"
+msgstr "Restock Alerts"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:17
+msgid "לוח בקרה"
+msgstr "Dashboard"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:18
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:140
+msgid "נרשמים"
+msgstr "Subscribers"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:19
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:193
+msgid "תבניות מייל"
+msgstr "Email templates"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:20
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:216
+msgid "הגדרות"
+msgstr "Settings"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:45
+msgid "ההגדרות נשמרו בהצלחה."
+msgstr "Settings saved."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:52
+msgid "תבניות המייל נשמרו בהצלחה."
+msgstr "Email templates saved."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:76
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:144
+msgid "ממתין"
+msgstr "Waiting"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:77
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:144
+msgid "עודכן"
+msgstr "Notified"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:78
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:144
+msgid "הוסר"
+msgstr "Unsubscribed"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:88
+msgid "לוח בקרה — התראות חזרה למלאי"
+msgstr "Dashboard — Back-in-stock notifications"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:90
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:97
+msgid "ממתינים"
+msgstr "Waiting"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:91
+msgid "עודכנו"
+msgstr "Notified"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:92
+msgid "מוצרים במעקב"
+msgstr "Products tracked"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:93
+msgid "נרשמו היום"
+msgstr "Signups today"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:96
+msgid "מוצרים מבוקשים"
+msgstr "Most-requested products"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:97
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:160
+msgid "מוצר"
+msgstr "Product"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:97
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:160
+msgid "וריאציה"
+msgstr "Variation"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:97
+msgid "סטטוס מלאי"
+msgstr "Stock status"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:97
+msgid "פעולה"
+msgstr "Action"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:109
+msgid "במלאי"
+msgstr "In stock"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:109
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:532
+#: src/Modules/VariationSwatches/legacy/templates/shop-simple-pick.php:84
+#: src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:51
+msgid "אזל מהמלאי"
+msgstr "Out of stock"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:110
+msgid "לשלוח עדכון לכל הממתינים?"
+msgstr "Send a notification to everyone waiting?"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:110
+msgid "שלח עכשיו"
+msgstr "Send now"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:110
+msgid "ישלח אוטומטית"
+msgstr "Will be sent automatically"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:115
+msgid "אין נרשמים עדיין"
+msgstr "No subscribers yet"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:115
+msgid "כשלקוחות ירשמו להתראות על מוצרים שאזלו, הם יופיעו כאן."
+msgstr "When customers subscribe to back-in-stock notifications, they will appear here."
+
+#. translators: %d = number of subscribers deleted
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:132
+#, php-format
+msgid "%d נרשם נמחק."
+msgid_plural "%d נרשמים נמחקו."
+msgstr[0] "%d subscriber deleted."
+msgstr[1] "%d subscribers deleted."
+
+#. translators: %d = number of notifications sent
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:136
+#, php-format
+msgid "נשלחה %d התראה."
+msgid_plural "נשלחו %d התראות."
+msgstr[0] "%d notification sent."
+msgstr[1] "%d notifications sent."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:140
+msgid "ייצוא CSV"
+msgstr "Export CSV"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:143
+msgid "חיפוש שם או אימייל…"
+msgstr "Search by name or email…"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:144
+msgid "כל הסטטוסים"
+msgstr "All statuses"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:145
+msgid "סינון"
+msgstr "Filter"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:150
+msgid "בחר הכל"
+msgstr "Select all"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:151
+msgid "פעולות מרובות"
+msgstr "Bulk actions"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:151
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:177
+msgid "מחיקה"
+msgstr "Delete"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:152
+msgid "בטוח?"
+msgstr "Are you sure?"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:152
+msgid "בצע"
+msgstr "Apply"
+
+#. translators: 1: total result count, 2: current page number, 3: total page count
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:156
+#, php-format
+msgid "%1$s תוצאות · עמוד %2$s מתוך %3$s"
+msgstr "%1$s results · page %2$s of %3$s"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:160
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:265
+msgid "שם"
+msgstr "Name"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:160
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:234
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:266
+msgid "אימייל"
+msgstr "Email"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:160
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:267
+msgid "סטטוס"
+msgstr "Status"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:160
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:268
+msgid "תאריך הרשמה"
+msgstr "Signup date"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:160
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:269
+msgid "תאריך עדכון"
+msgstr "Notification date"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:160
+msgid "פעולות"
+msgstr "Actions"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:162
+msgid "(נמחק)"
+msgstr "(deleted)"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:177
+msgid "למחוק נרשם זה?"
+msgstr "Delete this subscriber?"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:184
+msgid "לא נמצאו נרשמים"
+msgstr "No subscribers found"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:184
+msgid "נסו לשנות את הסינון או המתינו שלקוחות ירשמו."
+msgstr "Try changing the filter or wait for customers to subscribe."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:193
+msgid "התאימו את המיילים שנשלחים ללקוחות שלכם"
+msgstr "Customize the emails sent to your customers"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:195
+msgid "מייל אישור הרשמה"
+msgstr "Confirmation email"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:195
+msgid "נשלח כשלקוח נרשם להתראה על מוצר."
+msgstr "Sent when a customer subscribes to a notification for a product."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:196
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:202
+msgid "נושא"
+msgstr "Subject"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:197
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:203
+msgid "כותרת"
+msgstr "Heading"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:198
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:204
+msgid "תוכן"
+msgstr "Content"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:199
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:206
+msgid "משתנים זמינים:"
+msgstr "Available placeholders:"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:201
+msgid "מייל חזרה למלאי"
+msgstr "Back-in-stock email"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:201
+msgid "נשלח כשמוצר במעקב חוזר למלאי."
+msgstr "Sent when a tracked product is back in stock."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:205
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:230
+msgid "טקסט כפתור"
+msgstr "Button text"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:208
+msgid "שמירת תבניות מייל"
+msgstr "Save email templates"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:216
+msgid "הגדירו כיצד התראות מלאי עובד בחנות שלכם"
+msgstr "Configure how Restock Notify works in your store"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:218
+msgid "תצוגה"
+msgstr "Display"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:219
+msgid "הצגת טופס אוטומטית בעמודי מוצרים שאזלו מהמלאי"
+msgstr "Automatically show the form on out-of-stock product pages"
+
+#. translators: %s = literal shortcode tag (do not translate).
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:223
+#, php-format
+msgid "כשמושבת, השתמשו בשורטקוד %s למיקום ידני."
+msgstr "When disabled, use the %s shortcode to place it manually."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:228
+msgid "כותרת הטופס"
+msgstr "Form heading"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:229
+msgid "תיאור הטופס"
+msgstr "Form description"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:231
+msgid "הודעת הצלחה"
+msgstr "Success message"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:232
+msgid "הודעת כפילות"
+msgstr "Duplicate message"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:235
+msgid "שליחת מייל אישור בהרשמה"
+msgstr "Send a confirmation email on subscribe"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:236
+msgid "שם השולח"
+msgstr "Sender name"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:237
+msgid "אימייל השולח"
+msgstr "Sender email"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:239
+msgid "פרטיות"
+msgstr "Privacy"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:240
+msgid "הצגת תיבת הסכמה (GDPR)"
+msgstr "Show consent checkbox (GDPR)"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:241
+msgid "טקסט הסכמה"
+msgstr "Consent text"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:243
+msgid "שורטקוד"
+msgstr "Shortcode"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:244
+msgid "השתמשו בשורטקוד הבא כדי למקם את הטופס באופן ידני:"
+msgstr "Use the following shortcode to place the form manually:"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:246
+msgid "או ציינו מזהה מוצר:"
+msgstr "Or specify a product ID:"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:249
+msgid "שמירת הגדרות"
+msgstr "Save settings"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:262
+msgid "מזהה"
+msgstr "ID"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:263
+msgid "מזהה מוצר"
+msgstr "Product ID"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:264
+msgid "מזהה וריאציה"
+msgstr "Variation ID"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-admin.php:276
+msgid "רשימת המתנה"
+msgstr "Waiting list"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-ajax.php:13
+msgid "Security check failed. Please refresh the page and try again."
+msgstr "בדיקת אבטחה נכשלה. יש לרענן את הדף ולנסות שוב."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-ajax.php:28
+msgid "Too many requests. Please try again later."
+msgstr "יותר מדי בקשות. נסו שוב מאוחר יותר."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-ajax.php:37
+msgid "Invalid product."
+msgstr "מוצר לא תקין."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-ajax.php:40
+msgid "Please enter a valid email address."
+msgstr "יש להזין כתובת אימייל תקינה."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-ajax.php:45
+msgid "Product not found."
+msgstr "המוצר לא נמצא."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-ajax.php:50
+msgid "Please confirm the consent checkbox to continue."
+msgstr "יש לאשר את תיבת ההסכמה כדי להמשיך."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-ajax.php:70
+msgid "Something went wrong. Please try again."
+msgstr "משהו השתבש. נסו שוב."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-email.php:24
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-email.php:48
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-email.php:73
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-email.php:82
+msgid "לקוח/ה"
+msgstr "Customer"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-email.php:96
+msgid "הסרה מרשימת התפוצה"
+msgstr "Unsubscribe"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-email.php:96
+msgid "עבור מוצר זה."
+msgstr "for this product."
+
+#. translators: %s = customer name
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-email.php:107
+#, php-format
+msgid "היי %s,"
+msgstr "Hi %s,"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:103
+msgid "יש להזין כתובת אימייל תקינה."
+msgstr "Please enter a valid email address."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:104
+msgid "יש לאשר את תיבת ההסכמה."
+msgstr "Please tick the consent box."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:105
+msgid "שגיאה: מזהה מוצר חסר."
+msgstr "Error: product ID missing."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:106
+msgid "שגיאה: הסקריפט לא נטען כראוי. רענן את הדף."
+msgstr "Error: the script didn't load properly. Please refresh the page."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:107
+msgid "משהו השתבש. נסו שוב."
+msgstr "Something went wrong. Please try again."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:108
+msgid "שגיאת רשת. נסו שוב."
+msgstr "Network error. Please try again."
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:449
+msgid "שם מלא"
+msgstr "Full name"
+
+#: src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:452
+msgid "כתובת אימייל"
+msgstr "Email address"
+
+#: src/Modules/VariableStockFix/Importer.php:34
+msgid "Variable Stock Fix migrated — legacy daily audit cron cleared."
+msgstr "מודול תיקון המלאי הועבר — משימת ה-cron היומית הישנה נוקתה."
+
+#: src/Modules/VariableStockFix/Module.php:61
+msgid "Variable Stock Fix"
+msgstr "תיקון מלאי למוצרים עם וריאציות"
+
+#: src/Modules/VariableStockFix/Module.php:70
+msgid ""
+"When all visible variations of a variable product are out of stock, this "
+"module unchecks the parent's \"Manage stock\" box so Woo's native \"Hide out "
+"of stock items\" hides the product from the shop."
+msgstr ""
+
+#: src/Modules/VariableStockFix/Module.php:81
+msgid "Daily audit"
+msgstr "ביקורת יומית"
+
+#: src/Modules/VariableStockFix/Module.php:83
+msgid "Run a daily audit of recently modified variable products"
+msgstr "הרץ ביקורת יומית על מוצרי וריאציה שעודכנו לאחרונה"
+
+#: src/Modules/VariableStockFix/Module.php:84
+msgid ""
+"Safety-net: once per day the module scans products modified in the last 48h "
+"and fixes any that match."
+msgstr ""
+
+#. translators: %s: product label
+#: src/Modules/VariableStockFix/Module.php:399
+#, php-format
+msgid "Would fix %s"
+msgstr "היה מתקן %s"
+
+#. translators: %s: product label
+#: src/Modules/VariableStockFix/Module.php:405
+#, php-format
+msgid "Fixed %s"
+msgstr "תוקנו %s"
+
+#: src/Modules/VariableStockFix/Module.php:483
+msgid "Bulk audit"
+msgstr "ביקורת בתפזורת"
+
+#: src/Modules/VariableStockFix/Module.php:484
+msgid ""
+"Scans every variable product. For each one where every visible variation is "
+"out of stock AND the parent still has \"Manage stock\" checked, the module "
+"unchecks that box and clears the parent stock quantity."
+msgstr ""
+
+#: src/Modules/VariableStockFix/Module.php:488
+msgid "Dry run (report only, no changes)"
+msgstr ""
+
+#: src/Modules/VariableStockFix/Module.php:490
+msgid "Start scan"
+msgstr "התחל סריקה"
+
+#: src/Modules/VariableStockFix/Module.php:491
+msgid "Stop"
+msgstr "עצור"
+
+#: src/Modules/VariableStockFix/Module.php:509
+msgid "Counting variable products…"
+msgstr "סופר מוצרים עם וריאציות…"
+
+#: src/Modules/VariableStockFix/Module.php:510
+msgid "Scanning batch starting at"
+msgstr "סורק אצווה החל מ"
+
+#: src/Modules/VariableStockFix/Module.php:511
+msgid "Fixing batch starting at"
+msgstr "מתקן אצווה החל מ"
+
+#: src/Modules/VariableStockFix/Module.php:512
+msgid "Scan complete. No changes were made (dry run)."
+msgstr ""
+
+#: src/Modules/VariableStockFix/Module.php:513
+msgid "Done."
+msgstr "הסתיים."
+
+#: src/Modules/VariableStockFix/Module.php:514
+msgid "Stopped."
+msgstr "הופסק."
+
+#: src/Modules/VariableStockFix/Module.php:515
+msgid "Dry-run is OFF. This will actually modify products. Continue?"
+msgstr "מצב הרצה-יבשה כבוי. השינויים ייכנסו לתוקף על המוצרים. להמשיך?"
+
+#: src/Modules/VariableStockFix/Module.php:516
+msgid "scanned"
+msgstr "נסרק"
+
+#: src/Modules/VariableStockFix/Module.php:517
+msgid "match"
+msgstr "תואם"
+
+#: src/Modules/VariableStockFix/Module.php:518
+msgid "fixed"
+msgstr "תוקן"
+
+#: src/Modules/VariationSwatches/Importer.php:33
+msgid "Variation Swatches settings preserved (option keys unchanged)."
+msgstr ""
+
+#: src/Modules/VariationSwatches/Module.php:53
+msgid ""
+"Color swatches, size pills, quick-add buy box and shop-grid variation picker "
+"for variable products."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-admin.php:64
+#: src/Modules/VariationSwatches/legacy/includes/class-admin.php:77
+msgid "Swatch color"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-admin.php:67
+#: src/Modules/VariationSwatches/legacy/includes/class-admin.php:81
+msgid ""
+"Set a color here and this term will render as a color circle on the product "
+"page. Leave empty to render as a text button."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-admin.php:136
+msgid "Swatch"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:524
+#: src/Modules/VariationSwatches/legacy/includes/class-frontend.php:270
+#: src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:141
+msgid "Choose an option"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:525
+#: src/Modules/VariationSwatches/legacy/includes/class-frontend.php:271
+msgid "This combination is not available"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:526
+#: src/Modules/VariationSwatches/legacy/includes/class-frontend.php:272
+msgid "נוסף לעגלה"
+msgstr "Added to cart"
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:527
+#: src/Modules/VariationSwatches/legacy/templates/shop-simple-pick.php:76
+#: src/Modules/VariationSwatches/legacy/templates/shop-variation-pick.php:150
+#: src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:50
+#: src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:102
+#: src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:237
+#: src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:285
+msgid "הוספה לעגלה"
+msgstr "Add to cart"
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:528
+#: src/Modules/VariationSwatches/legacy/templates/shop-variation-pick.php:86
+msgid "בחר/י אפשרות"
+msgstr "Choose an option"
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:529
+#, php-format
+msgid "+%d"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:530
+msgid "−"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:531
+#: src/Modules/VariationSwatches/legacy/templates/shop-variation-pick.php:65
+#: src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:113
+msgid "החל מ:"
+msgstr "From:"
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:533
+msgid "לא זמין"
+msgstr "Unavailable"
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:534
+msgid "שגיאה, נסו שוב"
+msgstr "Error, please try again"
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:536
+msgid "סגירה"
+msgstr "Close"
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:537
+msgid "הודעות חנות"
+msgstr "Shop notices"
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:571
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:585
+msgid "Session expired. Please refresh the page."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:612
+msgid "This product is not available."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:619
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:631
+msgid "Product not available."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:636
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:695
+msgid "This combination is not available."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-archive.php:732
+msgid "Could not add to cart."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:126
+msgid "Shop swatches"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:149
+msgid "Shop-page variation picker"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:151
+msgid ""
+"Compact inline color / size picker shown on shop and archive pages instead "
+"of the default \"Choose options\" button. The single-product buy box is not "
+"affected by these settings."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:155
+msgid "Enable on shop / archive pages"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:156
+msgid "Replace the default \"Choose options\" link with the compact picker."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:162
+msgid "Options visible before \"+N\""
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:163
+msgid ""
+"Per attribute. Anything above this count collapses behind a \"+N\" reveal "
+"pill."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:170
+msgid "Show price"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:171
+msgid ""
+"Show \"החל מ: ₪X\" above the Add to cart button (updates to the selected "
+"variation's price once all attributes are picked). When on, also hides "
+"WooCommerce's default range price (e.g. ₪20 – ₪100) on the same card so the "
+"two displays don't fight."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:177
+msgid "Apply on"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:178
+msgid "Shop page"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:185
+msgid "Product category pages"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:192
+msgid "Product tag pages"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:199
+msgid "Search results"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:206
+msgid "Related / Upsells / Cross-sells on product pages"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:213
+msgid "Exclude categories"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:214
+msgid "Products in these categories keep the default \"Choose options\" link."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:223
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:263
+msgid "Hide out-of-stock options"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:224
+msgid ""
+"On shop / archive cards, only show attribute options (colors, sizes, etc.) "
+"that have at least one in-stock variation. Sold-out options are removed from "
+"the picker entirely. Turn off to keep showing every option and let customers "
+"see the sold-out ones too."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:230
+msgid "No pre-selected variation on archive"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:231
+msgid ""
+"Render every shop / archive picker with nothing pre-selected. The customer "
+"must actively click a swatch. Ignores both the product editor's manual "
+"defaults and the auto-cheapest pick — applies on shop / category / search / "
+"loop contexts only. The single-product page is unaffected."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:237
+msgid "Hide attribute labels"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:238
+msgid ""
+"On shop / archive cards, hide the attribute label row (e.g. \"Size:\" / "
+"\"Colour:\"). The swatches themselves are usually self-explanatory and the "
+"labels add visual noise to the card. The currently-selected value text "
+"stays. PDP buy-box is unaffected."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:244
+msgid "Hide selected-option text"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:245
+msgid ""
+"On shop / archive cards, hide the \"Choose an option\" / \"{selected value}"
+"\" text row that sits above the swatches. The swatches' active state already "
+"shows what's picked. PDP buy-box is unaffected."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:257
+msgid "Product page buy box"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:259
+msgid ""
+"These settings only affect the variation buy box on the single product page."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/includes/class-settings.php:264
+msgid ""
+"On the product page, only show variation options (colors, sizes, etc.) that "
+"have at least one in-stock variation. Options that are completely sold out "
+"won't appear at all. Off by default — out-of-stock options are shown greyed "
+"with a strike-through so customers can see what sizes/colors this product "
+"normally comes in. OOS hiding happens on shop / archive cards instead (see "
+"the setting in the section above)."
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/templates/shop-simple-pick.php:66
+msgid "כמות"
+msgstr "Quantity"
+
+#: src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:78
+#: src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:258
+msgid "קנה עכשיו"
+msgstr "Buy now"
+
+#: src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:131
+msgid "This product is currently out of stock and unavailable."
+msgstr ""
+
+#. translators: %s: attribute label
+#: src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:204
+#, php-format
+msgid "Choose %s"
+msgstr ""
+
+#: src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:216
+msgid "Clear"
+msgstr ""
+

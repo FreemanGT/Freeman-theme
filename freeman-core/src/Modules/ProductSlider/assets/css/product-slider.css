@@ -1,0 +1,426 @@
+/*
+ * Freeman Product Slider — overlays on top of the shared `.cs-*` skeleton
+ * (CategorySlider/assets/css/category-slider.css) for slider chrome (drag,
+ * track, mask, arrows, progress, RTL, etc.).
+ *
+ * Each slider item is a *standard* WooCommerce shop-loop `<li class="product
+ * type-product ...">` rendered via `wc_get_template_part( 'content',
+ * 'product' )`, so every plugin that targets the default product grid (sale
+ * flash customisers, wishlist buttons, quick-view modals, image-swap on
+ * hover, ratings overrides, etc.) lights up the slider with no extra wiring.
+ *
+ * The widget injects an additional `cs-card` class onto each `<li>` via the
+ * `post_class` filter so the shared flex-basis / scroll-snap /
+ * drag-suppression rules from the CategorySlider stylesheet apply unchanged.
+ *
+ * The widget also adds `woocommerce` to the outer wrapper class so plugin
+ * CSS scoped under `.woocommerce ul.products li.product .X` (WPC Quick
+ * View's `.quickvieww`, YITH wishlist heart, etc.) matches the slider
+ * exactly the way it matches the regular product grid. The trade-off is
+ * that WooCommerce's own default stylesheet (`assets/css/woocommerce.css`)
+ * starts trying to lay the cards out as a float-based percentage grid —
+ * its selectors are `.woocommerce ul.products li.product` which is 3
+ * classes deep, out-specifying any 2-class selector we'd otherwise use.
+ *
+ * Every rule that touches a property WC's default sets (width, float,
+ * text-align, image height, sale-flash position, title font-size, price
+ * color, etc.) is therefore scoped under `.cs.cs-products` (3 classes on
+ * the outer wrapper) so the rule lands at specificity 4+ classes deep and
+ * consistently wins against WC's 3-deep selectors. Rules that don't
+ * conflict with WC defaults (.cs-track wrapper, hover ring pseudo,
+ * VariationSwatches picker bounds, our own slider chrome) keep their
+ * original short selectors.
+ */
+
+/* ── Track / Grid wrapper ─────────────────────────── */
+
+/*
+ * WC's default stylesheet ships float-based percentage rules:
+ *   .woocommerce ul.products li.product            { float:left; width:22.05% }
+ *   .woocommerce ul.products.columns-N li.product  { width:N% }   (N = 1..6)
+ *   .woocommerce ul.products li.first              { clear:both }
+ *
+ * `.woocommerce ul.products.columns-N li.product` is (0,0,4,2) — TIES our
+ * older `.cs.cs-products ul.products li.product` (0,0,4,2) on specificity,
+ * so source order decides who wins. When WC's CSS loads after ours, cards
+ * end up at percentage widths and the slider scrolls way past the products
+ * because the row width no longer matches our flex-basis math.
+ *
+ * Every rule below is therefore scoped one class deeper to land at
+ * (0,0,5,2) or (0,0,6,2) — beating WC's column rules unconditionally.
+ * The cs-card class is added to each <li> via the post_class filter (see
+ * Widget::render's $cs_card_filter) so the selector always matches.
+ */
+
+.cs.cs-products ul.cs-track.products,
+.cs.cs-products ul.cs-grid.products {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	clear: none;
+}
+
+/* Slider track — flex row with native horizontal overflow scroll.
+   WC's modern stylesheet doesn't set display on ul.products, but the
+   pre-existing override below also handles legacy stores that did. */
+.cs.cs-products ul.cs-track.products {
+	display: flex;
+	align-items: stretch;
+	gap: var(--cs-gap);
+	overflow-x: auto;
+	overflow-y: hidden;
+	flex-wrap: nowrap;
+	grid-template-columns: none;
+	/* Vertical breathing room for the hover ring (`.cs-card.product::after`
+	   uses `inset: -8px` and -10px on hover). The track clips with
+	   `overflow-y: hidden`; the padding pushes the clip line outside the
+	   ring's reach. Negative outer margin compensates so the track still
+	   visually aligns with the head. */
+	padding: 12px 0 16px;
+	margin: -12px 0 -16px;
+	/* Prevent rubber-band overscroll past the last card (and stop the
+	   browser from chaining horizontal flicks to the parent page). */
+	overscroll-behavior-inline: contain;
+}
+
+/* ── Per-li overrides (beat WC `.columns-N li.product` at 5+2) ────── */
+.cs.cs-products ul.cs-track.products > li.cs-card.product,
+.cs.cs-products ul.cs-grid.products  > li.cs-card.product {
+	float: none;
+	clear: none;
+	width: auto;
+	min-width: 0;
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	text-align: start;
+}
+
+/* Re-assert the flex-basis at the same depth so it wins over WC's
+   `width: N%`. Without this, WC's per-column percentage widths leak in
+   and the row's total width is wrong, making the slider scroll past
+   where the user expects "products are finished". */
+.cs.cs-products ul.cs-track.products > li.cs-card.product {
+	flex: 0 0 calc((100% - (var(--cs-per) - 1) * var(--cs-gap)) / var(--cs-per));
+}
+@media (max-width: 1024px) {
+	.cs.cs-products ul.cs-track.products > li.cs-card.product {
+		flex: 0 0 calc((100% - (var(--cs-per-tablet) - 1) * var(--cs-gap)) / var(--cs-per-tablet));
+	}
+}
+@media (max-width: 640px) {
+	.cs.cs-products ul.cs-track.products > li.cs-card.product {
+		flex: 0 0 calc((100% - (var(--cs-per-mobile) - 1) * var(--cs-gap)) / var(--cs-per-mobile));
+	}
+}
+
+/* ── Card structure ───────────────────────────────── */
+
+/* The shared `.cs-card` rule pins the card to --cs-card-h. For products
+   we want only the IMAGE pinned to that height; the title / price /
+   rating / cart button stack below at natural height. */
+.cs.cs-products .cs-card.product {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	row-gap: 10px;
+	height: auto;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	overflow: visible;
+}
+
+/* Hover ring drawn around the whole product card (image + meta + cart),
+   matching the v1.7.x visual. The shared `.cs-ring` element only exists
+   on category cards, so for products we synthesise the ring with ::after. */
+.cs.cs-products .cs-card.product::after {
+	content: "";
+	position: absolute;
+	inset: -8px;
+	border: 1px solid transparent;
+	border-radius: 14px;
+	pointer-events: none;
+	transition: inset .25s cubic-bezier(.2,.7,.2,1), border-color .25s;
+	z-index: 0;
+}
+@media (hover: hover) {
+	.cs.cs-products .cs-card.product:hover::after {
+		border-color: var(--cs-ring-color, var(--cs-ink));
+		inset: -10px;
+	}
+}
+
+/* ── Product link / image area ────────────────────── */
+
+/* `<a class="woocommerce-LoopProduct-link woocommerce-loop-product__link">`
+   wraps the image + title + price. Reset its display so the inner <img>
+   stretches and reset color/decoration so theme link styles don't leak in. */
+.cs.cs-products .cs-card.product .woocommerce-LoopProduct-link {
+	display: block;
+	position: relative;
+	flex: 0 0 auto;
+	color: inherit;
+	text-decoration: none;
+}
+
+/* The product thumbnail comes from `woocommerce_template_loop_product_thumbnail`
+   on `woocommerce_before_shop_loop_item_title` — it emits a single <img>
+   sized to the `woocommerce_thumbnail` image. Pin its height so the
+   slider's per-instance image height is honoured. WC default sets
+   `height: auto; margin: 0 0 1em;` which we override here. */
+.cs.cs-products .cs-card.product img.attachment-woocommerce_thumbnail,
+.cs.cs-products .cs-card.product img.wp-post-image,
+.cs.cs-products ul.products li.product img {
+	display: block;
+	width: 100%;
+	height: var(--cs-card-h);
+	margin: 0;
+	object-fit: cover;
+	box-shadow: none;
+	transition: transform .5s cubic-bezier(.2,.7,.2,1);
+}
+.cs.cs-products.cs-shape-soft .cs-card.product img.attachment-woocommerce_thumbnail,
+.cs.cs-products.cs-shape-soft .cs-card.product img.wp-post-image {
+	border-radius: 18px;
+}
+.cs.cs-products.cs-shape-rect .cs-card.product img.attachment-woocommerce_thumbnail,
+.cs.cs-products.cs-shape-rect .cs-card.product img.wp-post-image {
+	border-radius: 6px;
+}
+/* Hover scale only on devices with a real hover capability. On mobile,
+   the first tap maps to `:hover`, which made the image jump every time
+   the user picked a swatch — looked like a buggy image-swap. */
+@media (hover: hover) {
+	.cs.cs-products .cs-card.product:hover img.attachment-woocommerce_thumbnail,
+	.cs.cs-products .cs-card.product:hover img.wp-post-image {
+		transform: scale(1.015);
+	}
+}
+
+/* ── Sale flash (WC's `.onsale`) ───────────────────── */
+
+/* WC's `woocommerce_show_product_loop_sale_flash` callback emits a <span
+   class="onsale">Sale!</span> inside the LoopProduct-link. WC's default
+   styles it as a giant green circle in the top-left
+   (`.woocommerce span.onsale { min-width: 3.236em; min-height: 3.236em;
+   border-radius: 100%; background-color: #77a464; ... }`). We replace
+   that with a small pill in the slider's accent colour, flipped to the
+   right edge in RTL. */
+.cs.cs-products .cs-card.product .onsale {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	right: auto;
+	z-index: 2;
+	margin: 0;
+	padding: 4px 10px;
+	min-width: 0;
+	min-height: 0;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	line-height: 1.2;
+	color: var(--cs-bg);
+	background: var(--cs-accent);
+	border: 0;
+	border-radius: 999px;
+	pointer-events: none;
+}
+.cs.cs-products[dir="rtl"] .cs-card.product .onsale {
+	left: auto;
+	right: 12px;
+}
+
+/* ── Title ─────────────────────────────────────────── */
+
+/* WC emits the title as <h2 class="woocommerce-loop-product__title">
+   (default styles: `padding: .5em 0; margin: 0; font-size: 1em;
+   text-align: center`). Reset to the slider's left-aligned, clamped
+   2-line look so cards align across the row. */
+.cs.cs-products .cs-card.product .woocommerce-loop-product__title {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	margin: 14px 2px 0;
+	padding: 0;
+	font-weight: 400;
+	font-size: 16px;
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+	min-height: calc(1.25em * 2);
+	text-align: start;
+}
+
+/* ── Price ─────────────────────────────────────────── */
+
+/* WC default: `color: #77a464; display: block; font-weight: 400;
+   margin-bottom: .5em; font-size: .857em` — green text, small. Reset to
+   the slider's ink colour. */
+.cs.cs-products .cs-card.product .price {
+	display: block;
+	margin: 4px 2px 0;
+	padding: 0;
+	font-size: 14px;
+	color: var(--cs-ink);
+	text-align: start;
+}
+.cs.cs-products .cs-card.product .price del {
+	margin-right: 6px;
+	color: var(--cs-mute);
+	opacity: 0.7;
+}
+.cs.cs-products .cs-card.product .price ins {
+	background: transparent;
+	text-decoration: none;
+	font-weight: 500;
+}
+
+/* ── Rating ────────────────────────────────────────── */
+
+.cs.cs-products .cs-card.product .star-rating {
+	display: block;
+	margin: 6px 2px 0;
+	font-size: 12px;
+}
+
+/* ── VariationSwatches archive picker ──────────────── */
+
+/* The VariationSwatches module replaces the standard add-to-cart link
+   with `<div class="etucart-shop-pick">` via the
+   `woocommerce_loop_add_to_cart_link` filter. The picker has its own
+   single-line overflow scanner that marks chips beyond the card width
+   as `is-overflow` and reveals them behind a `+N` button — but the
+   scanner reads `opts.clientWidth`, so the picker container has to be
+   bound to the card width. */
+.cs.cs-products .cs-card.product .etucart-shop-pick {
+	width: 100%;
+	margin-top: auto;
+	max-width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+}
+.cs.cs-products .cs-card.product .etucart-shop-pick__opts {
+	max-width: 100%;
+	min-width: 0;
+}
+
+/* ── Add-to-cart button ────────────────────────────── */
+
+/* `woocommerce_template_loop_add_to_cart` emits `<a class="button
+   add_to_cart_button ...">` (or the variable-product / external-product
+   variants — all carry the `button` class). Plugins that replace the
+   markup via `woocommerce_loop_add_to_cart_link` (e.g. our own
+   VariationSwatches picker) inherit the same look because we scope to
+   `.button` and `.added_to_cart`, not custom widget classes. */
+.cs.cs-products .cs-card.product > a.button,
+.cs.cs-products .cs-card.product > .button,
+.cs.cs-products .cs-card.product > .added_to_cart {
+	-webkit-appearance: none;
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 38px;
+	margin: 0;
+	padding: 8px 16px;
+	box-sizing: border-box;
+	font: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.02em;
+	text-decoration: none;
+	color: var(--cs-bg);
+	background: var(--cs-ink);
+	background-image: none;
+	border: 1px solid var(--cs-ink);
+	border-radius: 999px;
+	cursor: pointer;
+	line-height: 1.2;
+	text-shadow: none;
+	box-shadow: none;
+	transition: background .18s, color .18s, border-color .18s;
+	position: relative;
+	z-index: 2;
+}
+.cs.cs-products .cs-card.product > a.button,
+.cs.cs-products .cs-card.product > .button {
+	margin-top: auto;
+}
+.cs.cs-products .cs-card.product > a.button:hover,
+.cs.cs-products .cs-card.product > a.button:focus-visible,
+.cs.cs-products .cs-card.product > .button:hover,
+.cs.cs-products .cs-card.product > .button:focus-visible {
+	background: transparent;
+	color: var(--cs-ink);
+	border-color: var(--cs-ink);
+	outline: none;
+}
+.cs.cs-products .cs-card.product > .button.loading,
+.cs.cs-products .cs-card.product > .button.added {
+	opacity: 0.7;
+}
+
+/* Hide the WC "View cart" link that appears post-AJAX-add — it stretches
+   the card height and looks out of place inside a tight slider item. */
+.cs.cs-products .cs-card.product .added_to_cart {
+	display: none;
+}
+
+/* ── Grid mode ─────────────────────────────────────── */
+
+.cs.cs-products.cs-grid-mode .cs-grid.products {
+	display: grid;
+	grid-template-columns: repeat(var(--cs-per), minmax(0, 1fr));
+	gap: var(--cs-gap);
+}
+.cs.cs-products.cs-grid-mode .cs-grid.products > li.product {
+	flex: 0 1 auto;
+	margin: 0;
+}
+
+/* ── Responsive ────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+	.cs.cs-products.cs-grid-mode .cs-grid.products {
+		grid-template-columns: repeat(var(--cs-per-tablet), minmax(0, 1fr));
+	}
+	.cs.cs-products .cs-card.product .woocommerce-loop-product__title {
+		font-size: 15px;
+	}
+}
+
+@media (max-width: 640px) {
+	.cs.cs-products.cs-grid-mode .cs-grid.products {
+		grid-template-columns: repeat(var(--cs-per-mobile), minmax(0, 1fr));
+	}
+	/* Shorter image area on phones — the desktop default (320px) leaves
+	   too little room for the rest of the card on narrow viewports. */
+	.cs.cs-products .cs-card.product img.attachment-woocommerce_thumbnail,
+	.cs.cs-products .cs-card.product img.wp-post-image,
+	.cs.cs-products ul.products li.product img {
+		height: 220px;
+	}
+	.cs.cs-products .cs-card.product .woocommerce-loop-product__title {
+		margin-top: 10px;
+		font-size: 14px;
+	}
+	.cs.cs-products .cs-card.product > a.button,
+	.cs.cs-products .cs-card.product > .button {
+		font-size: 12px;
+		min-height: 34px;
+		padding: 6px 12px;
+	}
+	/* WPC Smart Quick View (WooSQ) anchors its trigger button to the
+	   center of the image by default. On phones that puts the eye-icon
+	   right across the product photo. Push it to the bottom edge so it
+	   sits below the focal area but stays in tap reach. */
+	.cs.cs-products .cs-card.product .woosq-btn {
+		top: auto !important;
+		bottom: 12px !important;
+		transform: none !important;
+	}
+}

@@ -1,0 +1,53 @@
+/*
+ * Freeman RTL overrides. Loaded only when is_rtl() is true.
+ *
+ * Primitive classes in freeman.css use logical properties (margin-inline-*,
+ * padding-inline-*, border-inline-*) so they flip automatically. This file
+ * handles the remaining handful of exceptions plus icon mirroring.
+ */
+
+.freeman-rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Container + stack helpers are already logical. Keep block for future use. */
+.freeman-rtl .fm-container {
+    /* intentional no-op — here for IDE discoverability. */
+}
+
+/* Buttons with trailing icons: mirror glyph direction. */
+.freeman-rtl .fm-btn .dashicons-external,
+.freeman-rtl .fm-btn .dashicons-arrow-right-alt,
+.freeman-rtl .dashicons-external {
+    transform: scaleX(-1);
+}
+
+/* Cards: no physical-direction values used, but inherit text-align:right. */
+.freeman-rtl .fm-card__body {
+    text-align: right;
+}
+
+/* Badges: recompute tracking (Hebrew doesn't want letter-spacing). */
+.freeman-rtl .fm-badge {
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+/* Uppercase + wide tracking are noisy in Hebrew; drop them globally. */
+.freeman-rtl .fm-btn,
+.freeman-rtl h6 {
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* Input icons pinned with positioning (swatches etc.) need flipping. */
+.freeman-rtl .fm-input--icon-end {
+    padding-left: var(--fm-input-padding-x);
+    padding-right: calc(var(--fm-input-padding-x) + 20px);
+}
+
+/* Skeleton shimmer direction should follow reading flow. */
+.freeman-rtl .fm-skeleton {
+    animation-direction: reverse;
+}

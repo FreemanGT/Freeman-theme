@@ -1,0 +1,1 @@
+<?php function get_plugins(){return array();} function is_plugin_active($f){return false;}

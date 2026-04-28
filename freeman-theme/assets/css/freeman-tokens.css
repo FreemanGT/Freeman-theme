@@ -1,0 +1,217 @@
+/*
+ * Freeman design tokens.
+ *
+ * Every Freeman Core module consumes these variables. Change a value here and
+ * it propagates to Cards, Swatches, Restock forms, Infinite Scroll skeletons,
+ * and the admin dashboard. This file is the theme's design API.
+ *
+ * To override per-site: add a Customizer CSS rule (or a child stylesheet) that
+ * redefines any of these on `:root` or `.freeman-theme`.
+ *
+ * Naming convention:
+ *   --fm-<group>-<variant>[-<modifier>]
+ *   group    = color | text | space | radius | shadow | motion | card | input | button | badge | z
+ *   variant  = semantic role (ink, paper, accent, danger, …) or scale step
+ *   modifier = optional state (hover, muted, soft, …)
+ */
+
+:root,
+.freeman-theme {
+    /* --- Palette (raw) -------------------------------------------------- */
+    --fm-palette-black:     #111111;
+    --fm-palette-ink:       #1b1b1b;
+    --fm-palette-ink-soft:  #3a3a3a;
+    --fm-palette-mute:      #6b6b6b;
+    --fm-palette-hairline:  #e6e6e2;
+    --fm-palette-paper:     #ffffff;
+    --fm-palette-paper-alt: #faf9f7;
+    --fm-palette-paper-dim: #f1efea;
+    --fm-palette-sand:      #e9e4db;
+    --fm-palette-gold:      #b68a3a;
+    --fm-palette-red:       #b11226;
+    --fm-palette-green:     #0e7c66;
+    --fm-palette-amber:     #a8630a;
+    --fm-palette-info:      #225e8f;
+
+    /* --- Semantic colors ----------------------------------------------- */
+    --fm-color-ink:          var(--fm-palette-ink);
+    --fm-color-ink-muted:    var(--fm-palette-mute);
+    --fm-color-ink-soft:     var(--fm-palette-ink-soft);
+    --fm-color-paper:        var(--fm-palette-paper);
+    --fm-color-paper-soft:   var(--fm-palette-paper-alt);
+    --fm-color-paper-dim:    var(--fm-palette-paper-dim);
+    --fm-color-hairline:     var(--fm-palette-hairline);
+    --fm-color-accent:       var(--fm-palette-ink);
+    --fm-color-accent-soft:  var(--fm-palette-paper-dim);
+    --fm-color-accent-text:  var(--fm-palette-paper);
+    --fm-color-danger:       var(--fm-palette-red);
+    --fm-color-danger-soft:  #fde3e6;
+    --fm-color-success:      var(--fm-palette-green);
+    --fm-color-success-soft: #d9f2ea;
+    --fm-color-warning:      var(--fm-palette-amber);
+    --fm-color-warning-soft: #fdecd0;
+    --fm-color-info:         var(--fm-palette-info);
+    --fm-color-info-soft:    #dce9f3;
+
+    /* --- Typography ---------------------------------------------------- */
+    --fm-font-body:    'Heebo', 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --fm-font-display: 'Assistant', var(--fm-font-body);
+    --fm-font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    /* Fluid type scale (clamped between min screen and 1600px). */
+    --fm-text-xs:   clamp(0.72rem, 0.68rem + 0.2vw, 0.78rem);   /* ~12px */
+    --fm-text-sm:   clamp(0.82rem, 0.78rem + 0.22vw, 0.9rem);   /* ~14px */
+    --fm-text-md:   clamp(0.95rem, 0.9rem + 0.3vw, 1.05rem);    /* ~16px */
+    --fm-text-lg:   clamp(1.1rem, 1rem + 0.4vw, 1.25rem);       /* ~20px */
+    --fm-text-xl:   clamp(1.35rem, 1.2rem + 0.7vw, 1.75rem);    /* ~28px */
+    --fm-text-xxl:  clamp(1.9rem, 1.55rem + 1.5vw, 2.75rem);    /* ~40px */
+    --fm-text-hero: clamp(2.5rem, 1.9rem + 2.6vw, 4rem);        /* ~60px */
+
+    --fm-leading-tight: 1.18;
+    --fm-leading-snug:  1.35;
+    --fm-leading-base:  1.55;
+    --fm-leading-loose: 1.8;
+
+    --fm-tracking-tight:  -0.01em;
+    --fm-tracking-normal: 0;
+    --fm-tracking-wide:   0.04em;
+
+    --fm-weight-regular: 400;
+    --fm-weight-medium:  500;
+    --fm-weight-semi:    600;
+    --fm-weight-bold:    700;
+
+    /* --- Spacing scale ------------------------------------------------- */
+    --fm-space-0:   0;
+    --fm-space-xxs: 2px;
+    --fm-space-xs:  4px;
+    --fm-space-sm:  8px;
+    --fm-space-md:  16px;
+    --fm-space-lg:  24px;
+    --fm-space-xl:  40px;
+    --fm-space-xxl: 64px;
+    --fm-space-3xl: 96px;
+
+    /* --- Radii --------------------------------------------------------- */
+    --fm-radius-xs:   2px;
+    --fm-radius-sm:   4px;
+    --fm-radius-md:   6px;
+    --fm-radius-lg:   12px;
+    --fm-radius-xl:   20px;
+    --fm-radius-pill: 999px;
+    --fm-radius-round: 50%;
+
+    /* --- Shadows ------------------------------------------------------- */
+    --fm-shadow-xs: 0 1px 1px rgba(0,0,0,0.04);
+    --fm-shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+    --fm-shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+    --fm-shadow-lg: 0 24px 48px rgba(0,0,0,0.12);
+    --fm-shadow-xl: 0 40px 80px rgba(0,0,0,0.18);
+    --fm-shadow-inset: inset 0 0 0 1px var(--fm-color-hairline);
+
+    /* --- Motion -------------------------------------------------------- */
+    --fm-motion-instant: 90ms;
+    --fm-motion-fast:    180ms;
+    --fm-motion-base:    280ms;
+    --fm-motion-slow:    480ms;
+    --fm-ease:           cubic-bezier(0.2, 0, 0, 1);
+    --fm-ease-out:       cubic-bezier(0.2, 0.8, 0.2, 1);
+    --fm-ease-in:        cubic-bezier(0.4, 0, 1, 1);
+    --fm-ease-bounce:    cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* --- Card primitives ---------------------------------------------- */
+    --fm-card-radius:       var(--fm-radius-md);
+    --fm-card-gap:          var(--fm-space-lg);
+    --fm-card-aspect:       4 / 5;
+    --fm-card-bg:           var(--fm-color-paper);
+    --fm-card-border:       1px solid transparent;
+    --fm-card-border-hover: 1px solid var(--fm-color-hairline);
+    --fm-card-shadow:       var(--fm-shadow-sm);
+    --fm-card-shadow-hover: var(--fm-shadow-md);
+    --fm-card-hover-shift:  -2px;
+
+    /* --- Form / input primitives -------------------------------------- */
+    --fm-input-height:      44px;
+    --fm-input-height-sm:   36px;
+    --fm-input-radius:      var(--fm-radius-sm);
+    --fm-input-bg:          var(--fm-color-paper);
+    --fm-input-border:      1px solid var(--fm-color-hairline);
+    --fm-input-border-hover:1px solid var(--fm-color-ink-soft);
+    --fm-input-focus-ring:  0 0 0 2px var(--fm-color-accent);
+    --fm-input-padding-x:   var(--fm-space-md);
+
+    /* --- Button primitives -------------------------------------------- */
+    --fm-button-height:       48px;
+    --fm-button-height-sm:    36px;
+    --fm-button-radius:       var(--fm-radius-sm);
+    --fm-button-padding-x:    var(--fm-space-lg);
+    --fm-button-font-weight:  var(--fm-weight-semi);
+    --fm-button-tracking:     var(--fm-tracking-wide);
+
+    /* --- Badge primitives --------------------------------------------- */
+    --fm-badge-height:   22px;
+    --fm-badge-radius:   var(--fm-radius-pill);
+    --fm-badge-padding:  0 var(--fm-space-sm);
+    --fm-badge-font:     var(--fm-text-xs);
+
+    /* --- Layout -------------------------------------------------------- */
+    --fm-container-max:   1360px;
+    --fm-container-pad:   var(--fm-space-md);
+    --fm-section-gap:     var(--fm-space-xxl);
+
+    /* --- Z-stack ------------------------------------------------------- */
+    --fm-z-card:    1;
+    --fm-z-sticky:  100;
+    --fm-z-overlay: 5000;
+    --fm-z-modal:   10000;
+    --fm-z-toast:   10100;
+    --fm-z-max:     99999;
+}
+
+/*
+ * Accent themes — add .is-accent-* on <body> (or any ancestor) to swap the
+ * accent colour without touching the rest of the palette. Modules that paint
+ * calls-to-action, active states or swatches will pick this up automatically.
+ */
+.freeman-theme.is-accent-ink {
+    --fm-color-accent:      var(--fm-palette-ink);
+    --fm-color-accent-soft: var(--fm-palette-paper-dim);
+    --fm-color-accent-text: var(--fm-palette-paper);
+}
+.freeman-theme.is-accent-gold {
+    --fm-color-accent:      var(--fm-palette-gold);
+    --fm-color-accent-soft: #f5e6c3;
+    --fm-color-accent-text: #1a1a1a;
+}
+.freeman-theme.is-accent-forest {
+    --fm-color-accent:      var(--fm-palette-green);
+    --fm-color-accent-soft: #d6efe5;
+    --fm-color-accent-text: #ffffff;
+}
+
+/*
+ * High-contrast preference — collapses shadows and increases border weight.
+ */
+@media (prefers-contrast: more) {
+    .freeman-theme {
+        --fm-card-border:       1px solid var(--fm-color-ink);
+        --fm-card-border-hover: 2px solid var(--fm-color-ink);
+        --fm-card-shadow:       none;
+        --fm-card-shadow-hover: none;
+        --fm-input-border:      1px solid var(--fm-color-ink);
+        --fm-input-focus-ring:  0 0 0 3px var(--fm-color-accent);
+    }
+}
+
+/*
+ * Reduced-motion preference — collapses motion durations so any transition
+ * that references --fm-motion-* becomes effectively instant.
+ */
+@media (prefers-reduced-motion: reduce) {
+    .freeman-theme {
+        --fm-motion-instant: 0ms;
+        --fm-motion-fast:    0ms;
+        --fm-motion-base:    0ms;
+        --fm-motion-slow:    0ms;
+    }
+}

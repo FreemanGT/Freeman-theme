@@ -1,0 +1,899 @@
+/*
+ * Freeman Core — My Account (classic shortcode).
+ *
+ * Restyles the markup produced by [woocommerce_my_account] into an editorial
+ * sidebar-and-canvas layout. Targets only classic selectors; the block-based
+ * My Account template is untouched.
+ *
+ * Scoped under body.woocommerce-account so nothing leaks to the rest of the
+ * store. Uses the theme's --fm-* tokens — no new web fonts.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════
+   Local tokens (resolve to --fm-* with sensible fallbacks)
+   ═══════════════════════════════════════════════════════════════════ */
+body.woocommerce-account {
+    --fma-bg:        var(--fm-color-paper, #ffffff);
+    --fma-bg-alt:    var(--fm-color-paper-soft, #f6f6f6);
+    --fma-bg-dim:    var(--fm-color-paper-dim, #eeeeee);
+    --fma-ink:       var(--fm-color-ink, #0a0a0a);
+    --fma-ink-2:     var(--fm-color-ink-soft, #2a2a2a);
+    --fma-ink-3:     var(--fm-color-ink-muted, #777777);
+    --fma-line:      var(--fm-color-hairline, #e6e6e6);
+    --fma-accent:    var(--fm-color-accent, #0a0a0a);
+    --fma-accent-tx: var(--fm-color-accent-text, #ffffff);
+    --fma-radius:    var(--fm-radius-md, 8px);
+    --fma-radius-sm: var(--fm-radius-sm, 4px);
+    --fma-radius-lg: var(--fm-radius-lg, 12px);
+    --fma-pill:      var(--fm-radius-pill, 999px);
+    --fma-font:      var(--fm-font-body, system-ui, sans-serif);
+    --fma-display:   var(--fm-font-display, var(--fma-font));
+    --fma-mono:      var(--fm-font-mono, ui-monospace, monospace);
+    --fma-text-xs:   var(--fm-text-xs, 12px);
+    --fma-text-sm:   var(--fm-text-sm, 14px);
+    --fma-text-md:   var(--fm-text-md, 16px);
+    --fma-text-lg:   var(--fm-text-lg, 20px);
+    --fma-text-xl:   var(--fm-text-xl, 28px);
+    --fma-text-xxl:  var(--fm-text-xxl, clamp(28px, 3.6vw, 44px));
+    --fma-weight-regular: var(--fm-weight-regular, 400);
+    --fma-weight-medium:  var(--fm-weight-medium, 500);
+    --fma-weight-semi:    var(--fm-weight-semi, 600);
+    --fma-leading-tight: var(--fm-leading-tight, 1.18);
+    --fma-leading-snug:  var(--fm-leading-snug, 1.35);
+    --fma-leading-base:  var(--fm-leading-base, 1.55);
+    --fma-tracking-tight: var(--fm-tracking-tight, -0.01em);
+    --fma-tracking-wide:  var(--fm-tracking-wide, 0.04em);
+    --fma-space-xs:  var(--fm-space-xs, 4px);
+    --fma-space-sm:  var(--fm-space-sm, 8px);
+    --fma-space-md:  var(--fm-space-md, 16px);
+    --fma-space-lg:  var(--fm-space-lg, 24px);
+    --fma-space-xl:  var(--fm-space-xl, 40px);
+    --fma-space-xxl: var(--fm-space-xxl, 64px);
+    --fma-card-gap:  var(--fm-card-gap, 24px);
+    --fma-input-height: var(--fm-input-height, 44px);
+    --fma-button-height: var(--fm-button-height, 48px);
+    --fma-button-height-sm: var(--fm-button-height-sm, 36px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Page frame
+   ═══════════════════════════════════════════════════════════════════ */
+body.woocommerce-account .woocommerce {
+    color: var(--fma-ink);
+    font-family: var(--fma-font);
+    background: var(--fma-bg);
+}
+
+/* Border-box throughout the page so paddings stay inside the grid tracks
+   regardless of whether the active theme provides a global reset. */
+body.woocommerce-account .woocommerce,
+body.woocommerce-account .woocommerce *,
+body.woocommerce-account .woocommerce *::before,
+body.woocommerce-account .woocommerce *::after {
+    box-sizing: border-box;
+}
+
+/* WooCommerce wraps nav + content as siblings. Promote them to a grid.
+   WC ships a clearfix on the wrapper:
+     .woocommerce-account .woocommerce::before { content:" "; display:table }
+     .woocommerce-account .woocommerce::after  { content:" "; display:table; clear:both }
+   In a grid container those pseudo-elements become grid items, so the
+   2-col grid ends up with 4 items (::before, nav, content, ::after) and
+   nav + content fall onto separate rows. Suppress the pseudos so only
+   the real children participate in the grid. */
+body.woocommerce-account .woocommerce {
+    display: grid;
+    grid-template-columns: 264px 1fr;
+    gap: var(--fma-space-lg);
+    align-items: start;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: var(--fma-space-xxl) var(--fma-space-lg) 80px;
+}
+body.woocommerce-account .woocommerce::before,
+body.woocommerce-account .woocommerce::after {
+    content: none;
+    display: none;
+}
+
+@media (max-width: 880px) {
+    body.woocommerce-account .woocommerce {
+        grid-template-columns: 1fr;
+        gap: var(--fma-space-lg);
+        padding: var(--fma-space-xl) var(--fma-space-md) var(--fma-space-xxl);
+    }
+}
+@media (max-width: 600px) {
+    body.woocommerce-account .woocommerce {
+        padding: var(--fma-space-lg) 14px var(--fma-space-xl);
+    }
+}
+
+/* WC also forces `.woocommerce-MyAccount-navigation { float:left; width:30% }`
+   and `.woocommerce-MyAccount-content { float:right; width:68% }` from
+   woocommerce-layout.css. Floats are ignored on grid items but the
+   explicit widths shrink the items inside their tracks — restore full
+   track width here. */
+body.woocommerce-account .woocommerce-MyAccount-navigation,
+body.woocommerce-account .woocommerce-MyAccount-content {
+    float: none;
+    width: 100%;
+    max-width: 100%;
+    /* Grid items default to `min-width: auto`, which equals their content
+       min-width. The mobile pill nav has `flex-wrap: nowrap` so its
+       min-content equals the sum of every pill — typically wider than
+       the phone viewport. Without this override the grid track stretches
+       to fit, the parent `.woocommerce` grows past 100vw, and the whole
+       page scrolls horizontally instead of just the nav row. Setting
+       `min-width: 0` lets the grid item shrink below its content's
+       intrinsic width so `overflow-x: auto` on the inner <ul> finally
+       takes effect and the scroll stays contained. */
+    min-width: 0;
+}
+
+/* When messages render above the layout, span the full grid. */
+body.woocommerce-account .woocommerce > .woocommerce-notices-wrapper,
+body.woocommerce-account .woocommerce > .woocommerce-message,
+body.woocommerce-account .woocommerce > .woocommerce-error,
+body.woocommerce-account .woocommerce > .woocommerce-info {
+    grid-column: 1 / -1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Sidebar — .woocommerce-MyAccount-navigation
+   ═══════════════════════════════════════════════════════════════════ */
+body.woocommerce-account .woocommerce-MyAccount-navigation {
+    border-inline-end: 1px solid var(--fma-line);
+    padding-block: var(--fma-space-sm);
+    padding-inline-end: var(--fma-space-lg);
+    padding-inline-start: 0;
+    position: sticky;
+    top: var(--fma-space-lg);
+    align-self: start;
+}
+
+@media (max-width: 880px) {
+    body.woocommerce-account .woocommerce-MyAccount-navigation {
+        position: static;
+        border-inline-end: none;
+        border-bottom: 1px solid var(--fma-line);
+        padding: 0 0 var(--fma-space-md);
+        margin-bottom: 0;
+    }
+}
+
+body.woocommerce-account .woocommerce-MyAccount-navigation ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--fma-space-xs);
+}
+
+@media (max-width: 880px) {
+    body.woocommerce-account .woocommerce-MyAccount-navigation ul {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: var(--fma-space-sm);
+        overflow-x: auto;
+        padding-bottom: var(--fma-space-xs);
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        /* Belt-and-braces: parent grid item already has `min-width: 0`,
+           but the <ul> itself is also a flex container; `min-width: 0`
+           on the flex container allows it to shrink to the parent's
+           inline size instead of the sum of its children's min-content. */
+        min-width: 0;
+        max-width: 100%;
+        /* Soft fade on the trailing edge advertises that the row scrolls.
+           In RTL the trailing edge is on the left; mask flips below. */
+        mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+    }
+    body.rtl.woocommerce-account .woocommerce-MyAccount-navigation ul {
+        mask-image: linear-gradient(to left, #000 0, #000 calc(100% - 32px), transparent 100%);
+        -webkit-mask-image: linear-gradient(to left, #000 0, #000 calc(100% - 32px), transparent 100%);
+    }
+    body.woocommerce-account .woocommerce-MyAccount-navigation ul::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+body.woocommerce-account .woocommerce-MyAccount-navigation li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    position: relative;
+}
+
+body.woocommerce-account .woocommerce-MyAccount-navigation li a {
+    display: block;
+    padding: 10px 14px;
+    border-radius: var(--fma-radius-sm);
+    font-size: var(--fma-text-sm);
+    line-height: var(--fma-leading-snug);
+    color: var(--fma-ink-2);
+    text-decoration: none;
+    transition: background 180ms ease, color 180ms ease;
+}
+@media (max-width: 880px) {
+    body.woocommerce-account .woocommerce-MyAccount-navigation li {
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+    }
+    body.woocommerce-account .woocommerce-MyAccount-navigation li a {
+        white-space: nowrap;
+        border: 1px solid var(--fma-line);
+        border-radius: var(--fma-pill);
+        background: var(--fma-bg);
+    }
+}
+
+body.woocommerce-account .woocommerce-MyAccount-navigation li a:hover,
+body.woocommerce-account .woocommerce-MyAccount-navigation li a:focus {
+    background: var(--fma-bg-alt);
+    color: var(--fma-ink);
+}
+
+body.woocommerce-account .woocommerce-MyAccount-navigation li.is-active > a {
+    background: var(--fma-bg-alt);
+    color: var(--fma-ink);
+    font-weight: var(--fma-weight-medium);
+}
+
+/* Vertical accent bar on active item. Uses inset-inline-start so it
+   self-flips in RTL (right-edge of the sidebar list). On mobile the
+   nav becomes a horizontal pill row — a vertical accent doesn't fit
+   that layout, so it's hidden there in favour of the bolder font weight
+   the active pill already gets. */
+body.woocommerce-account .woocommerce-MyAccount-navigation li.is-active::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 16px;
+    background: var(--fma-ink);
+}
+@media (max-width: 880px) {
+    body.woocommerce-account .woocommerce-MyAccount-navigation li.is-active::before {
+        display: none;
+    }
+    body.woocommerce-account .woocommerce-MyAccount-navigation li.is-active > a {
+        font-weight: var(--fma-weight-semi);
+    }
+}
+
+/* Sign-out item gets muted treatment, like the FOLIO footer link. */
+body.woocommerce-account .woocommerce-MyAccount-navigation-link--customer-logout {
+    margin-top: var(--fma-space-md);
+    padding-top: var(--fma-space-md);
+    border-top: 1px solid var(--fma-line);
+}
+body.woocommerce-account .woocommerce-MyAccount-navigation-link--customer-logout a {
+    color: var(--fma-ink-3);
+    font-size: var(--fma-text-xs);
+}
+@media (max-width: 880px) {
+    body.woocommerce-account .woocommerce-MyAccount-navigation-link--customer-logout {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Content canvas — .woocommerce-MyAccount-content
+   ═══════════════════════════════════════════════════════════════════ */
+body.woocommerce-account .woocommerce-MyAccount-content {
+    min-width: 0;
+}
+
+@media (max-width: 880px) {
+    body.woocommerce-account .woocommerce-MyAccount-content {
+        padding: 0;
+    }
+}
+
+/* Dashboard greeting — first paragraph becomes a serif-display headline,
+   subsequent paragraphs become muted body copy. */
+body.woocommerce-account .woocommerce-MyAccount-content > p:first-of-type {
+    font-family: var(--fma-display);
+    font-weight: var(--fma-weight-semi);
+    font-size: var(--fma-text-xxl);
+    line-height: var(--fma-leading-tight);
+    letter-spacing: var(--fma-tracking-tight);
+    color: var(--fma-ink);
+    margin: 0 0 var(--fma-space-lg);
+}
+
+body.woocommerce-account .woocommerce-MyAccount-content > p {
+    color: var(--fma-ink-2);
+    font-size: var(--fma-text-sm);
+    line-height: var(--fma-leading-base);
+    margin: 0 0 var(--fma-space-md);
+    max-width: 64ch;
+}
+
+body.woocommerce-account .woocommerce-MyAccount-content > p strong {
+    color: var(--fma-ink);
+    font-weight: var(--fma-weight-medium);
+}
+
+body.woocommerce-account .woocommerce-MyAccount-content a {
+    color: var(--fma-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--fma-line);
+    transition: text-decoration-color 180ms ease;
+}
+body.woocommerce-account .woocommerce-MyAccount-content a:hover {
+    text-decoration-color: var(--fma-ink);
+}
+
+/* H2/H3 inside content — order header, addresses, etc. */
+body.woocommerce-account .woocommerce-MyAccount-content h2,
+body.woocommerce-account .woocommerce-MyAccount-content h3 {
+    font-family: var(--fma-display);
+    font-weight: var(--fma-weight-semi);
+    font-size: var(--fma-text-lg);
+    line-height: var(--fma-leading-tight);
+    letter-spacing: var(--fma-tracking-tight);
+    color: var(--fma-ink);
+    margin: 0 0 var(--fma-space-md);
+}
+
+body.woocommerce-account .woocommerce-MyAccount-content header.title h3 {
+    margin-bottom: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Tables (orders, downloads, payment methods)
+   ═══════════════════════════════════════════════════════════════════ */
+body.woocommerce-account .woocommerce-MyAccount-content table.shop_table,
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table,
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads,
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-PaymentMethods {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--fma-line);
+    border-radius: var(--fma-radius);
+    overflow: hidden;
+    background: var(--fma-bg);
+    margin: 0 0 var(--fma-card-gap);
+    font-size: var(--fma-text-sm);
+}
+
+body.woocommerce-account .woocommerce-MyAccount-content table.shop_table th,
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table th,
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads th,
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-PaymentMethods th {
+    font-family: var(--fma-mono);
+    font-weight: var(--fma-weight-medium);
+    font-size: var(--fma-text-xs);
+    letter-spacing: var(--fma-tracking-wide);
+    text-transform: uppercase;
+    color: var(--fma-ink-3);
+    text-align: start;
+    padding: 14px var(--fma-space-md);
+    border-bottom: 1px solid var(--fma-line);
+    background: var(--fma-bg-alt);
+}
+
+body.woocommerce-account .woocommerce-MyAccount-content table.shop_table td,
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td,
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads td,
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-PaymentMethods td {
+    padding: var(--fma-space-md);
+    border-bottom: 1px solid var(--fma-line);
+    color: var(--fma-ink-2);
+    vertical-align: middle;
+    font-variant-numeric: tabular-nums;
+}
+
+body.woocommerce-account .woocommerce-MyAccount-content table.shop_table tr:last-child td {
+    border-bottom: none;
+}
+
+body.woocommerce-account .woocommerce-MyAccount-content table.shop_table tfoot tr th {
+    background: var(--fma-bg);
+    border-top: 1px solid var(--fma-line);
+    color: var(--fma-ink-3);
+}
+body.woocommerce-account .woocommerce-MyAccount-content table.shop_table tfoot tr td {
+    color: var(--fma-ink);
+    font-weight: var(--fma-weight-medium);
+}
+
+/* Status pills inside the orders table. */
+body.woocommerce-account .woocommerce-orders-table__cell-order-status mark,
+body.woocommerce-account .woocommerce-orders-table__cell-order-status .order-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px var(--fma-space-sm);
+    border-radius: var(--fma-pill);
+    background: transparent;
+    border: 1px solid var(--fma-line);
+    color: var(--fma-ink-2);
+    font-family: var(--fma-mono);
+    font-size: var(--fma-text-xs);
+    letter-spacing: var(--fma-tracking-wide);
+    text-transform: uppercase;
+}
+body.woocommerce-account .woocommerce-orders-table__cell-order-status mark::before,
+body.woocommerce-account .woocommerce-orders-table__cell-order-status .order-status::before {
+    content: "";
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Action buttons in the last column become hairline ghost buttons. */
+body.woocommerce-account .woocommerce-orders-table__cell-order-actions a.button,
+body.woocommerce-account .woocommerce-MyAccount-downloads-file a.button,
+body.woocommerce-account .woocommerce-PaymentMethods .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--fma-button-height-sm);
+    padding: 0 12px;
+    margin-inline-end: 4px;
+    background: var(--fma-bg);
+    color: var(--fma-ink);
+    border: 1px solid var(--fma-line);
+    border-radius: var(--fma-radius-sm);
+    font-size: var(--fma-text-xs);
+    font-weight: var(--fma-weight-semi);
+    letter-spacing: var(--fma-tracking-wide);
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 180ms ease, border-color 180ms ease;
+}
+body.woocommerce-account .woocommerce-orders-table__cell-order-actions a.button:hover,
+body.woocommerce-account .woocommerce-MyAccount-downloads-file a.button:hover,
+body.woocommerce-account .woocommerce-PaymentMethods .button:hover {
+    background: var(--fma-bg-alt);
+    border-color: var(--fma-ink-3);
+}
+
+/* "No orders yet" / empty state callout. */
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-info,
+body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-Message--info {
+    background: var(--fma-bg-alt);
+    border: 1px solid var(--fma-line);
+    border-inline-start: 2px solid var(--fma-ink);
+    border-radius: var(--fma-radius-sm);
+    padding: var(--fma-space-md) 20px;
+    color: var(--fma-ink-2);
+    font-size: var(--fma-text-sm);
+    line-height: var(--fma-leading-base);
+    margin: 0 0 var(--fma-card-gap);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Addresses & customer-details columns
+
+   Two endpoints render side-by-side address blocks: the **Addresses**
+   page (.woocommerce-Addresses with .woocommerce-Address children) and
+   the **View Order** page (.woocommerce-columns.woocommerce-columns--
+   addresses with .col-1 / .col-2 children, each containing a
+   .woocommerce-column__title and an <address>). The two markups differ
+   structurally — Addresses renders a card wrapper with the title
+   inside, View Order renders the title outside and the <address>
+   itself as the card — but visually they should read as the same
+   component. Rules below are deliberately written against the union
+   of both selectors so the grid track widths, gutter, card chrome,
+   eyebrow styling, and breakpoints stay in lockstep.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Grid — same minmax(280px, 1fr) auto-fit on both pages so columns
+   land at identical widths whether the customer is editing addresses
+   or viewing an order. */
+body.woocommerce-account .woocommerce-Addresses,
+body.woocommerce-account .woocommerce-columns--addresses {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--fma-card-gap);
+    align-items: stretch;
+    margin: 0 0 var(--fma-space-xl);
+}
+body.woocommerce-account .woocommerce-Addresses::before,
+body.woocommerce-account .woocommerce-Addresses::after,
+body.woocommerce-account .woocommerce-columns--addresses::before,
+body.woocommerce-account .woocommerce-columns--addresses::after {
+    content: none;
+    display: none;
+}
+
+/* Cell wrappers — strip WC's default float / percentage widths and
+   let the grid own track sizing. */
+body.woocommerce-account .woocommerce-Address,
+body.woocommerce-account .woocommerce-columns--addresses .col-1,
+body.woocommerce-account .woocommerce-columns--addresses .col-2 {
+    float: none;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Card chrome — applied to .woocommerce-Address (Addresses page,
+   wraps title + body) AND .woocommerce-customer-details address
+   (View Order page, the <address> IS the card because the title is a
+   sibling). Both render the same border / radius / padding / surface. */
+body.woocommerce-account .woocommerce-Address,
+body.woocommerce-account .woocommerce-customer-details address {
+    border: 1px solid var(--fma-line);
+    border-radius: var(--fma-radius-lg);
+    padding: var(--fma-space-lg);
+    background: var(--fma-bg);
+}
+
+/* Address body text — same on both pages. */
+body.woocommerce-account .woocommerce-Address address,
+body.woocommerce-account .woocommerce-customer-details address {
+    font-style: normal;
+    font-size: var(--fma-text-sm);
+    line-height: var(--fma-leading-base);
+    color: var(--fma-ink-2);
+}
+
+/* Title row — Addresses page has the title inside the card with a
+   hairline below it and an "Edit" pill on the trailing edge. */
+body.woocommerce-account .woocommerce-Address-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--fma-space-md);
+    margin: 0 0 var(--fma-space-md);
+    padding: 0 0 var(--fma-space-md);
+    border-bottom: 1px solid var(--fma-line);
+}
+
+/* Eyebrow style — shared by Addresses-page card titles AND View-Order
+   column titles. Same mono uppercase look on both pages. */
+body.woocommerce-account .woocommerce-Address-title h2,
+body.woocommerce-account .woocommerce-Address-title h3,
+body.woocommerce-account .woocommerce-column__title {
+    font-family: var(--fma-mono);
+    font-size: var(--fma-text-xs);
+    font-weight: var(--fma-weight-medium);
+    letter-spacing: var(--fma-tracking-wide);
+    text-transform: uppercase;
+    color: var(--fma-ink-3);
+    margin: 0;
+}
+
+/* View-Order titles sit OUTSIDE the card, so they need a bottom margin
+   that the Addresses-page titles don't (the latter use border-bottom +
+   margin from the title row). */
+body.woocommerce-account .woocommerce-column__title {
+    margin: 0 0 var(--fma-space-md);
+}
+
+body.woocommerce-account .woocommerce-Address-title .edit {
+    flex: 0 0 auto;
+    font-size: var(--fma-text-xs);
+    color: var(--fma-ink);
+    text-decoration: none;
+    border: 1px solid var(--fma-line);
+    border-radius: var(--fma-pill);
+    padding: 5px 12px;
+    transition: background 180ms ease;
+}
+body.woocommerce-account .woocommerce-Address-title .edit:hover {
+    background: var(--fma-bg-alt);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Forms — edit-address, edit-account, lost-password, login
+   ═══════════════════════════════════════════════════════════════════ */
+body.woocommerce-account .woocommerce form .form-row,
+body.woocommerce-account .woocommerce-MyAccount-content form .form-row,
+body.woocommerce-account .woocommerce-EditAccountForm .form-row {
+    display: block;
+    margin: 0 0 var(--fma-space-md);
+    padding: 0;
+}
+
+body.woocommerce-account .woocommerce form .form-row label,
+body.woocommerce-account .woocommerce-MyAccount-content form .form-row label,
+body.woocommerce-account .woocommerce-EditAccountForm .form-row label {
+    display: block;
+    font-family: var(--fma-mono);
+    font-size: var(--fma-text-xs);
+    font-weight: var(--fma-weight-medium);
+    letter-spacing: var(--fma-tracking-wide);
+    text-transform: uppercase;
+    color: var(--fma-ink-3);
+    margin: 0 0 var(--fma-space-sm);
+}
+
+body.woocommerce-account .woocommerce form .form-row .required,
+body.woocommerce-account .woocommerce-EditAccountForm .form-row .required {
+    color: var(--fma-ink);
+    text-decoration: none;
+}
+
+body.woocommerce-account .woocommerce form .form-row input.input-text,
+body.woocommerce-account .woocommerce form .form-row textarea,
+body.woocommerce-account .woocommerce form .form-row select,
+body.woocommerce-account .woocommerce-MyAccount-content form input.input-text,
+body.woocommerce-account .woocommerce-MyAccount-content form textarea,
+body.woocommerce-account .woocommerce-MyAccount-content form select,
+body.woocommerce-account .woocommerce-EditAccountForm input.input-text,
+body.woocommerce-account .woocommerce-EditAccountForm select,
+body.woocommerce-account .woocommerce-EditAccountForm textarea {
+    width: 100%;
+    min-height: var(--fma-input-height);
+    padding: 11px var(--fma-space-md);
+    background: var(--fma-bg);
+    border: 1px solid var(--fma-line);
+    border-radius: var(--fma-radius-sm);
+    font-family: var(--fma-font);
+    font-size: var(--fma-text-sm);
+    color: var(--fma-ink);
+    line-height: var(--fma-leading-snug);
+    outline: none;
+    transition: border-color 180ms ease;
+    box-shadow: none;
+}
+
+body.woocommerce-account .woocommerce form .form-row input.input-text:focus,
+body.woocommerce-account .woocommerce form .form-row textarea:focus,
+body.woocommerce-account .woocommerce form .form-row select:focus,
+body.woocommerce-account .woocommerce-EditAccountForm input.input-text:focus,
+body.woocommerce-account .woocommerce-EditAccountForm select:focus,
+body.woocommerce-account .woocommerce-EditAccountForm textarea:focus {
+    border-color: var(--fma-ink);
+    box-shadow: none;
+}
+
+body.woocommerce-account .woocommerce form .form-row-first,
+body.woocommerce-account .woocommerce form .form-row-last,
+body.woocommerce-account .woocommerce-EditAccountForm .form-row-first,
+body.woocommerce-account .woocommerce-EditAccountForm .form-row-last {
+    width: calc(50% - (var(--fma-space-md) / 2));
+    display: inline-block;
+    vertical-align: top;
+}
+body.woocommerce-account .woocommerce form .form-row-first,
+body.woocommerce-account .woocommerce-EditAccountForm .form-row-first {
+    margin-inline-end: var(--fma-space-md);
+}
+
+@media (max-width: 600px) {
+    body.woocommerce-account .woocommerce form .form-row-first,
+    body.woocommerce-account .woocommerce form .form-row-last,
+    body.woocommerce-account .woocommerce-EditAccountForm .form-row-first,
+    body.woocommerce-account .woocommerce-EditAccountForm .form-row-last {
+        width: 100%;
+        margin-inline-end: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    body.woocommerce-account .woocommerce-MyAccount-content > p:first-of-type {
+        font-size: var(--fma-text-xl);
+        margin-bottom: var(--fma-space-md);
+    }
+
+    body.woocommerce-account .woocommerce-MyAccount-content table.shop_table,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads {
+        display: block;
+        border: 0;
+        background: transparent;
+        overflow: visible;
+    }
+
+    body.woocommerce-account .woocommerce-MyAccount-content table.shop_table thead,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table thead,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads thead {
+        display: none;
+    }
+
+    body.woocommerce-account .woocommerce-MyAccount-content table.shop_table tbody,
+    body.woocommerce-account .woocommerce-MyAccount-content table.shop_table tr,
+    body.woocommerce-account .woocommerce-MyAccount-content table.shop_table td,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table tbody,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table tr,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads tbody,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads tr,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads td {
+        display: block;
+        width: 100%;
+    }
+
+    body.woocommerce-account .woocommerce-MyAccount-content table.shop_table tr,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table tr,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads tr {
+        margin: 0 0 var(--fma-space-md);
+        border: 1px solid var(--fma-line);
+        border-radius: var(--fma-radius-lg);
+        background: var(--fma-bg);
+        overflow: hidden;
+    }
+
+    body.woocommerce-account .woocommerce-MyAccount-content table.shop_table td,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads td {
+        padding: 12px var(--fma-space-md);
+        border-bottom: 1px solid var(--fma-line);
+    }
+
+    body.woocommerce-account .woocommerce-MyAccount-content table.shop_table td::before,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td::before,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads td::before {
+        content: attr(data-title);
+        display: block;
+        margin: 0 0 var(--fma-space-xs);
+        font-family: var(--fma-mono);
+        font-size: var(--fma-text-xs);
+        letter-spacing: var(--fma-tracking-wide);
+        text-transform: uppercase;
+        color: var(--fma-ink-3);
+    }
+
+    body.woocommerce-account .woocommerce-MyAccount-content table.shop_table td:last-child,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table td:last-child,
+    body.woocommerce-account .woocommerce-MyAccount-content .woocommerce-MyAccount-downloads td:last-child {
+        border-bottom: 0;
+    }
+
+    body.woocommerce-account .woocommerce-orders-table__cell-order-actions a.button,
+    body.woocommerce-account .woocommerce-MyAccount-downloads-file a.button,
+    body.woocommerce-account .woocommerce-PaymentMethods .button,
+    body.woocommerce-account .woocommerce button.button,
+    body.woocommerce-account .woocommerce input.button,
+    body.woocommerce-account .woocommerce a.button.alt,
+    body.woocommerce-account .woocommerce-MyAccount-content .button:not(.cancel):not(.view) {
+        width: 100%;
+        margin: var(--fma-space-sm) 0 0;
+    }
+
+    body.woocommerce-account .woocommerce-Addresses,
+    body.woocommerce-account .woocommerce-columns--addresses {
+        grid-template-columns: 1fr;
+        gap: var(--fma-space-md);
+    }
+
+    body.woocommerce-account .woocommerce-Address,
+    body.woocommerce-account .woocommerce-customer-details address {
+        padding: var(--fma-space-md);
+    }
+
+    body.woocommerce-account .woocommerce-Address-title {
+        align-items: flex-start;
+    }
+}
+
+/* Section divider headings inside the edit-account form. */
+body.woocommerce-account .woocommerce-EditAccountForm fieldset {
+    margin: var(--fma-space-xl) 0 0;
+    padding: var(--fma-space-lg) 0 0;
+    border: none;
+    border-top: 1px solid var(--fma-line);
+}
+body.woocommerce-account .woocommerce-EditAccountForm fieldset legend {
+    font-family: var(--fma-mono);
+    font-size: var(--fma-text-xs);
+    font-weight: var(--fma-weight-medium);
+    letter-spacing: var(--fma-tracking-wide);
+    text-transform: uppercase;
+    color: var(--fma-ink-3);
+    padding: 0;
+    margin: 0 0 var(--fma-space-md);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Buttons (primary submit, "Add new", etc.)
+   ═══════════════════════════════════════════════════════════════════ */
+body.woocommerce-account .woocommerce button.button,
+body.woocommerce-account .woocommerce input.button,
+body.woocommerce-account .woocommerce a.button.alt,
+body.woocommerce-account .woocommerce-MyAccount-content .button:not(.cancel):not(.view) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--fma-space-sm);
+    min-height: var(--fma-button-height);
+    padding: 0 var(--fma-space-lg);
+    background: var(--fma-ink);
+    color: var(--fma-bg);
+    border: 1px solid var(--fma-ink);
+    border-radius: var(--fma-radius-sm);
+    font-family: var(--fma-font);
+    font-size: var(--fma-text-sm);
+    font-weight: var(--fma-weight-semi);
+    letter-spacing: var(--fma-tracking-wide);
+    line-height: var(--fma-leading-tight);
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+body.woocommerce-account .woocommerce button.button:hover,
+body.woocommerce-account .woocommerce input.button:hover,
+body.woocommerce-account .woocommerce a.button.alt:hover,
+body.woocommerce-account .woocommerce-MyAccount-content .button:not(.cancel):not(.view):hover {
+    background: var(--fma-ink-2);
+    border-color: var(--fma-ink-2);
+    color: var(--fma-bg);
+}
+
+/* Secondary "view" / "cancel" / order-actions ghost buttons handled above. */
+
+/* ═══════════════════════════════════════════════════════════════════
+   View-order endpoint — order summary blocks
+
+   Card chrome / column grid / column titles live in the consolidated
+   "Addresses & customer-details columns" section above; only the
+   section-level outer-margin lives here.
+   ═══════════════════════════════════════════════════════════════════ */
+body.woocommerce-account section.woocommerce-order-details,
+body.woocommerce-account section.woocommerce-customer-details {
+    margin: 0 0 var(--fma-space-xl);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Notices — success / error banners above content
+   ═══════════════════════════════════════════════════════════════════ */
+body.woocommerce-account .woocommerce-message,
+body.woocommerce-account .woocommerce-error,
+body.woocommerce-account .woocommerce-info {
+    border-radius: var(--fma-radius);
+    border: 1px solid var(--fma-line);
+    padding: 14px 18px;
+    font-size: var(--fma-text-sm);
+    line-height: var(--fma-leading-base);
+    background: var(--fma-bg);
+    color: var(--fma-ink-2);
+    box-shadow: none;
+    margin: 0 0 var(--fma-card-gap);
+}
+body.woocommerce-account .woocommerce-message::before,
+body.woocommerce-account .woocommerce-error::before,
+body.woocommerce-account .woocommerce-info::before {
+    color: var(--fma-ink);
+}
+body.woocommerce-account .woocommerce-message {
+    border-inline-start: 2px solid var(--fma-ink);
+}
+body.woocommerce-account .woocommerce-error {
+    border-inline-start: 2px solid var(--fm-color-danger, #b11226);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RTL
+   ───────────────────────────────────────────────────────────────────
+   The rules above use logical properties (`border-inline-end`,
+   `padding-inline-*`, `margin-inline-end`, `inset-inline-start`)
+   wherever possible, so they self-flip in RTL with no override needed.
+   This block is intentionally short — it only contains exceptions where
+   a logical property couldn't express the LTR rule directly.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* (Currently empty — the mobile-nav mask gradient flip lives next to the
+   base mask rule above, so all directional behaviour is already
+   declarative.) */
+
+/* ═══════════════════════════════════════════════════════════════════
+   Reduced motion
+   ═══════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+    body.woocommerce-account *,
+    body.woocommerce-account *::before,
+    body.woocommerce-account *::after {
+        transition-duration: 0ms !important;
+    }
+}

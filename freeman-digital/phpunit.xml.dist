@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    bootstrap="tests/bootstrap.php"
+    colors="true"
+    verbose="true"
+    beStrictAboutCoversAnnotation="false"
+    beStrictAboutOutputDuringTests="false"
+    beStrictAboutTestsThatDoNotTestAnything="false"
+    beStrictAboutTodoAnnotatedTests="false"
+    cacheResult="false"
+>
+    <testsuites>
+        <testsuite name="freeman-digital">
+            <directory suffix=".php">tests/</directory>
+            <exclude>tests/bootstrap.php</exclude>
+        </testsuite>
+    </testsuites>
+    <php>
+        <const name="WP_TESTS_FORCE_KNOWN_BUGS" value="true"/>
+    </php>
+</phpunit>

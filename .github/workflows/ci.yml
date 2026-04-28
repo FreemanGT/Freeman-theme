@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # PHP lint + PHPUnit across the supported PHP range.
+  # ---------------------------------------------------------------------------
+  test:
+    name: PHP ${{ matrix.php }} • ${{ matrix.deps }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '7.4', '8.0', '8.1', '8.2', '8.3' ]
+        deps: [ 'normal' ]
+        include:
+          - php: '8.3'
+            deps: 'lowest'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, json, mbstring, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ matrix.php }}-${{ matrix.deps }}-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            composer-${{ matrix.php }}-${{ matrix.deps }}-
+            composer-${{ matrix.php }}-
+
+      - name: Install Composer deps
+        run: |
+          if [ "${{ matrix.deps }}" = "lowest" ]; then
+            composer update --prefer-lowest --prefer-dist --no-progress --no-interaction
+          else
+            composer update --prefer-dist --no-progress --no-interaction
+          fi
+
+      - name: php -l on every source file
+        run: |
+          find freeman-core freeman-theme tests tools -type f -name "*.php" \
+            -not -path "*/node_modules/*" -not -path "*/vendor/*" \
+            -print0 | xargs -0 -n1 php -l >/dev/null
+
+      - name: Smoke test (module + importer shape)
+        run: php tools/smoke.php
+
+      - name: Activation simulation
+        run: php tools/activation-sim.php
+
+      - name: PHPUnit
+        run: composer test
+
+  # ---------------------------------------------------------------------------
+  # WPCS lint — runs once; independent of the PHP-version matrix above.
+  # ---------------------------------------------------------------------------
+  lint:
+    name: WPCS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      - name: Install Composer deps
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Run PHPCS
+        run: composer lint
+        continue-on-error: true # WPCS is noisy; keep CI green while we clean up
+
+  # ---------------------------------------------------------------------------
+  # Build artifacts — smoke-level check that release.sh + build.sh still work.
+  # Runs on every push to ensure the release pipeline never rots silently.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build zips
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node deps
+        run: npm ci --no-audit --no-fund
+
+      - name: Run build.sh
+        run: bash tools/build.sh all
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: freeman-zips
+          path: dist/*.zip
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,126 @@
+/*
+ * Freeman admin dashboard styles.
+ * Scoped to .freeman-wrap so we don't touch the rest of wp-admin.
+ */
+
+.freeman-wrap .freeman-version {
+    font-size: 13px;
+    color: #666;
+    font-weight: 400;
+    margin-left: 6px;
+}
+
+.freeman-healthbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 24px;
+}
+
+.freeman-healthbar-item {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: #f0f0f1;
+    color: #1d2327;
+}
+.freeman-healthbar-item strong {
+    margin-right: 6px;
+}
+.freeman-healthbar-item.ok   { background: #d1fae5; color: #065f46; }
+.freeman-healthbar-item.bad  { background: #fee2e2; color: #991b1b; }
+.freeman-healthbar-item.soft { background: #fef3c7; color: #92400e; }
+
+.freeman-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.freeman-module-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    transition: box-shadow 180ms ease;
+}
+.freeman-module-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.freeman-module-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.freeman-module-title {
+    font-size: 16px;
+    margin: 0;
+}
+
+.freeman-module-desc {
+    color: #555;
+    font-size: 13px;
+    flex: 1;
+    margin: 0 0 16px;
+}
+
+.freeman-module-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.freeman-toggle-form {
+    margin: 0;
+}
+
+.freeman-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+.freeman-dot-green { background: #10b981; }
+.freeman-dot-amber { background: #f59e0b; }
+.freeman-dot-red   { background: #ef4444; }
+
+.freeman-onboarding {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 24px;
+    margin-top: 16px;
+}
+
+.freeman-onboarding-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+}
+.freeman-onboarding-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+.freeman-onboarding-list li:last-child {
+    border-bottom: none;
+}
+
+.freeman-log {
+    background: #1d2327;
+    color: #f0f0f1;
+    padding: 12px;
+    border-radius: 6px;
+    max-height: 320px;
+    overflow: auto;
+    font-size: 12px;
+    line-height: 1.5;
+}

@@ -1,8 +1,23 @@
 # Product Slider — Public API
 
-This module exposes its surface through Elementor controls only. No PHP
-filters of our own yet — open an issue if you need one (e.g. to inject
-custom products or override the WC query).
+## Shipped hooks (1.11.1+)
+
+### `freeman_core/product_slider/query_args` (filter, since 1.11.1)
+```php
+apply_filters(
+    'freeman_core/product_slider/query_args',
+    array $args,
+    array $settings
+);
+```
+Filters the args about to be passed to `wc_get_products()` inside the
+widget's `fetch_products()` method. `$settings` is the resolved Elementor
+settings array.
+
+**Only fires on the standard query path.** The early-return branches for
+`source = 'current_query'` (reads `$wp_query` directly) and
+`source = 'related'` (delegates to `wc_get_related_products()`) bypass this
+filter — those code paths never build `$args`.
 
 ## WooCommerce hook stack
 

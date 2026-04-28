@@ -8,8 +8,15 @@ freeman-core/src/Core/Settings_Tools.php:154:		$skip_backup = (bool) apply_filte
 freeman-core/src/Core/Settings_Tools.php:161:		do_action( 'freeman_core/tools/import/before_write', $envelope );
 freeman-core/src/Core/Settings_Tools.php:185:		do_action( 'freeman_core/tools/import/after_write', $envelope, array( 'written' => $written, 'total' => $total ) );
 freeman-core/src/Core/Settings_Tools.php:89:		$envelope['options'] = (array) apply_filters( 'freeman_core/tools/export/options', $envelope['options'], $envelope );
+freeman-core/src/Modules/CategorySlider/Widget.php:539:		$args = (array) apply_filters( 'freeman_core/category_slider/query_args', $args, $s );
+freeman-core/src/Modules/CategorySlider/Widget.php:772:					echo apply_filters(
 freeman-core/src/Modules/CheapestDefaultVariation/Module.php:120:		$should_apply = apply_filters( 'freeman_core/cheapest_variation/should_apply', true, $product, $default_attributes );
 freeman-core/src/Modules/CheapestDefaultVariation/Module.php:186:		$cheapest = apply_filters( 'freeman_core/cheapest_variation/chosen', $cheapest, $product, $variations );
+freeman-core/src/Modules/ProductFeed/Generator.php:163:			do_action( 'freeman_core/product_feed/after_generate', $this->feed_file(), $elapsed );
+freeman-core/src/Modules/ProductFeed/Generator.php:224:			$args = (array) apply_filters(
+freeman-core/src/Modules/ProductFeed/Generator.php:262:				$xml = (string) apply_filters( 'freeman_core/product_feed/item', $this->product_xml( $product ), $product );
+freeman-core/src/Modules/ProductFeed/Server.php:94:		do_action( 'freeman_core/product_feed/before_serve' );
+freeman-core/src/Modules/ProductSlider/Widget.php:806:		$args = (array) apply_filters( 'freeman_core/product_slider/query_args', $args, $s );
 freeman-core/src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:75:        $should = (bool) apply_filters( 'rsn_should_enqueue', $should );
 freeman-core/src/Modules/VariableStockFix/Module.php:294:		if ( ! apply_filters( 'freeman_core/variable_stock_fix/should_check', true, $product ) ) {
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-ajax.php:44:			$checkout = (string) apply_filters( 'etucart_vs_checkout_url', $checkout );

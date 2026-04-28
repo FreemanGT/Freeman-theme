@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.1] — 2026-04-29
+
+- Wave 1.1b: add category_slider/query_args, category_slider/render_card, product_slider/query_args, product_feed/query_args, product_feed/item, product_feed/before_serve, product_feed/after_generate
+
 ## [1.11.0] — 2026-04-29
 
 - Wave 1.1a: add cheapest_variation/should_apply, cheapest_variation/chosen, variable_stock_fix/should_check filters

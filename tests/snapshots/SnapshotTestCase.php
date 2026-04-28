@@ -66,10 +66,10 @@ trait SnapshotTestCase {
 	 * exactly one trailing newline.
 	 */
 	private static function normalize_for_storage( string $s ): string {
-		if ( str_starts_with( $s, "\xEF\xBB\xBF" ) ) {
+		if ( 0 === strpos( $s, "\xEF\xBB\xBF" ) ) {
 			throw new \RuntimeException( 'Snapshot input contains a UTF-8 BOM. Strip it before snapshotting.' );
 		}
-		if ( str_contains( $s, "\r\n" ) || str_contains( $s, "\r" ) ) {
+		if ( false !== strpos( $s, "\r" ) ) {
 			throw new \RuntimeException( 'Snapshot input contains CR or CRLF line endings. Convert to LF before snapshotting.' );
 		}
 		// Exactly one trailing LF.
@@ -81,10 +81,10 @@ trait SnapshotTestCase {
 	 * violation here means a manual edit has corrupted the file.
 	 */
 	private static function assert_format_invariants( string $contents, string $path ): void {
-		if ( str_starts_with( $contents, "\xEF\xBB\xBF" ) ) {
+		if ( 0 === strpos( $contents, "\xEF\xBB\xBF" ) ) {
 			throw new \RuntimeException( "Golden file has a UTF-8 BOM: $path" );
 		}
-		if ( str_contains( $contents, "\r" ) ) {
+		if ( false !== strpos( $contents, "\r" ) ) {
 			throw new \RuntimeException( "Golden file has CR/CRLF line endings: $path" );
 		}
 		if ( '' !== $contents && substr( $contents, -1 ) !== "\n" ) {

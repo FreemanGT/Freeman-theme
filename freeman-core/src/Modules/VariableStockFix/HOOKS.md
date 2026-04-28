@@ -1,5 +1,28 @@
 # Variable Stock Fix — Public API
 
+## Shipped hooks (1.11.0+)
+
+### `freeman_core/variable_stock_fix/should_check` (filter, since 1.11.0)
+```php
+apply_filters(
+    'freeman_core/variable_stock_fix/should_check',
+    bool $check,
+    \WC_Product $product
+);
+```
+Return `false` to skip the all-out-of-stock evaluation for this variable
+product entirely. Fires *after* the `'not variable'` early guard, so listeners
+do not need to type-check `$product`. Useful for per-product overrides (product
+meta, taxonomy gates, custom fields) without disabling the module globally.
+
+When the filter returns `false`, `maybe_uncheck_manage_stock()` returns
+`array( 'changed' => false, 'reason' => 'skipped by freeman_core/variable_stock_fix/should_check' )`.
+
+## Planned hooks (NOT YET SHIPPED)
+
+The hooks below are documented for planning but are not yet wired into the
+code. Treat as "do not rely on" until `@since` tags appear in the source.
+
 ## Filters
 
 ### `freeman_core/vsf/should_process`

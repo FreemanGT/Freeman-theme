@@ -279,6 +279,25 @@ final class Module extends Module_Base {
 				'reason'  => 'not variable',
 			);
 		}
+
+		/**
+		 * Filter whether this variable product should be checked at all.
+		 * Returning false skips the all-out-of-stock evaluation entirely —
+		 * useful for per-product overrides (product meta, taxonomy, custom
+		 * fields) without disabling the module globally.
+		 *
+		 * @since 1.11.0
+		 *
+		 * @param bool        $should_check Whether to evaluate this product. Default true.
+		 * @param \WC_Product $product      The variable product.
+		 */
+		if ( ! apply_filters( 'freeman_core/variable_stock_fix/should_check', true, $product ) ) {
+			return array(
+				'changed' => false,
+				'reason'  => 'skipped by freeman_core/variable_stock_fix/should_check',
+			);
+		}
+
 		if ( ! $product->get_manage_stock() ) {
 			return array(
 				'changed' => false,

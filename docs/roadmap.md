@@ -74,12 +74,44 @@ These items are prerequisites. Nothing in Wave 1+ can start until Wave 0 is comp
 
 ## Wave 1 — P0 extensibility (additive, zero behavior change)
 
-**1.1 — Add 18 module hooks (Roadmap #1)**
-- Single PR (waiver from the "one roadmap item per PR" rule, stated in description)
-- Add the hooks listed in `/docs/audit-2026-04-28.md` §D1
+**1.1 — Add module hooks (Roadmap #1)**
+
+Originally scoped as 18 hooks across 9 modules per `/docs/audit-2026-04-28.md` §D1. After per-call-site reality check during pre-flight (2026-04-29), only 11 of those hooks have viable call sites in non-legacy `freeman-core` PHP today. Wave 1.1 ships the implementable subset; the rest are deferred to natural homes (see Wave 2.3, Wave 3.1, Wave 3.4 below; VariationSwatches's 2 hooks already deferred to Wave 2.2).
+
+Split into two PRs (waiver from "one roadmap item per PR" — stated in each PR description):
+
+**1.1a** — gates / data filters (3 hooks, no rendering refactors). Lands shared infra: 1.11.0 version bump, CLAUDE.md infra-state refresh, this roadmap edit.
+- `freeman_core/cheapest_variation/should_apply` (filter)
+- `freeman_core/cheapest_variation/chosen` (filter — replaces audit's `strategy` because the picker returns an attributes array, not a variation_id)
+- `freeman_core/variable_stock_fix/should_check` (filter)
+
+**1.1b** — render and feed (8 hooks; 2 snapshot tests).
+- `freeman_core/category_slider/query_args` (filter)
+- `freeman_core/category_slider/render_card` (filter, via output buffering)
+- `freeman_core/product_slider/query_args` (filter)
+- `freeman_core/product_feed/query_args` (filter)
+- `freeman_core/product_feed/item` (filter)
+- `freeman_core/product_feed/before_serve` (action)
+- `freeman_core/product_feed/after_generate` (action)
+- New CategorySlider snapshot + ProductFeed byte-identity snapshot
+
+Standards for both:
 - Each hook: `@since 1.11.0` PHPDoc with `@param` descriptions
 - Each hook: at least one test verifying the filter mutates output / the action fires
-- With no listeners attached, output must be byte-identical to current — verify with snapshot test
+- With no listeners attached, output must be byte-identical to current
+
+### Deferred from 1.1 (proposed — pending approval)
+
+> The three new wave entries below are proposed during Wave 1.1 pre-flight to give the deferred hooks a documented home. They are NOT committed work until Yiftach approves and merges them into the active roadmap.
+
+**2.3 — RestockNotify legacy migration (proposed)**
+Parallels Wave 2.2's VariationSwatches migration. Required before the three deferred RestockNotify hooks (`should_inject`, `email_args`, `before_send`) can be added — all three call sites currently live in `legacy/includes/class-rsn-*.php`, which hard rule #3 forbids editing without a migration plan.
+
+**3.1 — InfiniteScroll trigger modes (Roadmap #5) — expanded scope**
+Three deferred Wave-1.1 hooks fold in: `freeman_core/infinite_scroll/selector` (filter), `freeman_core/infinite_scroll/before_render` (action), `freeman_core/infinite_scroll/after_render` (action). All three require PHP-side render logic that 3.1 is already adding (selector override, history API, trigger modes).
+
+**3.4 — MyAccount endpoint extensibility (proposed)**
+Required before the two deferred MyAccount hooks (`endpoints` filter, `sidebar_html` filter) can be added — current MyAccount module is CSS-only with no PHP render path. May be dropped instead of shipped if no internal need surfaces.
 
 **1.2 — RestockNotify locale bootstrapper (Roadmap #2)**
 - Per `/docs/decisions-2026-04-28.md` §4.2: English defaults, Hebrew opt-in

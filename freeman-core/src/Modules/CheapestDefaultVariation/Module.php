@@ -104,6 +104,23 @@ final class Module extends Module_Base {
 		if ( (int) $this->get_option( 'respect_manual_defaults', 1 ) && ! empty( $default_attributes ) ) {
 			return $default_attributes;
 		}
+
+		/**
+		 * Filter whether the cheapest-variation auto-selection should run for
+		 * this product. Returning false short-circuits the picker and leaves
+		 * `$default_attributes` untouched — useful for per-product opt-outs
+		 * (e.g. via product meta) without disabling the module globally.
+		 *
+		 * @since 1.11.0
+		 *
+		 * @param bool        $should_apply       Whether to apply the picker. Default true.
+		 * @param \WC_Product $product            The variable product.
+		 * @param array       $default_attributes Existing defaults at the call site.
+		 */
+		$should_apply = apply_filters( 'freeman_core/cheapest_variation/should_apply', true, $product, $default_attributes );
+		if ( ! $should_apply ) {
+			return $default_attributes;
+		}
 		// PDP-only mode (default on): skip pre-selection on shop / archive
 		// loops so swatches in those contexts render with nothing chosen
 		// and the customer has to actively pick. `is_product()` is true on
@@ -152,7 +169,23 @@ final class Module extends Module_Base {
 			}
 		}
 
-		if ( $cheapest && ! empty( $cheapest['attributes'] ) ) {
+		/**
+		 * Filter the variation chosen as the default. Receives the variation
+		 * array selected by the cheapest-price scan (or null if none qualified)
+		 * and the full eligible list, and must return either a variation array
+		 * shaped like the entries in `$variations` or null. Returning null or
+		 * an array without an `attributes` key leaves `$default_attributes`
+		 * unchanged.
+		 *
+		 * @since 1.11.0
+		 *
+		 * @param array|null  $cheapest   The picked variation array, or null.
+		 * @param \WC_Product $product    The variable product.
+		 * @param array[]     $variations Eligible variation arrays from `get_available_variations()`.
+		 */
+		$cheapest = apply_filters( 'freeman_core/cheapest_variation/chosen', $cheapest, $product, $variations );
+
+		if ( is_array( $cheapest ) && ! empty( $cheapest['attributes'] ) ) {
 			foreach ( $cheapest['attributes'] as $key => $value ) {
 				$clean_key                        = str_replace( 'attribute_', '', $key );
 				$default_attributes[ $clean_key ] = $value;

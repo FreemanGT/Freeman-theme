@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.10.17] — 2026-04-29
+
+- Add snapshot harness (Wave 0.5): SnapshotTestCase trait, Scrubber utility, and three example tests (HTML, XML, JSON) with committed goldens
+
 ## [1.10.16] — 2026-04-29
 
 - Wave 0.4: regression baselines (hooks, REST, CLI, freeman_/etucart_ identifiers) + tools/capture-baselines.sh + BaselinesIntegrityTest

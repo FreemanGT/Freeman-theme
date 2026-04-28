@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "exported_at": "<scrubbed>",
+    "site_url": "<scrubbed>",
+    "options": {
+        "freeman_core_modules": {
+            "sliders": true,
+            "product_feed": true
+        },
+        "freeman_core_sliders_advanced_controls_enabled": "1",
+        "freeman_core_tools_settings_import_enabled": "0",
+        "freeman_digital_some_setting": "value"
+    }
+}

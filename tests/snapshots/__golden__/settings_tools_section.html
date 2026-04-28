@@ -1,0 +1,21 @@
+<hr style="margin:32px 0;"/>
+
+<h2>Settings export / import</h2>
+
+
+<h3>Export</h3>
+<p>Download every freeman_core_* and freeman_digital_* option as a JSON envelope. Runtime state (logs, boot diagnostics, the backup store) is excluded.</p>
+<form method="post" action="https://example.test/wp-admin/admin-post.php">
+		<input type="hidden" name="action" value="freeman_settings_export"/>
+	<button type="submit" class="button button-primary">Download settings JSON</button>
+</form>
+
+<h3 style="margin-top:24px;">Import</h3>
+	<p>
+		<em>Settings import is disabled. Enable with:</em>
+		<code>wp option update freeman_core_tools_settings_import_enabled 1</code>
+	</p>
+
+<h3 style="margin-top:24px;">Backups</h3>
+<p>Auto-backups created before each import. The five most recent are kept. A restore itself creates a backup, so any restore is also undoable.</p>
+	<p><em>No backups yet.</em></p>

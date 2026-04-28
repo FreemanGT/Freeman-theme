@@ -39,3 +39,13 @@ No database required. Tests run in <10 ms locally.
 1. Drop a `NewThingTest.php` in this directory.
 2. Extend `PHPUnit\Framework\TestCase`.
 3. Use the global `$GLOBALS['fr_opts']` / `$GLOBALS['fr_transients']` if you need to reset the in-memory stores in `setUp()`.
+
+## Snapshot tests
+
+`tests/snapshots/` holds golden-file snapshot tests for module output. See [tests/snapshots/README.md](snapshots/README.md). To accept a deliberate output change, run:
+
+```bash
+UPDATE_SNAPSHOTS=1 PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test
+```
+
+Then commit the updated `tests/snapshots/__golden__/*` files alongside the source change.

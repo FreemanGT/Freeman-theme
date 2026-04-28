@@ -1,0 +1,41 @@
+  <product type="simple" id="42">
+    <sku>TEST-SKU-1</sku>
+    <name>Test Product</name>
+    <slug>test-product</slug>
+    <url>https://example.test/?p=42</url>
+    <status>publish</status>
+    <visibility>visible</visibility>
+    <description>A description with HTML.</description>
+    <short_desc>Short.</short_desc>
+    <date_created></date_created>
+    <date_modified></date_modified>
+    <weight>1.5</weight>
+    <length>10</length>
+    <width>5</width>
+    <height>2</height>
+    <weight_unit></weight_unit>
+    <dim_unit></dim_unit>
+    <tax_class></tax_class>
+    <tax_status>taxable</tax_status>
+    <categories>
+    </categories>
+    <tags>
+    </tags>
+    <images>
+    </images>
+    <attributes>
+    </attributes>
+    <in_stock>yes</in_stock>
+    <stock_qty>10</stock_qty>
+    <stock_status>instock</stock_status>
+    <manage_stock>yes</manage_stock>
+    <backorders_allowed>no</backorders_allowed>
+    <low_stock_amount></low_stock_amount>
+    <price>29.99</price>
+    <regular_price>39.99</regular_price>
+    <sale_price>29.99</sale_price>
+    <on_sale>yes</on_sale>
+    <sale_from></sale_from>
+    <sale_to></sale_to>
+    <currency>USD</currency>
+  </product>

@@ -81,10 +81,10 @@ The guidelines above apply universally. The rules below are specific to this rep
 
 ## Current infrastructure state
 
-*Last verified: 2026-04-28.*
+*Last verified: 2026-04-29.*
 
-- **PHPUnit**: configured for freeman-core (root `phpunit.xml.dist`, `tests/bootstrap.php`, 48 tests, all green). Runs in CI on PHP 7.4–8.3 lanes. Locally: `composer install` once, then `PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test` (system `php` is 8.5, outside PHPUnit 10's supported range). freeman-digital has its own separate test config; freeman-theme has none.
-- **Snapshot harness**: not yet built. Wave 0.5 adds `/tests/snapshots/` helpers.
+- **PHPUnit**: configured for freeman-core (root `phpunit.xml.dist`, `tests/bootstrap.php`, 102 tests reported / 71 test methods, all green). PHPUnit's reported count exceeds the method count because `@dataProvider` cases expand to one reported test per dataset (notably `FeatureFlagsTest`). When updating this number, run `vendor/bin/phpunit` and copy the reported total. Runs in CI on PHP 7.4–8.3 lanes. Locally: `composer install` once, then `PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test` (system `php` is 8.5, outside PHPUnit 10's supported range). freeman-digital has its own separate test config; freeman-theme has none.
+- **Snapshot harness**: shipped in Wave 0.5. See `/tests/snapshots/` (`SnapshotTestCase` trait, `Scrubber`, three example tests with committed goldens) and `/tests/snapshots/README.md`.
 - **Staging**: not yet provisioned. Manual local testing on a separate WP install for now.
 - **WP-CLI**: not currently installed locally. Wave 0.4 needs it installed (or a substitute) before regression baselines can be captured.
 - **Commit format**: Conventional Commits, scope = package. Example: `feat(freeman-core): add logger hooks`.
@@ -125,7 +125,7 @@ If touching >12 files or >3 modules: STOP and ask whether to split.
 
 When asked to implement a roadmap item, follow §4 (Goal-Driven Execution) with this concrete shape:
 
-1. **Pre-flight**: which decisions in `/docs/decisions-2026-04-28.md` does this depend on; which Wave-0/1 prerequisites are satisfied.
+1. **Pre-flight**: which decisions in `/docs/decisions-2026-04-28.md` does this depend on; which Wave-0/1 prerequisites are satisfied. **If the wave adds tests**, note that the "Current infrastructure state" PHPUnit count above must be updated in the same PR — copy the new total from `vendor/bin/phpunit`'s reported count, not the method count.
 2. **Plan**: file list, hook list, option keys, feature flag name, default value, test list. **No code yet.**
 3. *Wait for human approval of the plan before proceeding.*
 4. **Execution**: code changes, one logical commit per file group.

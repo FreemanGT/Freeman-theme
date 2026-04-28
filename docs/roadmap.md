@@ -99,6 +99,7 @@ These items are prerequisites. Nothing in Wave 1+ can start until Wave 0 is comp
 - Existing `/product-feed` endpoint keeps Google XML output unchanged
 - New endpoints: `/product-feed/<channel>`
 - Feature flag: `freeman_core_product_feed_multichannel_enabled`
+- **Before extending Generator's surface**: read the header comment in `tests/snapshots/__fixtures__/wc_product_stub.php` — it lists which `\WC_Product` methods the snapshot stub already covers and which still need to be added (variable-product branch + `\WC_Product_Variation` stub) before variation XML can be snapshotted.
 
 **2.2 — VariationSwatches migration plan (Roadmap #4)**
 - **STOP after writing the plan.** Wait for human approval before coding.

@@ -76,7 +76,7 @@ These items are prerequisites. Nothing in Wave 1+ can start until Wave 0 is comp
 
 **1.1 — Add module hooks (Roadmap #1)**
 
-Originally scoped as 18 hooks across 9 modules per `/docs/audit-2026-04-28.md` §D1. After per-call-site reality check during pre-flight (2026-04-29), only 11 of those hooks have viable call sites in non-legacy `freeman-core` PHP today. Wave 1.1 ships the implementable subset; the rest are deferred to natural homes (see Wave 2.3, Wave 3.1, Wave 3.4 below; VariationSwatches's 2 hooks already deferred to Wave 2.2).
+Originally scoped as 18 hooks across 9 modules per `/docs/audit-2026-04-28.md` §D1. After per-call-site reality check during pre-flight (2026-04-29), only 10 of those hooks have viable call sites in non-legacy `freeman-core` PHP today (one further hook — `infinite_scroll/selector` — was dropped from 1.1a after finding the JS doesn't yet read it; folded into Wave 3.1 instead). Wave 1.1 ships the implementable subset; the rest are deferred to natural homes (see Wave 2.3, Wave 3.1, Wave 3.4 below; VariationSwatches's 2 hooks already deferred to Wave 2.2).
 
 Split into two PRs (waiver from "one roadmap item per PR" — stated in each PR description):
 
@@ -85,7 +85,7 @@ Split into two PRs (waiver from "one roadmap item per PR" — stated in each PR 
 - `freeman_core/cheapest_variation/chosen` (filter — replaces audit's `strategy` because the picker returns an attributes array, not a variation_id)
 - `freeman_core/variable_stock_fix/should_check` (filter)
 
-**1.1b** — render and feed (8 hooks; 2 snapshot tests).
+**1.1b** — render and feed (7 hooks; 2 snapshot tests).
 - `freeman_core/category_slider/query_args` (filter)
 - `freeman_core/category_slider/render_card` (filter, via output buffering)
 - `freeman_core/product_slider/query_args` (filter)

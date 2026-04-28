@@ -43,8 +43,50 @@ if ( ! defined( 'DAY_IN_SECONDS' ) ) {
 // These get defined BEFORE the blanket null-return loop so they win.
 // ---------------------------------------------------------------------------
 
+// Minimal hook registry. Backs apply_filters / do_action / add_filter / add_action
+// so tests can assert filter mutations and action firings. With no listeners
+// registered, apply_filters returns the input value unchanged and do_action is a
+// no-op — preserving the behavior of the previous identity/null stubs.
+$GLOBALS['fr_hooks'] = $GLOBALS['fr_hooks'] ?? array();
+
+if ( ! function_exists( 'add_filter' ) ) {
+	function add_filter( $tag, $cb, $priority = 10, $accepted_args = 1 ) {
+		$GLOBALS['fr_hooks'][ $tag ][] = array( 'cb' => $cb, 'args' => (int) $accepted_args );
+		return true;
+	}
+}
 if ( ! function_exists( 'apply_filters' ) ) {
-	function apply_filters( $tag, $value ) { return $value; }
+	function apply_filters( $tag, $value ) {
+		$args = func_get_args();
+		array_shift( $args ); // drop $tag
+		if ( empty( $GLOBALS['fr_hooks'][ $tag ] ) ) {
+			return $value;
+		}
+		foreach ( $GLOBALS['fr_hooks'][ $tag ] as $h ) {
+			$slice    = array_slice( $args, 0, $h['args'] );
+			$slice[0] = $value;
+			$value    = call_user_func_array( $h['cb'], $slice );
+			$args[0]  = $value;
+		}
+		return $value;
+	}
+}
+if ( ! function_exists( 'add_action' ) ) {
+	function add_action( $tag, $cb, $priority = 10, $accepted_args = 1 ) {
+		return add_filter( $tag, $cb, $priority, $accepted_args );
+	}
+}
+if ( ! function_exists( 'do_action' ) ) {
+	function do_action( $tag ) {
+		$args = func_get_args();
+		array_shift( $args );
+		if ( empty( $GLOBALS['fr_hooks'][ $tag ] ) ) {
+			return;
+		}
+		foreach ( $GLOBALS['fr_hooks'][ $tag ] as $h ) {
+			call_user_func_array( $h['cb'], array_slice( $args, 0, $h['args'] ) );
+		}
+	}
 }
 if ( ! function_exists( 'sanitize_text_field' ) ) {
 	function sanitize_text_field( $v ) { return is_scalar( $v ) ? (string) $v : ''; }
@@ -154,7 +196,7 @@ if ( ! function_exists( 'is_plugin_active' ) ) {
 // ---------------------------------------------------------------------------
 
 $stubs = array(
-	'add_action', 'do_action', 'remove_action', 'add_filter',
+	'remove_action', 'remove_filter',
 	'register_activation_hook', 'register_deactivation_hook', 'register_uninstall_hook',
 	'plugin_dir_path', 'plugin_dir_url',
 	'wp_enqueue_script', 'wp_enqueue_style', 'wp_register_style', 'wp_register_script',

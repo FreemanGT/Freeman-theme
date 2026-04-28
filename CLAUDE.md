@@ -73,7 +73,7 @@ The guidelines above apply universally. The rules below are specific to this rep
 ## Repo state
 
 - Path: `/Users/freemansmain/Ai Projects/Freeman Theme/`
-- Packages: `freeman-core` (v1.10.12), `freeman-digital` (v1.7.3), `freeman-theme` (v1.10.8)
+- Packages: `freeman-core` (v1.10.13), `freeman-digital` (v1.7.3), `freeman-theme` (v1.10.8)
 - Audit: `/docs/audit-2026-04-28.md`
 - Decisions: `/docs/decisions-2026-04-28.md` — read this before any roadmap work
 - Roadmap: `/docs/roadmap.md`
@@ -95,7 +95,7 @@ If any of the above changes, update this section before starting work.
 
 These extend §3 (Surgical Changes) with project-specific surfaces:
 
-1. NEVER ship a roadmap item without a feature flag (`freeman_core_<module>_<feature>_enabled`, default `false`) unless purely additive (new hook, new filter, new CSS variable with backward-compatible fallback).
+1. NEVER ship a roadmap item without a feature flag (`freeman_core_<module>_<feature>_enabled`, default `false`) unless purely additive (new hook, new filter, new CSS variable with backward-compatible fallback, or a new helper class with no callers).
 2. NEVER remove an existing hook, filter, option key, shortcode, REST route, or admin URL. Deprecate via `_deprecated_function()` / `_deprecated_hook()` with a 2-minor-version sunset.
 3. NEVER edit `legacy/` directories or `etucart_*` keys without a written migration plan AND human approval.
 4. NEVER touch more than ONE roadmap item per PR. Exception: the 18-hooks PR (Wave 1.1) — state it explicitly.

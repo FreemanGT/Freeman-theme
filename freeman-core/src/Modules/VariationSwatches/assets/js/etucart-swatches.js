@@ -876,6 +876,8 @@
 		function initForm($form) {
 			if (!$form || !$form.length) return;
 
+			var preselectTimingFix = !!(window.FreemanCoreVSFlags && window.FreemanCoreVSFlags.preselectTimingFix);
+
 			// One-time setup (qty stepper, swatch→select sync, sticky bar) is
 			// guarded by a flag so repeated calls from the MutationObserver /
 			// quick-view events don't redo DOM work.
@@ -890,9 +892,19 @@
 				var pid = parseInt($form.attr('data-product_id') || '0', 10);
 				var pre = readPreselectEntry(pid);
 				if (pre) {
-					var applied = applyPreselect($form, pre.attrs);
-					if (applied > 0) {
-						clearPreselectEntry(pid);
+					if (preselectTimingFix) {
+						// Wave 4.4: defer the apply until refresh() has bound
+						// wc_variation_form. Without the deferral, our
+						// $select.val(v).trigger('change') fires before WC's
+						// onChange handler binds (or before its match logic is
+						// ready), so found_variation never fires and the
+						// gallery image stays on the parent default.
+						$form.data('etucart-pending-preselect', pre.attrs);
+					} else {
+						var applied = applyPreselect($form, pre.attrs);
+						if (applied > 0) {
+							clearPreselectEntry(pid);
+						}
 					}
 				}
 			}
@@ -926,6 +938,22 @@
 					if (typeof $.fn.wc_variation_form === 'function' && !$form.data('wc_variation_form')) {
 						try { $form.wc_variation_form(); } catch (e) {}
 					}
+
+					// Wave 4.4: apply any preselect deferred from initForm now
+					// that wc_variation_form is bound. Once per form.
+					if (preselectTimingFix && $form.attr('data-etucart-preselect-applied') !== '1') {
+						var pending = $form.data('etucart-pending-preselect');
+						if (pending) {
+							var pidApply = parseInt($form.attr('data-product_id') || '0', 10);
+							var appliedCount = applyPreselect($form, pending);
+							if (appliedCount > 0) {
+								clearPreselectEntry(pidApply);
+							}
+							$form.attr('data-etucart-preselect-applied', '1');
+							$form.removeData('etucart-pending-preselect');
+						}
+					}
+
 					try { $form.trigger('check_variations'); } catch (e) {}
 				}
 				syncAvailability($form);

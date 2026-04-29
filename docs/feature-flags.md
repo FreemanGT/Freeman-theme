@@ -75,6 +75,7 @@ Listeners receive `( bool $enabled, string $module, string $feature )`.
 | Flag | Default | Gates |
 |---|---|---|
 | `freeman_core_tools_settings_import_enabled` | `false` | Settings → Tools → Import form (Wave 0.3). Export, backup listing, and restore are ungated so rollback works even after disabling import. |
+| `freeman_core_variation_swatches_preselect_timing_fix_enabled` | `false` | Wave 4.4. Defers the archive→PDP preselect apply until after `wc_variation_form()` binds, so WC's `found_variation` event fires and the gallery image swaps to the chosen variation. OFF preserves the legacy synchronous-apply behavior. |
 
 ## Settings export/import notes (Wave 0.3)
 

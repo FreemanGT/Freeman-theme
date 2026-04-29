@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.3] — 2026-04-29
+
+- Wave 2.3a: add Subscribers repository - thin static wrapper around RSN_Database with 4 methods, no callers yet, groundwork for 2.3b/c
+
 ## [1.11.2] — 2026-04-29
 
 - Wave 1.2: RestockNotify locale bootstrapper - English defaults plus Hebrew opt-in via locales/en_US.php and he_IL.php

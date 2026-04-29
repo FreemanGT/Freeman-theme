@@ -213,6 +213,116 @@ if ( ! function_exists( 'get_locale' ) ) {
 	}
 }
 
+// Smart wp_localize_script: captures the localize payload into
+// $GLOBALS['fr_localize_calls'] keyed by $object_name so tests can assert
+// the JS-side data (handle, object name, payload). Doesn't render anything.
+if ( ! function_exists( 'wp_localize_script' ) ) {
+	function wp_localize_script( $handle, $object_name, $l10n ) {
+		$GLOBALS['fr_localize_calls'][] = array(
+			'handle'      => $handle,
+			'object_name' => $object_name,
+			'l10n'        => $l10n,
+		);
+		return true;
+	}
+}
+
+// Page-type predicates — read from $GLOBALS['fr_page_type'] so tests can
+// drive frontend code paths (e.g. Frontend::should_enqueue_here heuristic).
+// Each defaults false. Set $GLOBALS['fr_page_type'] = 'product' (etc.) once
+// per test; the predicates below match against it.
+foreach (
+	array(
+		'is_product'          => 'product',
+		'is_shop'             => 'shop',
+		'is_product_taxonomy' => 'product_taxonomy',
+		'is_cart'             => 'cart',
+		'is_checkout'         => 'checkout',
+		'is_account_page'     => 'account',
+	) as $fn => $kind
+) {
+	if ( ! function_exists( $fn ) ) {
+		eval( "function {$fn}() { return ( \$GLOBALS['fr_page_type'] ?? '' ) === '{$kind}'; }" );
+	}
+}
+if ( ! function_exists( 'is_singular' ) ) {
+	function is_singular( $post_types = '' ) {
+		$current = $GLOBALS['fr_singular_type'] ?? '';
+		if ( '' === $current ) {
+			return false;
+		}
+		if ( '' === $post_types || array() === $post_types ) {
+			return true;
+		}
+		$wanted = (array) $post_types;
+		return in_array( $current, $wanted, true );
+	}
+}
+if ( ! function_exists( 'wp_doing_ajax' ) ) {
+	function wp_doing_ajax() {
+		return ! empty( $GLOBALS['fr_doing_ajax'] );
+	}
+}
+if ( ! function_exists( 'add_shortcode' ) ) {
+	function add_shortcode( $tag, $cb ) {
+		$GLOBALS['fr_shortcodes'][ $tag ] = $cb;
+		return true;
+	}
+}
+if ( ! function_exists( 'shortcode_atts' ) ) {
+	function shortcode_atts( $defaults, $atts, $shortcode = '' ) {
+		$atts = is_array( $atts ) ? $atts : array();
+		return array_merge( (array) $defaults, $atts );
+	}
+}
+if ( ! function_exists( 'has_shortcode' ) ) {
+	function has_shortcode( $content, $tag ) {
+		return false !== strpos( (string) $content, '[' . $tag );
+	}
+}
+if ( ! function_exists( 'get_post' ) ) {
+	function get_post( $post = null ) {
+		return $GLOBALS['fr_get_post_return'] ?? null;
+	}
+}
+if ( ! function_exists( 'get_post_type' ) ) {
+	function get_post_type( $post = null ) {
+		if ( is_object( $post ) && isset( $post->post_type ) ) {
+			return $post->post_type;
+		}
+		return $GLOBALS['fr_get_post_type_return'] ?? '';
+	}
+}
+if ( ! function_exists( 'get_post_meta' ) ) {
+	function get_post_meta( $id, $key = '', $single = false ) {
+		return $GLOBALS['fr_post_meta'][ $id ][ $key ] ?? '';
+	}
+}
+if ( ! function_exists( 'get_queried_object_id' ) ) {
+	function get_queried_object_id() {
+		return $GLOBALS['fr_queried_object_id'] ?? 0;
+	}
+}
+if ( ! function_exists( 'get_the_ID' ) ) {
+	function get_the_ID() {
+		return $GLOBALS['fr_the_id'] ?? 0;
+	}
+}
+if ( ! function_exists( 'wp_create_nonce' ) ) {
+	function wp_create_nonce( $action ) {
+		return 'nonce-' . md5( (string) $action );
+	}
+}
+if ( ! function_exists( 'wp_safe_redirect' ) ) {
+	function wp_safe_redirect( $location, $status = 302 ) {
+		$GLOBALS['fr_safe_redirect_calls'][] = array( 'location' => $location, 'status' => $status );
+		return true;
+	}
+}
+if ( ! function_exists( 'absint' ) ) {
+	function absint( $v ) { return abs( (int) $v ); }
+}
+
 // Smart wp_mail: captures the most recent send into $GLOBALS['fr_wp_mail_calls']
 // instead of dispatching real mail. Tests can inspect the captured payload to
 // assert email contents (subject, body, recipient, headers).

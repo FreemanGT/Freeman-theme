@@ -4,6 +4,26 @@ Bundled from the legacy `restock-notify` plugin. The original `rsn_*` hooks
 are still emitted; new Freeman Core hooks live under the `freeman_core/restock/`
 namespace.
 
+## Shipped hooks (1.11.5+)
+
+### `freeman_core/restock_notify/should_inject` (filter, since 1.11.5)
+```php
+apply_filters(
+    'freeman_core/restock_notify/should_inject',
+    bool        $inject,
+    \WC_Product $product,
+    string      $context  // 'summary' | 'variation' | 'cart_form' | 'meta' | 'shortcode' | 'stock_filter' | 'footer'
+);
+```
+Per-product gate for form injection. Fires inside `Frontend::maybe_render()`
+once per attempted render (across all 6 entry points: 4 WC template hooks +
+shortcode + stock-html filter + wp_footer fallback). Distinct from
+`rsn_should_enqueue` (which gates the asset load for the whole page); this
+one fires per-product and per-context.
+
+Return `false` to short-circuit the render. Useful for "no form for this
+specific product" rules without disabling the module globally.
+
 ## Shipped hooks (1.11.4+)
 
 ### `freeman_core/restock_notify/email_args` (filter, since 1.11.4)

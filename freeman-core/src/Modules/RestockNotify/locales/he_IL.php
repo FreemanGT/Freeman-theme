@@ -41,4 +41,18 @@ return array(
 	'shell_greeting'               => 'היי %s,',
 	'shell_unsubscribe_link_text'  => 'הסרה מרשימת התפוצה',
 	'shell_unsubscribe_link_suffix' => 'עבור מוצר זה.',
+
+	// Frontend strings (Wave 2.3c) — consumed by modern Frontend's
+	// wp_localize_script payload (js_*) and render_form() placeholders
+	// (form_placeholder_*). Pre-2.3c these were hardcoded literals at
+	// legacy/class-rsn-frontend.php:103-108 (js_*) and lines 449/452
+	// (form_placeholder_*).
+	'js_invalid_email'             => 'יש להזין כתובת אימייל תקינה.',
+	'js_consent_missing'           => 'יש לאשר את תיבת ההסכמה.',
+	'js_product_missing'           => 'שגיאה: מזהה מוצר חסר.',
+	'js_script_missing'            => 'שגיאה: הסקריפט לא נטען כראוי. רענן את הדף.',
+	'js_generic_error'             => 'משהו השתבש. נסו שוב.',
+	'js_network_error'             => 'שגיאת רשת. נסו שוב.',
+	'form_placeholder_name'        => 'שם מלא',
+	'form_placeholder_email'       => 'כתובת אימייל',
 );

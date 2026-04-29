@@ -17,6 +17,7 @@
 
 namespace Freeman\Core\Modules\VariationSwatches;
 
+use Freeman\Core\Core\Feature_Flags;
 use Freeman\Core\Core\Module_Base;
 
 defined( 'ABSPATH' ) || exit;
@@ -142,6 +143,51 @@ final class Module extends Module_Base {
 			define( 'ETUCART_VS_BOOTED', true );
 			\Etucart_VS_Plugin::instance()->boot();
 		}
+
+		// Feature-flag bridge: expose flag values to the frontend JS bundle
+		// before it executes. Runs after legacy register_assets (priority
+		// 9999) so the `freeman-core` script handle is already registered.
+		add_action( 'wp_enqueue_scripts', array( $this, 'inject_feature_flags' ), 10001 );
+	}
+
+	/**
+	 * Inject `window.FreemanCoreVSFlags` ahead of the swatches script so the
+	 * JS can branch on per-feature flags without editing the legacy bundle.
+	 *
+	 * @since 1.11.13
+	 */
+	public function inject_feature_flags() {
+		$handle = 'freeman-core';
+		if ( ! wp_script_is( $handle, 'registered' ) ) {
+			return;
+		}
+
+		/**
+		 * Filter the bundle-plugin marker prefixes. When a form contains a
+		 * hidden field whose name starts with any of these, our capture-phase
+		 * click handler skips the shortcut so the bundle plugin's own AJAX
+		 * handler can run. Defaults cover WPC Product Bundles (`woosb_`) and
+		 * WPC Frequently Bought Together (`wcfbt_`).
+		 *
+		 * @since 1.11.13
+		 *
+		 * @param string[] $markers List of name-prefix strings.
+		 */
+		$markers = apply_filters(
+			'freeman_core/variation_swatches/bundle_markers',
+			array( 'woosb_', 'wcfbt_' )
+		);
+		$markers = array_values( array_filter( array_map( 'strval', (array) $markers ) ) );
+
+		$flags = array(
+			'bundleCompat'  => Feature_Flags::is_enabled( 'variation_swatches', 'bundle_compat' ),
+			'bundleMarkers' => $markers,
+		);
+		wp_add_inline_script(
+			$handle,
+			'window.FreemanCoreVSFlags = ' . wp_json_encode( $flags ) . ';',
+			'before'
+		);
 	}
 
 	/**

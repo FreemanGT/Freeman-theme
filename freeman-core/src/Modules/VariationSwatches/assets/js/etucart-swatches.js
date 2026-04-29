@@ -531,12 +531,35 @@
 			// WC's add_to_cart AJAX endpoint expects product_id to be the
 			// variation_id for variable products, and the actual product_id
 			// for simple products (see WC_AJAX::add_to_cart).
-			var data = { product_id: (isSimple ? productId : variationId), quantity: qty };
-			if (!isSimple) {
-				$form.find('[name^="attribute_"]').each(function () {
-					data[this.name] = $(this).val();
+			var data;
+			var bundleCompat = !!(window.FreemanCoreVSFlags && window.FreemanCoreVSFlags.bundleCompat);
+			if (bundleCompat) {
+				// Wave 4.5: forward every form field except a small deny-list
+				// of WP nonces / referer fields. Bundle/FBT plugins inject
+				// hidden fields like woosb_*, wcfbt_*; the legacy
+				// product_id/quantity/attribute_* whitelist silently dropped
+				// them, so the cart only got the main product. Whitelisting
+				// is fragile against new bundle plugins — denylist is more
+				// compatible.
+				var DENY = { '_wpnonce': 1, '_wp_http_referer': 1, 'woocommerce-process-checkout-nonce': 1 };
+				data = {};
+				$form.serializeArray().forEach(function (field) {
+					if (DENY[field.name]) return;
+					data[field.name] = field.value;
 				});
+			} else {
+				data = { product_id: (isSimple ? productId : variationId), quantity: qty };
+				if (!isSimple) {
+					$form.find('[name^="attribute_"]').each(function () {
+						data[this.name] = $(this).val();
+					});
+				}
 			}
+			// product_id / quantity overrides apply to both branches: WC's
+			// endpoint requires variation_id in the product_id slot for
+			// variable products, and the form's quantity field name varies.
+			data.product_id = (isSimple ? productId : variationId);
+			data.quantity   = qty;
 
 			$btn.addClass('loading');
 
@@ -582,6 +605,25 @@
 			return true; // handled
 		}
 
+		// Wave 4.5: when bundle compatibility is on AND the form carries any
+		// known bundle plugin's hidden fields, our capture-phase shortcut
+		// must step out so the bundle plugin's bubble-phase click handler
+		// runs natively. WC's add_to_cart endpoint can't process a bundle
+		// payload — only the plugin's own AJAX handler can.
+		function formOwnedByBundlePlugin(formEl) {
+			var flags = window.FreemanCoreVSFlags || {};
+			if (!flags.bundleCompat) return false;
+			var markers = flags.bundleMarkers || ['woosb_', 'wcfbt_'];
+			for (var i = 0; i < markers.length; i++) {
+				var marker = String(markers[i] || '');
+				if (!marker) continue;
+				if (formEl.querySelector('[name^="' + marker + '"]')) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 		// Capture-phase native listener: runs before any other click handler
 		// in the document, regardless of what order plugins were loaded.
 		document.addEventListener('click', function (nativeEvt) {
@@ -599,6 +641,10 @@
 			// focus-the-empty-select nudge for disabled buttons.
 			if ($btn.hasClass('disabled') || btn.getAttribute('aria-disabled') === 'true') {
 				return;
+			}
+
+			if (formOwnedByBundlePlugin(form)) {
+				return; // bundle plugin owns this submit
 			}
 
 			if (handleEtucartAdd($form, $btn)) {
@@ -625,6 +671,10 @@
 
 			if ($btn.hasClass('disabled') || $btn.attr('aria-disabled') === 'true') {
 				return;
+			}
+
+			if (formOwnedByBundlePlugin(form)) {
+				return; // bundle plugin owns this submit
 			}
 
 			if (handleEtucartAdd($form, $btn)) {

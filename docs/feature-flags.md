@@ -75,6 +75,7 @@ Listeners receive `( bool $enabled, string $module, string $feature )`.
 | Flag | Default | Gates |
 |---|---|---|
 | `freeman_core_tools_settings_import_enabled` | `false` | Settings → Tools → Import form (Wave 0.3). Export, backup listing, and restore are ungated so rollback works even after disabling import. |
+| `freeman_core_variation_swatches_bundle_compat_enabled` | `false` | Wave 4.5. ON: forwards every form field (minus a WP-nonce denylist) to `WC_AJAX::add_to_cart`, and skips the capture-phase shortcut when the form contains hidden fields prefixed by any marker in `freeman_core/variation_swatches/bundle_markers` (defaults `['woosb_', 'wcfbt_']`). Lets WPC Product Bundles and WPC Frequently Bought Together actually deliver bundle items to the cart. OFF preserves the legacy hardcoded whitelist. |
 
 ## Settings export/import notes (Wave 0.3)
 

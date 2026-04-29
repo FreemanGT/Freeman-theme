@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.13] — 2026-04-30
+
+- Wave 4.5: VariationSwatches WPC Bundles + FBT compatibility - when flag ON, the swatches AJAX add-to-cart now forwards every form field (minus a small WP-nonce denylist) so bundle/FBT plugins' injected hidden fields reach WC_AJAX::add_to_cart, and the capture-phase shortcut steps aside when the form contains any marker prefix in freeman_core/variation_swatches/bundle_markers (defaults woosb_ and wcfbt_) so the bundle plugin's own bubble-phase handler can run. Behind freeman_core_variation_swatches_bundle_compat_enabled (default OFF).
+
 ## [1.11.6] — 2026-04-29
 
 - Bug fix: cap shop variation-pill width so long option names cannot stretch the product card column and break the archive grid (RTL: pushed cards off-screen left).

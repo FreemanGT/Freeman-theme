@@ -1,10 +1,22 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-04-28
+**Last updated**: 2026-04-29
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
 This is the execution plan. Waves run in order. Items within a wave can run in parallel only if they touch separate modules.
+
+## Shipped to date
+
+| Wave | Description | Version | Merged | PR |
+|---|---|---|---|---|
+| 1.1a | Module hooks (gates / data filters) — 3 hooks | freeman-core 1.11.0 | 2026-04-28 | [#6](https://github.com/FreemanGT/Freeman-theme/pull/6) |
+| 1.1b | Module hooks (render and feed) — 7 hooks + 2 snapshots | freeman-core 1.11.1 | 2026-04-28 | [#7](https://github.com/FreemanGT/Freeman-theme/pull/7) |
+| 1.2 | RestockNotify locale bootstrapper (English defaults, Hebrew opt-in) | freeman-core 1.11.2 | 2026-04-28 | [#9](https://github.com/FreemanGT/Freeman-theme/pull/9) |
+| 2.3a | RestockNotify modern Subscribers repository wrapper | freeman-core 1.11.3 | 2026-04-29 | [#10](https://github.com/FreemanGT/Freeman-theme/pull/10) |
+| 2.3b | RestockNotify modern Email + Stock_Monitor (bilingual fix + 2 hooks) | freeman-core 1.11.4 | 2026-04-29 | [#11](https://github.com/FreemanGT/Freeman-theme/pull/11) |
+
+Wave-1.1's `infinite_scroll/selector` / `before_render` / `after_render` were folded into Wave 3.1 per the roadmap; `restock_notify/should_inject` (and the rest of the deferred Wave-1.1 RestockNotify hooks) is the next item — Wave 2.3c, in flight.
 
 ---
 
@@ -74,18 +86,18 @@ These items are prerequisites. Nothing in Wave 1+ can start until Wave 0 is comp
 
 ## Wave 1 — P0 extensibility (additive, zero behavior change)
 
-**1.1 — Add module hooks (Roadmap #1)**
+**1.1 — Add module hooks (Roadmap #1)** ✅ shipped — see "Shipped to date" table above
 
 Originally scoped as 18 hooks across 9 modules per `/docs/audit-2026-04-28.md` §D1. After per-call-site reality check during pre-flight (2026-04-29), only 10 of those hooks have viable call sites in non-legacy `freeman-core` PHP today (one further hook — `infinite_scroll/selector` — was dropped from 1.1a after finding the JS doesn't yet read it; folded into Wave 3.1 instead). Wave 1.1 ships the implementable subset; the rest are deferred to natural homes (see Wave 2.3, Wave 3.1, Wave 3.4 below; VariationSwatches's 2 hooks already deferred to Wave 2.2).
 
 Split into two PRs (waiver from "one roadmap item per PR" — stated in each PR description):
 
-**1.1a** — gates / data filters (3 hooks, no rendering refactors). Lands shared infra: 1.11.0 version bump, CLAUDE.md infra-state refresh, this roadmap edit.
+**1.1a** ✅ shipped 1.11.0 (#6, 2026-04-28) — gates / data filters (3 hooks, no rendering refactors). Lands shared infra: 1.11.0 version bump, CLAUDE.md infra-state refresh, this roadmap edit.
 - `freeman_core/cheapest_variation/should_apply` (filter)
 - `freeman_core/cheapest_variation/chosen` (filter — replaces audit's `strategy` because the picker returns an attributes array, not a variation_id)
 - `freeman_core/variable_stock_fix/should_check` (filter)
 
-**1.1b** — render and feed (7 hooks; 2 snapshot tests).
+**1.1b** ✅ shipped 1.11.1 (#7, 2026-04-28; forward-merged via #8) — render and feed (7 hooks; 2 snapshot tests).
 - `freeman_core/category_slider/query_args` (filter)
 - `freeman_core/category_slider/render_card` (filter, via output buffering)
 - `freeman_core/product_slider/query_args` (filter)
@@ -104,13 +116,14 @@ Standards for both:
 
 Wave 2.3 and the Wave 3.1 expansion below are committed work, approved 2026-04-29 alongside Wave 1.1a. Wave 3.4 remains proposed (not yet approved); promote only once an internal MyAccount extension need surfaces.
 
-**1.2 — RestockNotify locale bootstrapper (Roadmap #2)**
+**1.2 — RestockNotify locale bootstrapper (Roadmap #2)** ✅ shipped 1.11.2 (#9, 2026-04-28)
 - Per `/docs/decisions-2026-04-28.md` §4.2: English defaults, Hebrew opt-in
 - Create `RestockNotify/locales/en_US.php` and `he_IL.php`
 - On activation: detect `get_locale()`, install matching defaults
 - **Existing installs**: do NOT overwrite their option values (check if values exist first)
-- Move email body templates from option-string defaults to template files
-- Highest-risk Wave-1 item — write upgrade routine first, dry-run on a clone
+- Email-body **option** strings ship per locale; the email **shell** strings (greeting / unsubscribe link / suffix / customer-name fallback) stayed hardcoded Hebrew in `legacy/class-rsn-email.php` until Wave 2.3b's full bilingual fix
+- Reading A from pre-flight (no `legacy/` edits) — locale files = data; send path unchanged in 1.2
+- Q3 from pre-flight: NO retroactive change for installs that activated pre-1.11.2; their existing `rsn_*` option values stay untouched
 
 ---
 
@@ -135,15 +148,18 @@ Wave 2.3 and the Wave 3.1 expansion below are committed work, approved 2026-04-2
 - After approval: split into 4a (settings migration), 4b (image swatches), 4c (tooltip), each its own PR
 
 **2.3 — RestockNotify legacy migration (committed 2026-04-29)**
-- Parallels Wave 2.2's VariationSwatches migration. Required before the three deferred Wave-1.1 RestockNotify hooks (`should_inject`, `email_args`, `before_send`) can be added — call sites live in `legacy/includes/class-rsn-*.php`, which hard rule #3 forbids editing without a migration plan.
-- **STOP after writing the plan.** Wait for human approval before coding.
-- Plan must cover:
-  - Inventory of `legacy/includes/class-rsn-frontend.php`, `class-rsn-email.php`, `class-rsn-stock-monitor.php`, `class-rsn-ajax.php`, `class-rsn-admin.php`, `class-rsn-database.php`
-  - Existing legacy filters preserved (e.g. `rsn_should_enqueue` at `class-rsn-frontend.php:75`)
-  - Option-key inventory (`rsn_*` keys must keep working — no rename)
-  - Subscriber table (`{prefix}rsn_subscribers`) preservation guarantee
-  - The 3 hooks land in the migration PR or its successor — confirm in plan
-- After approval: split into sub-PRs per legacy class group; the 3 hooks land in whichever PR brings their call site out of `legacy/`.
+
+Parallels Wave 2.2's VariationSwatches migration. Required before the three deferred Wave-1.1 RestockNotify hooks (`should_inject`, `email_args`, `before_send`) can be added — call sites live in `legacy/includes/class-rsn-*.php`, which hard rule #3 forbids editing without a migration plan.
+
+Master plan (approved 2026-04-29) split execution into 3 sub-PRs (2.3a → 2.3b → 2.3c); the originally-proposed 2.3d (Ajax + Admin) is **skipped indefinitely** per Q-B since neither surface has any extension demand.
+
+**2.3a** ✅ shipped 1.11.3 (#10, 2026-04-29) — modern `Subscribers` repository wrapping `\RSN_Database`. Pure groundwork (4-method static wrapper, no callers in this PR). Becomes canonical in 2.3b/c.
+
+**2.3b** ✅ shipped 1.11.4 (#11, 2026-04-29) — modern `Email` + `Stock_Monitor` via `class_alias` swap in `Module::boot()`. Bilingual-email shell fix (4 Hebrew literals moved to `locales/<locale>.php` `shell_*` keys). 2 of the 3 deferred hooks land: `freeman_core/restock_notify/email_args` (filter) and `before_send` (action). The 3rd deferred hook (`should_inject`) waits for 2.3c.
+
+**2.3c** — modern `Frontend` (in flight, master-plan answer Q-E required a local spike before pre-flight; spike completed 2026-04-29). Lands the final deferred Wave-1.1 hook `freeman_core/restock_notify/should_inject` and fixes the Hebrew JS strings + form placeholders that 2.3b couldn't reach (per Q-C). Single-PR with explicit waiver expected (~18-22 files; same one-off framing as 2.3b's #11). Browser-side JS-relocation parity for `footer_inject` is live-QA-only; PHPUnit covers the PHP-side output of all 4 injection paths byte-identically.
+
+Each sub-PR keeps `legacy/` files untouched; modern classes shadow via `class_alias`. Existing legacy filters (`rsn_should_enqueue`), AJAX action (`rsn_subscribe`), shortcode (`[restock_notify]`), unsubscribe URL pattern, transient cache key shape, asset handles, admin URLs, and the `{prefix}rsn_subscribers` table are all preserved verbatim across the migration.
 
 ---
 

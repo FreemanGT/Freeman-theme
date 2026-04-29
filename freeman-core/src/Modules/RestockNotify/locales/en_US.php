@@ -33,4 +33,12 @@ return array(
 	'notify_button_text'     => 'Buy now',
 	'from_name'              => '',
 	'from_email'             => '',
+
+	// Email-shell strings — consumed directly by Modern \Freeman\Core\Modules\
+	// RestockNotify\Email; NOT seeded into rsn_* options. See Module::OPTION_KEYS
+	// for the seeded subset.
+	'shell_customer_name_fallback' => 'Customer',
+	'shell_greeting'               => 'Hi %s,',
+	'shell_unsubscribe_link_text'  => 'Unsubscribe',
+	'shell_unsubscribe_link_suffix' => 'for this product.',
 );

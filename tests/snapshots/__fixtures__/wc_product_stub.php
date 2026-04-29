@@ -176,5 +176,13 @@ if ( ! class_exists( '\WC_Product' ) ) {
 		public function get_date_on_sale_to() {
 			return null;
 		}
+
+		public function get_permalink() {
+			return 'https://example.test/?p=42';
+		}
+
+		public function get_variation_attributes() {
+			return array();
+		}
 	}
 }

@@ -9,13 +9,24 @@ use PHPUnit\Framework\TestCase;
  */
 final class RestockNotifyLocaleTest extends TestCase {
 
-	/** Keys every locale file must declare. Mirrors the historical 18-key contract. */
+	/** The 18 `rsn_*` option keys seeded by `Module::seed_locale_defaults()`. */
 	private const REQUIRED_KEYS = array(
 		'auto_inject', 'form_heading', 'form_description', 'form_button_text',
 		'form_success_message', 'form_duplicate_message', 'enable_confirmation',
 		'enable_gdpr', 'gdpr_text', 'confirm_subject', 'confirm_heading',
 		'confirm_body', 'notify_subject', 'notify_heading', 'notify_body',
 		'notify_button_text', 'from_name', 'from_email',
+	);
+
+	/**
+	 * Email-shell keys added in Wave 2.3b (1.11.4). Consumed directly by the
+	 * modern `Email` class; NOT seeded into `rsn_*` options.
+	 */
+	private const SHELL_KEYS = array(
+		'shell_customer_name_fallback',
+		'shell_greeting',
+		'shell_unsubscribe_link_text',
+		'shell_unsubscribe_link_suffix',
 	);
 
 	protected function setUp(): void {
@@ -48,10 +59,36 @@ final class RestockNotifyLocaleTest extends TestCase {
 	}
 
 	public function test_defaults_method_return_shape_is_stable(): void {
+		$en       = Module::defaults( 'en_US' );
+		$he       = Module::defaults( 'he_IL' );
+		$expected = array_merge( self::REQUIRED_KEYS, self::SHELL_KEYS );
+		$this->assertSame( $expected, array_keys( $en ) );
+		$this->assertSame( $expected, array_keys( $he ) );
+	}
+
+	public function test_shell_keys_present_in_both_locales(): void {
 		$en = Module::defaults( 'en_US' );
 		$he = Module::defaults( 'he_IL' );
-		$this->assertSame( self::REQUIRED_KEYS, array_keys( $en ) );
-		$this->assertSame( self::REQUIRED_KEYS, array_keys( $he ) );
+		foreach ( self::SHELL_KEYS as $k ) {
+			$this->assertNotEmpty( $en[ $k ], "en_US.{$k} must be set" );
+			$this->assertNotEmpty( $he[ $k ], "he_IL.{$k} must be set" );
+		}
+	}
+
+	public function test_seed_locale_defaults_skips_shell_keys(): void {
+		$GLOBALS['fr_locale'] = 'en_US';
+
+		( new Module() )->seed_locale_defaults();
+
+		// Shell keys must NOT be seeded into the options table.
+		foreach ( self::SHELL_KEYS as $k ) {
+			$this->assertFalse(
+				get_option( 'rsn_' . $k, false ),
+				"rsn_{$k} must NOT be seeded as an option (shell strings are read directly from locale files)"
+			);
+		}
+		// Sanity: option keys still ARE seeded.
+		$this->assertNotFalse( get_option( 'rsn_form_heading', false ) );
 	}
 
 	public function test_seed_locale_defaults_seeds_english_when_locale_is_english(): void {

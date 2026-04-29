@@ -26,6 +26,36 @@ defined( 'ABSPATH' ) || exit;
 final class Module extends Module_Base {
 
 	/**
+	 * The 18 `rsn_*` option keys seeded by `seed_locale_defaults()`.
+	 *
+	 * Defined as a constant so non-option entries in `locales/<locale>.php`
+	 * (e.g. `shell_*` strings consumed by the modern Email class) don't get
+	 * accidentally written to the WP options table.
+	 *
+	 * @since 1.11.4
+	 */
+	private const OPTION_KEYS = array(
+		'auto_inject',
+		'form_heading',
+		'form_description',
+		'form_button_text',
+		'form_success_message',
+		'form_duplicate_message',
+		'enable_confirmation',
+		'enable_gdpr',
+		'gdpr_text',
+		'confirm_subject',
+		'confirm_heading',
+		'confirm_body',
+		'notify_subject',
+		'notify_heading',
+		'notify_body',
+		'notify_button_text',
+		'from_name',
+		'from_email',
+	);
+
+	/**
 	 * Module id.
 	 *
 	 * @return string
@@ -104,9 +134,13 @@ final class Module extends Module_Base {
 	 * @since 1.11.2
 	 */
 	public function seed_locale_defaults() {
-		foreach ( self::defaults() as $key => $value ) {
+		$defaults = self::defaults();
+		foreach ( self::OPTION_KEYS as $key ) {
+			if ( ! array_key_exists( $key, $defaults ) ) {
+				continue;
+			}
 			if ( false === get_option( 'rsn_' . $key, false ) ) {
-				update_option( 'rsn_' . $key, $value );
+				update_option( 'rsn_' . $key, $defaults[ $key ] );
 			}
 		}
 	}
@@ -124,7 +158,7 @@ final class Module extends Module_Base {
 	 */
 	public function on_uninstall() {
 		parent::on_uninstall();
-		foreach ( array_keys( $this->option_defaults() ) as $key ) {
+		foreach ( self::OPTION_KEYS as $key ) {
 			delete_option( 'rsn_' . $key );
 		}
 		delete_option( 'rsn_db_version' );
@@ -171,14 +205,29 @@ final class Module extends Module_Base {
 			update_option( 'rsn_db_version', FREEMAN_CORE_VERSION );
 		}
 
+		// Modern Email + Stock_Monitor (Wave 2.3b) — alias the legacy global
+		// names onto the modern PSR-4 classes so legacy callers
+		// (`RSN_Ajax::handle_subscribe()` calling `\RSN_Email::send_confirmation`,
+		// `RSN_Admin::handle_actions()` calling `\RSN_Stock_Monitor::manual_notify`)
+		// resolve to the modern classes — bilingual-email shell fix and the
+		// `freeman_core/restock_notify/email_args` + `before_send` hooks apply
+		// universally, not only on the stock-change path.
+		//
+		// IMPORTANT ordering:
+		//  - Aliases happen AFTER the `class_exists(..., false)` conflict check
+		//    above, so they don't trip the guard against ourselves.
+		//  - The legacy class-rsn-email.php and class-rsn-stock-monitor.php files
+		//    are NOT `require_once`'d — loading them would `class RSN_Email {}`
+		//    against the alias and fatal.
+		class_alias( '\\Freeman\\Core\\Modules\\RestockNotify\\Email',         'RSN_Email' );
+		class_alias( '\\Freeman\\Core\\Modules\\RestockNotify\\Stock_Monitor', 'RSN_Stock_Monitor' );
+
 		require_once $dir . 'class-rsn-frontend.php';
 		require_once $dir . 'class-rsn-ajax.php';
-		require_once $dir . 'class-rsn-email.php';
-		require_once $dir . 'class-rsn-stock-monitor.php';
 
 		new \RSN_Frontend();
 		new \RSN_Ajax();
-		new \RSN_Stock_Monitor();
+		new \Freeman\Core\Modules\RestockNotify\Stock_Monitor();
 
 		if ( is_admin() ) {
 			require_once $dir . 'class-rsn-admin.php';

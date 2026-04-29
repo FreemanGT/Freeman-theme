@@ -32,4 +32,13 @@ return array(
 	'notify_button_text'     => 'לרכישה',
 	'from_name'              => '',
 	'from_email'             => '',
+
+	// Email-shell strings — consumed directly by Modern \Freeman\Core\Modules\
+	// RestockNotify\Email; NOT seeded into rsn_* options. See Module::OPTION_KEYS
+	// for the seeded subset. Pre-1.11.4 these were hardcoded literals inside
+	// legacy/includes/class-rsn-email.php — modern Email reads them from here.
+	'shell_customer_name_fallback' => 'לקוח/ה',
+	'shell_greeting'               => 'היי %s,',
+	'shell_unsubscribe_link_text'  => 'הסרה מרשימת התפוצה',
+	'shell_unsubscribe_link_suffix' => 'עבור מוצר זה.',
 );

@@ -4,6 +4,41 @@ Bundled from the legacy `restock-notify` plugin. The original `rsn_*` hooks
 are still emitted; new Freeman Core hooks live under the `freeman_core/restock/`
 namespace.
 
+## Shipped hooks (1.11.4+)
+
+### `freeman_core/restock_notify/email_args` (filter, since 1.11.4)
+```php
+apply_filters(
+    'freeman_core/restock_notify/email_args',
+    array  $args,
+    object $subscriber,
+    string $kind   // 'confirmation' or 'notification'
+);
+```
+Filters the args dictionary that drives the rendered email HTML inside
+modern `Email::build_html()`. Keys: `heading`, `body`, `product_name`,
+`product_image`, `button_url`, `button_text`, `unsubscribe_url`,
+`customer_name`. Use to inject custom rows, override styling tokens, or
+swap the customer-name fallback per send.
+
+Fires for confirmation AND notification emails — distinguish via the
+`$kind` parameter.
+
+### `freeman_core/restock_notify/before_send` (action, since 1.11.4)
+```php
+do_action(
+    'freeman_core/restock_notify/before_send',
+    string $to,
+    string $subject,
+    string $html,
+    object $subscriber
+);
+```
+Fires immediately before `wp_mail()`. Use cases: route to a transactional
+ESP, log the send, gate by subscriber attribute. Informational by design —
+to actually suppress the send, listeners should use the WP `wp_mail` /
+`pre_wp_mail` filters; this hook does not short-circuit.
+
 ## Filters (legacy, still supported)
 
 - `rsn_notification_email_subject`

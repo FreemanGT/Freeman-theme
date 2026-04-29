@@ -213,6 +213,73 @@ if ( ! function_exists( 'get_locale' ) ) {
 	}
 }
 
+// Smart wp_mail: captures the most recent send into $GLOBALS['fr_wp_mail_calls']
+// instead of dispatching real mail. Tests can inspect the captured payload to
+// assert email contents (subject, body, recipient, headers).
+if ( ! function_exists( 'wp_mail' ) ) {
+	function wp_mail( $to, $subject, $message, $headers = '', $attachments = array() ) {
+		$GLOBALS['fr_wp_mail_calls'][] = array(
+			'to'          => $to,
+			'subject'     => $subject,
+			'message'     => $message,
+			'headers'     => $headers,
+			'attachments' => $attachments,
+		);
+		return $GLOBALS['fr_wp_mail_return'] ?? true;
+	}
+}
+
+// Lightweight implementations of common WP helpers the new RestockNotify
+// Email class touches. Each is guarded so tests that ship their own richer
+// stub (e.g. snapshots) win.
+if ( ! function_exists( 'wp_parse_args' ) ) {
+	function wp_parse_args( $args, $defaults = array() ) {
+		if ( is_object( $args ) ) {
+			$args = get_object_vars( $args );
+		}
+		if ( ! is_array( $args ) ) {
+			$args = array();
+		}
+		return array_merge( (array) $defaults, $args );
+	}
+}
+if ( ! function_exists( 'add_query_arg' ) ) {
+	function add_query_arg( $key, $value = '', $url = '' ) {
+		if ( is_array( $key ) ) {
+			$args = $key;
+			$url  = '' === $value ? ( $GLOBALS['fr_home_url'] ?? 'https://example.test' ) : $value;
+		} else {
+			$args = array( $key => $value );
+		}
+		$qs = http_build_query( $args );
+		$sep = ( false === strpos( $url, '?' ) ) ? '?' : '&';
+		return $url . $sep . $qs;
+	}
+}
+if ( ! function_exists( 'is_email' ) ) {
+	function is_email( $v ) {
+		return (bool) filter_var( (string) $v, FILTER_VALIDATE_EMAIL );
+	}
+}
+if ( ! function_exists( 'wc_get_page_permalink' ) ) {
+	function wc_get_page_permalink( $page = 'shop' ) {
+		return ( $GLOBALS['fr_home_url'] ?? 'https://example.test' ) . '/' . (string) $page;
+	}
+}
+if ( ! function_exists( 'wp_get_attachment_url' ) ) {
+	function wp_get_attachment_url( $id ) {
+		return $GLOBALS['fr_attachment_url'] ?? '';
+	}
+}
+if ( ! function_exists( 'get_bloginfo' ) ) {
+	function get_bloginfo( $key = '' ) {
+		if ( 'name' === $key ) {
+			return $GLOBALS['fr_blogname'] ?? 'Test Site';
+		}
+		return $GLOBALS['fr_home_url'] ?? 'https://example.test';
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Blanket null-return stubs for every other WP function used in the codebase.
 // Only runs for functions NOT already defined above.

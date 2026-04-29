@@ -1,52 +1,11 @@
 <?php
 declare(strict_types=1);
 
+// Shared stub for \RSN_Database — see tests/__stubs__/rsn_database_stub.php.
+require_once __DIR__ . '/__stubs__/rsn_database_stub.php';
+
 use Freeman\Core\Modules\RestockNotify\Subscribers;
 use PHPUnit\Framework\TestCase;
-
-// Stub `RSN_Database` before the legacy file gets a chance to load it.
-// `Subscribers::*` calls resolve to this stub at runtime; the real legacy
-// class is only require_once'd from Module::boot(), which the tests never
-// exercise. Public static properties capture call args + drive returns.
-if ( ! class_exists( '\RSN_Database' ) ) {
-	// phpcs:ignore Generic.Files.OneObjectStructurePerFile.MultipleFound
-	class RSN_Database {
-		public static array $calls = array();
-		public static $get_waiting_for_product_return = array();
-		public static $mark_notified_return = 1;
-		public static $get_by_token_return = null;
-		public static $unsubscribe_return = 1;
-
-		public static function get_waiting_for_product( $product_id, $variation_id = 0 ) {
-			self::$calls[] = array(
-				'method' => 'get_waiting_for_product',
-				'args'   => array( $product_id, $variation_id ),
-			);
-			return self::$get_waiting_for_product_return;
-		}
-		public static function mark_notified( $id ) {
-			self::$calls[] = array(
-				'method' => 'mark_notified',
-				'args'   => array( $id ),
-			);
-			return self::$mark_notified_return;
-		}
-		public static function get_by_token( $token ) {
-			self::$calls[] = array(
-				'method' => 'get_by_token',
-				'args'   => array( $token ),
-			);
-			return self::$get_by_token_return;
-		}
-		public static function unsubscribe( $id ) {
-			self::$calls[] = array(
-				'method' => 'unsubscribe',
-				'args'   => array( $id ),
-			);
-			return self::$unsubscribe_return;
-		}
-	}
-}
 
 /**
  * @covers \Freeman\Core\Modules\RestockNotify\Subscribers

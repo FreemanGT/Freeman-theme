@@ -17,6 +17,8 @@ freeman-core/src/Modules/ProductFeed/Generator.php:224:			$args = (array) apply_
 freeman-core/src/Modules/ProductFeed/Generator.php:262:				$xml = (string) apply_filters( 'freeman_core/product_feed/item', $this->product_xml( $product ), $product );
 freeman-core/src/Modules/ProductFeed/Server.php:94:		do_action( 'freeman_core/product_feed/before_serve' );
 freeman-core/src/Modules/ProductSlider/Widget.php:806:		$args = (array) apply_filters( 'freeman_core/product_slider/query_args', $args, $s );
+freeman-core/src/Modules/RestockNotify/Email.php:209:		$a = (array) apply_filters( 'freeman_core/restock_notify/email_args', $a, $subscriber, $kind );
+freeman-core/src/Modules/RestockNotify/Email.php:292:		do_action( 'freeman_core/restock_notify/before_send', $to, $subject, $html, $subscriber );
 freeman-core/src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:75:        $should = (bool) apply_filters( 'rsn_should_enqueue', $should );
 freeman-core/src/Modules/VariableStockFix/Module.php:294:		if ( ! apply_filters( 'freeman_core/variable_stock_fix/should_check', true, $product ) ) {
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-ajax.php:44:			$checkout = (string) apply_filters( 'etucart_vs_checkout_url', $checkout );

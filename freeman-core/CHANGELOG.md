@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.4] — 2026-04-29
+
+- Wave 2.3b: modern Email + Stock_Monitor classes via class_alias swap; bilingual email shell fix; freeman_core/restock_notify/email_args filter and before_send action
+
 ## [1.11.3] — 2026-04-29
 
 - Wave 2.3a: add Subscribers repository - thin static wrapper around RSN_Database with 4 methods, no callers yet, groundwork for 2.3b/c

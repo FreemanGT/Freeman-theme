@@ -143,9 +143,16 @@
 	padding: 0 !important;
 }
 
+/* `min-width: 0` on the flex column items so the pill row's
+ * `overflow: hidden` actually wins against the card column's intrinsic
+ * sizing — without it, a long unbreakable attribute label or selected-
+ * variation name in `.attr-head` lets the column track stretch and
+ * triggers the same RTL-grid breakage the pill cap above guards against.
+ */
 .etucart-shop-pick__attr {
 	margin: 0 !important;
 	padding: 0 !important;
+	min-width: 0 !important;
 }
 
 .etucart-shop-pick__attr-head {
@@ -155,6 +162,7 @@
 	margin: 0 0 4px 0 !important;
 	font-size: 12px !important;
 	line-height: 1.2 !important;
+	min-width: 0 !important;
 }
 
 .etucart-shop-pick__attr-label {
@@ -279,9 +287,19 @@
 	border-color: var(--eshop-border-strong) !important;
 }
 
-/* ---------- Size / text pill ---------- */
+/* ---------- Size / text pill ----------
+ * `max-width: 100%` + `overflow: hidden` keep a single long-text option
+ * (e.g. "Extra Large Premium Edition") from inflating the pill past the
+ * card's column width. Without this cap, a nowrap pill's intrinsic width
+ * propagates up the flex chain and the grid track stretches to fit it,
+ * which on RTL archives pushes the rest of the row off-screen to the
+ * left. The `.etucart-shop-pick__opts` parent already has
+ * `min-width: 0` + `overflow: hidden`; the bound here is the
+ * per-pill safety so a single chip can never exceed its row.
+ */
 .etucart-shop-pick__opt--button {
 	min-width: 36px !important;
+	max-width: 100% !important;
 	height: 32px !important;
 	padding: 0 12px !important;
 	border-radius: var(--eshop-radius-pill) !important;
@@ -295,6 +313,7 @@
 	justify-content: center !important;
 	cursor: pointer !important;
 	white-space: nowrap !important;
+	overflow: hidden !important;
 	transition: background var(--eshop-transition), border-color var(--eshop-transition), color var(--eshop-transition) !important;
 }
 

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.6] — 2026-04-29
+
+- Bug fix: cap shop variation-pill width so long option names cannot stretch the product card column and break the archive grid (RTL: pushed cards off-screen left).
+
 ## [1.11.5] — 2026-04-29
 
 - Wave 2.3c: modern Frontend via class_alias swap; Hebrew JS strings + form placeholders moved to locales/; freeman_core/restock_notify/should_inject filter

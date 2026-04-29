@@ -103,6 +103,7 @@ These extend §3 (Surgical Changes) with project-specific surfaces:
 6. NEVER modify the database schema without `dbDelta()` upgrade routine + downgrade note.
 7. NEVER change `Logger`'s `final` keyword. Do not extract a `Logger_Interface`. Add hooks only inside `log()`.
 8. NEVER use `error_log()`, `var_dump()`, or `console.log()` in shipped code. Use `Freeman\Core\Core\Logger`.
+9. NEVER ship a wave PR without updating `/docs/roadmap.md` in the same PR — mark the wave's section with `✅ shipped <version> (#<PR>, <YYYY-MM-DD>)` and bump the **Last updated** line. Sub-PRs (e.g. 1.1a, 2.3a) update only their own sub-bullet; the parent wave stays open until all sub-PRs ship. If the same PR also lands roadmap edits beyond the shipped-marker (promotion, scope change, new wave entry), state that separately in the PR description.
 
 ## STOP and ask before coding if
 
@@ -125,7 +126,7 @@ If touching >12 files or >3 modules: STOP and ask whether to split.
 
 When asked to implement a roadmap item, follow §4 (Goal-Driven Execution) with this concrete shape:
 
-1. **Pre-flight**: which decisions in `/docs/decisions-2026-04-28.md` does this depend on; which Wave-0/1 prerequisites are satisfied. **If the wave adds tests**, note that the "Current infrastructure state" PHPUnit count above must be updated in the same PR — copy the new total from `vendor/bin/phpunit`'s reported count, not the method count.
+1. **Pre-flight**: which decisions in `/docs/decisions-2026-04-28.md` does this depend on; which Wave-0/1 prerequisites are satisfied. Include a **Roadmap delta** section listing roadmap changes, or `none` if truly none, as a flag to double-check. Roadmap freshness: every wave's PR must update `/docs/roadmap.md` in the same PR by marking the wave shipped with version + date, bumping the "Last updated" line, and reconciling any scope drift between predicted and actual. **If the wave adds tests**, note that the "Current infrastructure state" PHPUnit count above must be updated in the same PR — copy the new total from `vendor/bin/phpunit`'s reported count, not the method count.
 2. **Plan**: file list, hook list, option keys, feature flag name, default value, test list. **No code yet.**
 3. *Wait for human approval of the plan before proceeding.*
 4. **Execution**: code changes, one logical commit per file group.

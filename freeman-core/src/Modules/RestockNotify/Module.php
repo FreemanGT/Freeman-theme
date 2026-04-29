@@ -222,10 +222,16 @@ final class Module extends Module_Base {
 		class_alias( '\\Freeman\\Core\\Modules\\RestockNotify\\Email',         'RSN_Email' );
 		class_alias( '\\Freeman\\Core\\Modules\\RestockNotify\\Stock_Monitor', 'RSN_Stock_Monitor' );
 
-		require_once $dir . 'class-rsn-frontend.php';
+		// Wave 2.3c — same alias pattern for Frontend. Legacy callers that
+		// reference `\RSN_Frontend` (none currently — it's only instantiated
+		// from this method) resolve to modern Frontend. The legacy
+		// class-rsn-frontend.php file is NOT `require_once`'d below — loading
+		// it would `class RSN_Frontend {}` against the alias and fatal.
+		class_alias( '\\Freeman\\Core\\Modules\\RestockNotify\\Frontend',      'RSN_Frontend' );
+
 		require_once $dir . 'class-rsn-ajax.php';
 
-		new \RSN_Frontend();
+		new \Freeman\Core\Modules\RestockNotify\Frontend();
 		new \RSN_Ajax();
 		new \Freeman\Core\Modules\RestockNotify\Stock_Monitor();
 

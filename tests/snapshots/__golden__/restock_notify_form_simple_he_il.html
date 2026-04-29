@@ -1,0 +1,77 @@
+<style>
+				.rsn-form-wrap{margin:24px 0;direction:rtl;text-align:right}
+				.rsn-form-card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:32px 28px;max-width:480px;direction:rtl;text-align:right;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+				.rsn-form-heading{margin:0 0 6px;font-size:18px;font-weight:600;color:#111}
+				.rsn-form-desc{margin:0 0 20px;font-size:14px;color:#666;line-height:1.6}
+				.rsn-form-fields{display:flex;flex-direction:column;gap:12px}
+				.rsn-field-row{display:flex;gap:10px}
+				.rsn-field{flex:1}
+				.rsn-input{display:block;width:100%;padding:11px 14px;font-size:14px;color:#111;background:#fafafa;border:1px solid #e0e0e0;border-radius:8px;outline:none;box-sizing:border-box;direction:rtl;text-align:right;font-family:inherit}
+				.rsn-input:focus{background:#fff;border-color:#111;box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+				.rsn-submit-btn{display:flex;align-items:center;justify-content:center;width:100%;padding:12px 20px;font-size:14px;font-weight:600;color:#fff;background:#111;border:none;border-radius:8px;cursor:pointer;font-family:inherit}
+				.rsn-submit-btn:hover{background:#333}
+				.rsn-hidden{display:none!important}
+				.rsn-form-icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:#000;border-radius:50%;margin-bottom:16px;color:#fff}
+				.rsn-form-success{text-align:center;padding:8px 0}
+				.rsn-success-icon{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;background:#f0f0f0;border-radius:50%;margin-bottom:12px;color:#111}
+				.rsn-error-text{margin:0;padding:10px 14px;font-size:13px;color:#c00;background:#fff5f5;border:1px solid #fdd;border-radius:8px}
+				.rsn-gdpr-label{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:#666;cursor:pointer}
+				.rsn-btn-spinner{display:none}
+				.rsn-loading .rsn-btn-text{display:none}
+				.rsn-loading .rsn-btn-spinner{display:inline-flex;animation:rsnSpin .8s linear infinite}
+				.rsn-loading{pointer-events:none;opacity:.7}
+				@keyframes rsnSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+				@keyframes rsnFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+				.rsn-form-wrap{animation:rsnFadeIn .4s ease-out}
+				@media(max-width:480px){.rsn-field-row{flex-direction:column}.rsn-form-card{padding:24px 20px}}
+			</style>		<div class="rsn-form-wrap" dir="rtl" data-product-id="42" data-variation-id="0">
+			<div class="rsn-form-card">
+				<div class="rsn-form-icon">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+						<path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+					</svg>
+				</div>
+				<h4 class="rsn-form-heading">HEADING</h4>
+				<p class="rsn-form-desc">DESCRIPTION.</p>
+
+				<div class="rsn-form-fields">
+					<div class="rsn-field-row">
+						<div class="rsn-field">
+							<input type="text" class="rsn-input rsn-name" placeholder="שם מלא" autocomplete="name" />
+						</div>
+						<div class="rsn-field">
+							<input type="email" class="rsn-input rsn-email" placeholder="כתובת אימייל" autocomplete="email" required />
+						</div>
+					</div>
+
+					<!-- honeypot: real users can't see this; bots fill it. -->
+					<input type="text" name="_hp" class="rsn-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" />
+
+					
+					<button type="button" class="rsn-submit-btn">
+						<span class="rsn-btn-text">BUTTON</span>
+						<span class="rsn-btn-spinner">
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+							</svg>
+						</span>
+					</button>
+				</div>
+
+				<div class="rsn-form-success rsn-hidden">
+					<div class="rsn-success-icon">
+						<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+							<polyline points="22 4 12 14.01 9 11.01"/>
+						</svg>
+					</div>
+					<p class="rsn-success-text">SUCCESS</p>
+				</div>
+
+				<div class="rsn-form-error rsn-hidden">
+					<p class="rsn-error-text"></p>
+				</div>
+			</div>
+		</div>
+		

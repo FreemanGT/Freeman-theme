@@ -29,6 +29,23 @@ final class RestockNotifyLocaleTest extends TestCase {
 		'shell_unsubscribe_link_suffix',
 	);
 
+	/**
+	 * Frontend keys added in Wave 2.3c (1.11.5). Consumed directly by the
+	 * modern `Frontend` class (`js_*` end up in the wp_localize_script
+	 * payload, `form_placeholder_*` end up as inline form input
+	 * placeholders). NOT seeded into `rsn_*` options.
+	 */
+	private const FRONTEND_KEYS = array(
+		'js_invalid_email',
+		'js_consent_missing',
+		'js_product_missing',
+		'js_script_missing',
+		'js_generic_error',
+		'js_network_error',
+		'form_placeholder_name',
+		'form_placeholder_email',
+	);
+
 	protected function setUp(): void {
 		parent::setUp();
 		$GLOBALS['fr_opts']   = array();
@@ -61,7 +78,7 @@ final class RestockNotifyLocaleTest extends TestCase {
 	public function test_defaults_method_return_shape_is_stable(): void {
 		$en       = Module::defaults( 'en_US' );
 		$he       = Module::defaults( 'he_IL' );
-		$expected = array_merge( self::REQUIRED_KEYS, self::SHELL_KEYS );
+		$expected = array_merge( self::REQUIRED_KEYS, self::SHELL_KEYS, self::FRONTEND_KEYS );
 		$this->assertSame( $expected, array_keys( $en ) );
 		$this->assertSame( $expected, array_keys( $he ) );
 	}
@@ -75,16 +92,26 @@ final class RestockNotifyLocaleTest extends TestCase {
 		}
 	}
 
-	public function test_seed_locale_defaults_skips_shell_keys(): void {
+	public function test_frontend_keys_present_in_both_locales(): void {
+		$en = Module::defaults( 'en_US' );
+		$he = Module::defaults( 'he_IL' );
+		foreach ( self::FRONTEND_KEYS as $k ) {
+			$this->assertNotEmpty( $en[ $k ], "en_US.{$k} must be set" );
+			$this->assertNotEmpty( $he[ $k ], "he_IL.{$k} must be set" );
+		}
+	}
+
+	public function test_seed_locale_defaults_skips_shell_and_frontend_keys(): void {
 		$GLOBALS['fr_locale'] = 'en_US';
 
 		( new Module() )->seed_locale_defaults();
 
-		// Shell keys must NOT be seeded into the options table.
-		foreach ( self::SHELL_KEYS as $k ) {
+		// Neither shell nor frontend keys may be seeded into the options
+		// table — they're read directly from the locale files at call time.
+		foreach ( array_merge( self::SHELL_KEYS, self::FRONTEND_KEYS ) as $k ) {
 			$this->assertFalse(
 				get_option( 'rsn_' . $k, false ),
-				"rsn_{$k} must NOT be seeded as an option (shell strings are read directly from locale files)"
+				"rsn_{$k} must NOT be seeded as an option"
 			);
 		}
 		// Sanity: option keys still ARE seeded.

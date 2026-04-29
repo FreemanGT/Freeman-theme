@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-04-29
+**Last updated**: 2026-04-29 (2.3c shipped)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -15,8 +15,9 @@ This is the execution plan. Waves run in order. Items within a wave can run in p
 | 1.2 | RestockNotify locale bootstrapper (English defaults, Hebrew opt-in) | freeman-core 1.11.2 | 2026-04-28 | [#9](https://github.com/FreemanGT/Freeman-theme/pull/9) |
 | 2.3a | RestockNotify modern Subscribers repository wrapper | freeman-core 1.11.3 | 2026-04-29 | [#10](https://github.com/FreemanGT/Freeman-theme/pull/10) |
 | 2.3b | RestockNotify modern Email + Stock_Monitor (bilingual fix + 2 hooks) | freeman-core 1.11.4 | 2026-04-29 | [#11](https://github.com/FreemanGT/Freeman-theme/pull/11) |
+| 2.3c | RestockNotify modern Frontend (Hebrew-JS-strings fix + `should_inject` hook) | freeman-core 1.11.5 | 2026-04-29 | _this PR_ |
 
-Wave-1.1's `infinite_scroll/selector` / `before_render` / `after_render` were folded into Wave 3.1 per the roadmap; `restock_notify/should_inject` (and the rest of the deferred Wave-1.1 RestockNotify hooks) is the next item — Wave 2.3c, in flight.
+Wave-1.1's `infinite_scroll/selector` / `before_render` / `after_render` are still folded into Wave 3.1. With 2.3c shipped, all 3 deferred Wave-1.1 RestockNotify hooks are now live (`should_inject` from this wave; `email_args` + `before_send` from 2.3b). Wave 2.3 closed; Wave 3 (P1 functional improvements) is next.
 
 ---
 
@@ -157,7 +158,7 @@ Master plan (approved 2026-04-29) split execution into 3 sub-PRs (2.3a → 2.3b 
 
 **2.3b** ✅ shipped 1.11.4 (#11, 2026-04-29) — modern `Email` + `Stock_Monitor` via `class_alias` swap in `Module::boot()`. Bilingual-email shell fix (4 Hebrew literals moved to `locales/<locale>.php` `shell_*` keys). 2 of the 3 deferred hooks land: `freeman_core/restock_notify/email_args` (filter) and `before_send` (action). The 3rd deferred hook (`should_inject`) waits for 2.3c.
 
-**2.3c** — modern `Frontend` (in flight, master-plan answer Q-E required a local spike before pre-flight; spike completed 2026-04-29). Lands the final deferred Wave-1.1 hook `freeman_core/restock_notify/should_inject` and fixes the Hebrew JS strings + form placeholders that 2.3b couldn't reach (per Q-C). Single-PR with explicit waiver expected (~18-22 files; same one-off framing as 2.3b's #11). Browser-side JS-relocation parity for `footer_inject` is live-QA-only; PHPUnit covers the PHP-side output of all 4 injection paths byte-identically.
+**2.3c** ✅ shipped 1.11.5 (this PR, 2026-04-29) — modern `Frontend` via `class_alias` swap. Lands the final deferred Wave-1.1 hook `freeman_core/restock_notify/should_inject` (per-product render gate, distinct from `rsn_should_enqueue`'s page-level asset gate) and moves 8 Hebrew literals into `locales/<locale>.php` (`js_*` for the `wp_localize_script` payload, `form_placeholder_*` for the inline form input placeholders). The 6-case `is_variation_truly_oos()` ladder copied verbatim from legacy with one unit test per branch. Browser-side JS-relocation parity for `footer_inject` is live-QA-only; PHPUnit locks the PHP-side output of all 4 injection paths.
 
 Each sub-PR keeps `legacy/` files untouched; modern classes shadow via `class_alias`. Existing legacy filters (`rsn_should_enqueue`), AJAX action (`rsn_subscribe`), shortcode (`[restock_notify]`), unsubscribe URL pattern, transient cache key shape, asset handles, admin URLs, and the `{prefix}rsn_subscribers` table are all preserved verbatim across the migration.
 

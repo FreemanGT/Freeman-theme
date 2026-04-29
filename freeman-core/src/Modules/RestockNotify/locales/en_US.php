@@ -41,4 +41,16 @@ return array(
 	'shell_greeting'               => 'Hi %s,',
 	'shell_unsubscribe_link_text'  => 'Unsubscribe',
 	'shell_unsubscribe_link_suffix' => 'for this product.',
+
+	// Frontend strings (Wave 2.3c) — consumed by modern Frontend's
+	// wp_localize_script payload (js_*) and render_form() placeholders
+	// (form_placeholder_*). NOT seeded into rsn_* options.
+	'js_invalid_email'             => 'Please enter a valid email address.',
+	'js_consent_missing'           => 'Please confirm the consent checkbox.',
+	'js_product_missing'           => 'Error: missing product id.',
+	'js_script_missing'            => 'Error: the script did not load correctly. Please refresh the page.',
+	'js_generic_error'             => 'Something went wrong. Please try again.',
+	'js_network_error'             => 'Network error. Please try again.',
+	'form_placeholder_name'        => 'Full name',
+	'form_placeholder_email'       => 'Email address',
 );

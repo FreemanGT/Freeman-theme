@@ -892,18 +892,21 @@
 				var pid = parseInt($form.attr('data-product_id') || '0', 10);
 				var pre = readPreselectEntry(pid);
 				if (pre) {
-					if (preselectTimingFix) {
-						// Wave 4.4: defer the apply until refresh() has bound
-						// wc_variation_form. Without the deferral, our
-						// $select.val(v).trigger('change') fires before WC's
-						// onChange handler binds (or before its match logic is
-						// ready), so found_variation never fires and the
-						// gallery image stays on the parent default.
-						$form.data('etucart-pending-preselect', pre.attrs);
-					} else {
-						var applied = applyPreselect($form, pre.attrs);
-						if (applied > 0) {
-							clearPreselectEntry(pid);
+					var applied = applyPreselect($form, pre.attrs);
+					if (applied > 0) {
+						clearPreselectEntry(pid);
+						if (preselectTimingFix) {
+							// Wave 4.4: stash the attrs so refresh() can re-fire
+							// change events on the preselected selects after
+							// $.fn.wc_variation_form() binds. The original
+							// race: our $select.val(v).trigger('change') above
+							// can fire before WC's onChange listener is ready,
+							// silently dropping the found_variation that swaps
+							// the gallery image. The rehydrate fixes that
+							// without deviating from the legacy synchronous
+							// apply on flag OFF — found_variation is
+							// idempotent on a re-fired matching change.
+							$form.data('etucart-preselect-rehydrate', pre.attrs);
 						}
 					}
 				}
@@ -939,18 +942,24 @@
 						try { $form.wc_variation_form(); } catch (e) {}
 					}
 
-					// Wave 4.4: apply any preselect deferred from initForm now
-					// that wc_variation_form is bound. Once per form.
-					if (preselectTimingFix && $form.attr('data-etucart-preselect-applied') !== '1') {
-						var pending = $form.data('etucart-pending-preselect');
-						if (pending) {
-							var pidApply = parseInt($form.attr('data-product_id') || '0', 10);
-							var appliedCount = applyPreselect($form, pending);
-							if (appliedCount > 0) {
-								clearPreselectEntry(pidApply);
+					// Wave 4.4: re-fire change on each preselected hidden
+					// select now that wc_variation_form is bound, in case the
+					// initForm() apply landed before WC's onChange listener
+					// was ready. Once per form. Idempotent — WC's
+					// found_variation handler safely re-runs on the same
+					// matching variation.
+					if (preselectTimingFix && $form.attr('data-etucart-preselect-rehydrated') !== '1') {
+						var rehydrate = $form.data('etucart-preselect-rehydrate');
+						if (rehydrate) {
+							for (var rname in rehydrate) {
+								if (!rehydrate.hasOwnProperty(rname)) continue;
+								var $rsel = findHiddenSelect($form, rname);
+								if ($rsel.length && String($rsel.val()) === String(rehydrate[rname] || '')) {
+									$rsel.trigger('change');
+								}
 							}
-							$form.attr('data-etucart-preselect-applied', '1');
-							$form.removeData('etucart-pending-preselect');
+							$form.attr('data-etucart-preselect-rehydrated', '1');
+							$form.removeData('etucart-preselect-rehydrate');
 						}
 					}
 

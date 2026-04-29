@@ -1,8 +1,8 @@
 # Freeman Core — Changelog
 
-## [1.11.11] — 2026-04-30
+## [1.11.12] — 2026-04-30
 
-- Wave 4.4: VariationSwatches preselect timing fix - archive/slider variation swatch click now correctly swaps the gallery image on the PDP. Bug was a race - applyPreselect() fired the change event before wc_variation_form() bound, so found_variation never fired. Fix defers the apply into refresh() once WC has bound. Behind freeman_core_variation_swatches_preselect_timing_fix_enabled (default OFF).
+- Wave 4.4 (revised): VariationSwatches preselect timing fix - archive/slider variation swatch click now correctly swaps the gallery image on the PDP. Bug was a race - applyPreselect() fired the change event before wc_variation_form() bound, so found_variation never fired. Revised fix keeps the legacy synchronous apply in initForm() (preserves OFF behavior verbatim) and adds a redundant change re-trigger inside refresh() once wc_variation_form has bound. Replaces 1.11.11's deferred-apply approach which regressed the QV-close-then-link flow. Behind freeman_core_variation_swatches_preselect_timing_fix_enabled (default OFF).
 
 ## [1.11.6] — 2026-04-29
 

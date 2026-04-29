@@ -16,7 +16,7 @@ This is the execution plan. Waves run in order. Items within a wave can run in p
 | 2.3a | RestockNotify modern Subscribers repository wrapper | freeman-core 1.11.3 | 2026-04-29 | [#10](https://github.com/FreemanGT/Freeman-theme/pull/10) |
 | 2.3b | RestockNotify modern Email + Stock_Monitor (bilingual fix + 2 hooks) | freeman-core 1.11.4 | 2026-04-29 | [#11](https://github.com/FreemanGT/Freeman-theme/pull/11) |
 | 2.3c | RestockNotify modern Frontend (Hebrew-JS-strings fix + `should_inject` hook) | freeman-core 1.11.5 | 2026-04-29 | _this PR_ |
-| 4.4 | VariationSwatches preselect timing fix (archive→PDP variation image) | freeman-core 1.11.11 | 2026-04-30 | _this PR_ |
+| 4.4 | VariationSwatches preselect timing fix (archive→PDP variation image) | freeman-core 1.11.12 | 2026-04-30 | _this PR_ |
 
 Wave-1.1's `infinite_scroll/selector` / `before_render` / `after_render` are still folded into Wave 3.1. With 2.3c shipped, all 3 deferred Wave-1.1 RestockNotify hooks are now live (`should_inject` from this wave; `email_args` + `before_send` from 2.3b). Wave 2.3 closed; Wave 3 (P1 functional improvements) is next.
 
@@ -214,7 +214,7 @@ Each item is its own PR with its own feature flag. Order within wave doesn't mat
 - Existing CSS variables stay as fallbacks
 - No flag (additive)
 
-**4.4 — VariationSwatches preselect timing fix (P1 bugfix)** ✅ shipped 1.11.11 (_this PR_, 2026-04-30)
+**4.4 — VariationSwatches preselect timing fix (P1 bugfix)** ✅ shipped 1.11.12 (_this PR_, 2026-04-30)
 - Bug: choosing a variation from a shop archive or product slider correctly hands off to the PDP via sessionStorage (`etucart_qv_preselect_<pid>`), but the PDP's gallery image stays on the parent default. Direct PDP swatch clicks already work.
 - Cause: `applyPreselect()` fires `$select.val(v).trigger('change')` synchronously inside `initForm()`, before `wc_variation_form()` is bound inside `refresh()`. WC's `onChange`→`found_variation` chain therefore never runs for the preselect, and the gallery never updates.
 - Fix: behind a flag, defer the preselect apply into the first `refresh()` invocation — after `$.fn.wc_variation_form()` binds. Per-form `data-etucart-preselect-applied` flag guarantees once-only execution.

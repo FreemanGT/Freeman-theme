@@ -2,7 +2,7 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
-## [1.11.7] — 2026-04-30
+## [1.11.11] — 2026-04-30
 
 - Wave 4.4: VariationSwatches preselect timing fix - archive/slider variation swatch click now correctly swaps the gallery image on the PDP. Bug was a race - applyPreselect() fired the change event before wc_variation_form() bound, so found_variation never fired. Fix defers the apply into refresh() once WC has bound. Behind freeman_core_variation_swatches_preselect_timing_fix_enabled (default OFF).
 

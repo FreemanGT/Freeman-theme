@@ -78,8 +78,13 @@ class Etucart_VS_Frontend {
 
 	/**
 	 * Remove `woocommerce_template_single_price` from the single-product
-	 * summary when our variable buy-box will render its own price line.
-	 * Simple/grouped/external products keep WC's price line untouched.
+	 * summary when our buy-box will render its own price line. Applies to
+	 * variable AND simple products (1.11.7 — simple was previously a
+	 * no-op, which left Elementor/FSE templates that don't fire WC's
+	 * default action chain with no visible price; classic-theme installs
+	 * now render our price instead of WC's, structurally similar markup).
+	 * Grouped / external products keep WC's price line untouched — they
+	 * use the native template, not our buy-box.
 	 *
 	 * Hooked on `woocommerce_single_product_summary` priority 9 so it
 	 * fires during every summary render — main PDP, Elementor preview,
@@ -90,7 +95,10 @@ class Etucart_VS_Frontend {
 	 */
 	public function maybe_suppress_pdp_price(): void {
 		global $product;
-		if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) ) {
+		if ( ! $product instanceof WC_Product ) {
+			return;
+		}
+		if ( ! $product->is_type( 'variable' ) && ! $product->is_type( 'simple' ) ) {
 			return;
 		}
 		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );

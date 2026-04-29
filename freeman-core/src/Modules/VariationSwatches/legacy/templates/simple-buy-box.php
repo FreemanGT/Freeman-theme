@@ -27,8 +27,21 @@ $product_id = $product->get_id();
 // sticky bar — so a priceless or out-of-stock product renders the same
 // clear OOS state instead of a confusing half-enabled form.
 $buyable = $product->is_purchasable() && $product->is_in_stock();
+?>
 
-do_action( 'woocommerce_before_add_to_cart_form' ); ?>
+<?php // 1.11.7 — main-area PDP price line for simple products. Symmetric to
+	  // variation-buy-box.php's `.etucart-pdp-price` and gated by the
+	  // matching simple-branch in `Etucart_VS_Frontend::maybe_suppress_pdp_price()`
+	  // so classic-theme installs don't double-render WC's default price.
+	  // Renders unconditionally — Elementor / FSE / quick-view modal contexts
+	  // that don't fire WC's default price action now get a visible price too. ?>
+<p class="price etucart-pdp-price etucart-pdp-price--simple"
+   dir="<?php echo is_rtl() ? 'rtl' : 'ltr'; ?>"
+   data-pdp-price>
+	<span class="etucart-pdp-price__value"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
+</p>
+
+<?php do_action( 'woocommerce_before_add_to_cart_form' ); ?>
 
 <form class="cart etucart-buy-box etucart-buy-box--simple"
 	  action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>"

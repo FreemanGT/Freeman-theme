@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.7] — 2026-04-29
+
+- Bug fix: render main-area PDP price for simple products in the Freeman buy-box (was previously only rendered for variable products, leaving Elementor / FSE / WPC Quick View / WooSQ contexts with no visible price). Symmetric to variation-buy-box; classic-theme installs no longer double-render via WC default.
+
 ## [1.11.5] — 2026-04-29
 
 - Wave 2.3c: modern Frontend via class_alias swap; Hebrew JS strings + form placeholders moved to locales/; freeman_core/restock_notify/should_inject filter

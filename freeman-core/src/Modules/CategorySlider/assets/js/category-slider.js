@@ -65,6 +65,25 @@
 
 	function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
 
+	// Default: (scrollWidth - clientWidth). With mode='children', derives the
+	// bound from the visible extent of .cs-card elements via
+	// getBoundingClientRect — direction-agnostic, and immune to phantom
+	// scrollable area added by trailing pseudo-elements or plugin-injected
+	// content past the last card. Opt-in per slider via data-cs-clamp-children
+	// on the root .cs element.
+	function computeMaxScroll(track, mode) {
+		if (mode === 'children') {
+			var cards = track.querySelectorAll('.cs-card');
+			if (cards.length > 0) {
+				var first = cards[0].getBoundingClientRect();
+				var last  = cards[cards.length - 1].getBoundingClientRect();
+				var contentWidth = Math.max(first.right, last.right) - Math.min(first.left, last.left);
+				return Math.max(0, contentWidth - track.clientWidth);
+			}
+		}
+		return Math.max(0, track.scrollWidth - track.clientWidth);
+	}
+
 	function attachDragScroll(track, opts) {
 		opts = opts || {};
 		if (opts.enabled === false) return;
@@ -94,7 +113,7 @@
 				state.raf = 0;
 				return;
 			}
-			var max = Math.max(0, track.scrollWidth - track.clientWidth);
+			var max = computeMaxScroll(track, opts.clampMode);
 			if (max <= 0) {
 				state.raf = 0;
 				return;
@@ -188,7 +207,7 @@
 			// either edge; modern browsers normalize scrollLeft to 0..-max
 			// in RTL, so the bounds are [-max, 0] in RTL and [0, max] in
 			// LTR — same `clamp` shape with the bounds swapped.
-			var dragMax = Math.max(0, track.scrollWidth - track.clientWidth);
+			var dragMax = computeMaxScroll(track, opts.clampMode);
 			var dragNext = state.startScroll - dx;
 			if (opts.isRtl) {
 				track.scrollLeft = clamp(dragNext, -dragMax, 0);
@@ -280,11 +299,11 @@
 	 * regardless of direction. The sign flip for scrollLeft is the only
 	 * direction-dependent piece.
 	 */
-	function attachProgressDrag(progress, track, isRtl) {
+	function attachProgressDrag(progress, track, isRtl, clampMode) {
 		if (!progress || !track) return;
 
 		function maxScroll() {
-			return Math.max(0, track.scrollWidth - track.clientWidth);
+			return computeMaxScroll(track, clampMode);
 		}
 
 		function ratioFromEvent(e) {
@@ -347,8 +366,12 @@
 		// "0" = explicitly disabled by admin → fall back to native overflow
 		// scroll for touch and to the progress scrubber for desktop.
 		var dragEnabled = root.getAttribute('data-cs-mouse-drag') !== '0';
+		// Opt-in: clamp scroll bounds at the visible extent of .cs-card
+		// children (rect-based) instead of trusting track.scrollWidth.
+		// ProductSlider sets this; CategorySlider does not.
+		var clampMode = root.getAttribute('data-cs-clamp-children') === '1' ? 'children' : 'native';
 
-		attachDragScroll(track, { enabled: dragEnabled, isRtl: isRtl });
+		attachDragScroll(track, { enabled: dragEnabled, isRtl: isRtl, clampMode: clampMode });
 
 		var arrows = root.querySelectorAll('[data-cs-dir]');
 		arrows.forEach(function (btn) {
@@ -365,11 +388,11 @@
 		var footCurrent = root.querySelector('[data-cs-foot-current]');
 		var totalCards = track.querySelectorAll('.cs-card').length;
 
-		attachProgressDrag(progress, track, isRtl);
+		attachProgressDrag(progress, track, isRtl, clampMode);
 		var per = parseInt(getComputedStyle(root).getPropertyValue('--cs-per'), 10) || 5;
 
 		function updateProgress() {
-			var max = track.scrollWidth - track.clientWidth;
+			var max = computeMaxScroll(track, clampMode);
 			// Math.abs handles both LTR (scrollLeft 0..max) and RTL normalized
 			// mode (0..-max), and is safe against the legacy positive-RTL mode.
 			var ratio = max > 0 ? clamp(Math.abs(track.scrollLeft) / max, 0, 1) : 0;
@@ -380,7 +403,11 @@
 				// (the previous approach) under-shoots whenever bar.width
 				// fraction differs from the visible-content fraction.
 				var parentW = progress.clientWidth;
-				var visibleRatio = track.scrollWidth > 0 ? track.clientWidth / track.scrollWidth : 1;
+				// Effective content width — derived from `max` so the bar
+				// width matches what the user can actually scroll, not what
+				// scrollWidth claims (which may be bloated in clampMode).
+				var effectiveContentWidth = max + track.clientWidth;
+				var visibleRatio = effectiveContentWidth > 0 ? track.clientWidth / effectiveContentWidth : 1;
 				var barW = Math.max(parentW * 0.12, parentW * Math.min(1, visibleRatio));
 				var travelPx = Math.max(0, parentW - barW);
 				var dx = (isRtl ? -1 : 1) * ratio * travelPx;

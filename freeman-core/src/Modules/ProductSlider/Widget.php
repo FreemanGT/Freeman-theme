@@ -907,6 +907,7 @@ final class Widget extends Widget_Base {
 			<?php if ( $is_slider ) : ?>
 				data-cs-snap="<?php echo esc_attr( $snap ); ?>"
 				data-cs-mouse-drag="<?php echo $mouse_drag ? '1' : '0'; ?>"
+				data-cs-clamp-children="1"
 			<?php endif; ?>
 			style="<?php echo esc_attr( $style_vars ); ?>"
 		>

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.15] — 2026-04-30
+
+- Wave 4.5 (final): fire `woocommerce_before_add_to_cart_button` action inside the buy-box template. Without it, plugins that hook this standard WC action (WPC FBT injects the `woobt_ids` hidden input here) never get to add their markup, and bundle/FBT extras silently drop on add-to-cart. The hook now fires inside `.etucart-actions`, mirroring WC's own `variations_button` placement. Single-line legacy template addition (approved exception to hard rule #3); purely additive — actions with no listeners are no-ops, with listeners they fire intended hook behavior. Combined with 1.11.14's marker correction this completes Wave 4.5: WPC FBT's woobt_ids now lands in our form, my marker scan detects it, capture-phase steps aside, and FBT's own bubble-phase handler posts to its `woobt_add_all_to_cart` endpoint.
+
 ## [1.11.14] — 2026-04-30
 
 - Wave 4.5 (revised): correct the WPC FBT marker. 1.11.13 used `wcfbt_` based on a guess; reading WPC FBT's actual frontend.js source (wp.org slug `woo-bought-together`) confirmed the plugin injects a hidden `woobt_ids` field and posts to its own AJAX action `woobt_add_all_to_cart`. With the wrong marker, our capture-phase shortcut never stepped aside, intercepted FBT's button click, posted the wrong payload to WC's `add_to_cart`, the AJAX failed, and our fallback ran a native form submit which navigated to the form's action URL (the product permalink) — that's the "QV opens product page" + "extremely slow" symptom 1.11.13 had on FBT sites. Default markers now `['woobt_']` only. WPC Product Bundles uses `woosb-ids-*` (hyphen) but doesn't have its own AJAX endpoint — its WC `add_to_cart` action hook processes the fields server-side, so flag-ON's `serializeArray()` forwarding already handles bundles without needing a marker; adding `woosb-` would force a slower native page reload instead. Same flag, same default OFF.

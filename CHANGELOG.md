@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.15] — 2026-04-30
+
+- Wave 4.5 (final): fire `woocommerce_before_add_to_cart_button` action inside the buy-box template. Plugins that hook this standard WC action (WPC FBT for `woobt_ids` hidden input, others) now actually get to inject — without this, our custom buy-box was silently dropping FBT/bundle extras at submit. Single-line legacy template addition, approved exception to hard rule #3, purely additive. Completes Wave 4.5 alongside 1.11.14's marker correction.
+
 ## [1.11.14] — 2026-04-30
 
 - Wave 4.5 (revised): correct the WPC FBT marker from the wrong `wcfbt_` (guessed) to `woobt_` (verified against wp.org `woo-bought-together` plugin source — internally branded WOOBT). 1.11.13 missed the actual marker, so our capture-phase shortcut intercepted FBT button clicks, the AJAX failed, and the form fallback navigated to the product permalink. Removed `woosb_` from defaults — Smart Bundles uses hyphenated `woosb-ids-*` and is handled correctly by serializeArray field forwarding without needing a marker. Same flag, same default OFF.

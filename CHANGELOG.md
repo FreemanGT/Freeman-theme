@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.14] — 2026-04-30
+
+- Wave 4.5 (revised): correct the WPC FBT marker from the wrong `wcfbt_` (guessed) to `woobt_` (verified against wp.org `woo-bought-together` plugin source — internally branded WOOBT). 1.11.13 missed the actual marker, so our capture-phase shortcut intercepted FBT button clicks, the AJAX failed, and the form fallback navigated to the product permalink. Removed `woosb_` from defaults — Smart Bundles uses hyphenated `woosb-ids-*` and is handled correctly by serializeArray field forwarding without needing a marker. Same flag, same default OFF.
+
 ## [1.11.13] — 2026-04-30
 
 - Wave 4.5: VariationSwatches WPC Bundles + FBT compatibility - when flag ON, the swatches AJAX add-to-cart now forwards every form field (minus a small WP-nonce denylist) so bundle/FBT plugins' injected hidden fields reach WC_AJAX::add_to_cart, and the capture-phase shortcut steps aside when the form contains any marker prefix in freeman_core/variation_swatches/bundle_markers (defaults woosb_ and wcfbt_) so the bundle plugin's own bubble-phase handler can run. Behind freeman_core_variation_swatches_bundle_compat_enabled (default OFF).

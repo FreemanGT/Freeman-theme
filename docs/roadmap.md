@@ -16,7 +16,7 @@ This is the execution plan. Waves run in order. Items within a wave can run in p
 | 2.3a | RestockNotify modern Subscribers repository wrapper | freeman-core 1.11.3 | 2026-04-29 | [#10](https://github.com/FreemanGT/Freeman-theme/pull/10) |
 | 2.3b | RestockNotify modern Email + Stock_Monitor (bilingual fix + 2 hooks) | freeman-core 1.11.4 | 2026-04-29 | [#11](https://github.com/FreemanGT/Freeman-theme/pull/11) |
 | 2.3c | RestockNotify modern Frontend (Hebrew-JS-strings fix + `should_inject` hook) | freeman-core 1.11.5 | 2026-04-29 | _this PR_ |
-| 4.5 | VariationSwatches WPC Bundles + FBT compatibility (full form-field forwarding + bundle-marker capture skip) | freeman-core 1.11.13 | 2026-04-30 | _this PR_ |
+| 4.5 | VariationSwatches WPC Bundles + FBT compatibility (full form-field forwarding + bundle-marker capture skip) | freeman-core 1.11.14 | 2026-04-30 | _this PR_ |
 
 Wave-1.1's `infinite_scroll/selector` / `before_render` / `after_render` are still folded into Wave 3.1. With 2.3c shipped, all 3 deferred Wave-1.1 RestockNotify hooks are now live (`should_inject` from this wave; `email_args` + `before_send` from 2.3b). Wave 2.3 closed; Wave 3 (P1 functional improvements) is next.
 
@@ -214,12 +214,13 @@ Each item is its own PR with its own feature flag. Order within wave doesn't mat
 - Existing CSS variables stay as fallbacks
 - No flag (additive)
 
-**4.5 — VariationSwatches WPC Bundles + FBT compatibility (P1 bugfix)** ✅ shipped 1.11.13 (_this PR_, 2026-04-30)
+**4.5 — VariationSwatches WPC Bundles + FBT compatibility (P1 bugfix)** ✅ shipped 1.11.14 (_this PR_, 2026-04-30)
 - Bug: when WPC Product Bundles or WPC Frequently Bought Together is active, adding a bundle/FBT product to cart through the swatches' AJAX add-to-cart silently dropped every bundled extra. Only the main product reached the cart.
-- Cause: `handleEtucartAdd()` built its AJAX payload as a hardcoded whitelist (`product_id`, `quantity`, `attribute_*`), stripping plugin-injected hidden fields (`woosb_*`, `wcfbt_*`). Compounded by the capture-phase click listener calling `stopImmediatePropagation()` before bundle plugins' bubble-phase handlers could amend the form.
+- Cause: `handleEtucartAdd()` built its AJAX payload as a hardcoded whitelist (`product_id`, `quantity`, `attribute_*`), stripping plugin-injected hidden fields (`woosb-ids-*`, `woobt_ids`). Compounded by the capture-phase click listener calling `stopImmediatePropagation()` before bundle plugins' bubble-phase handlers could amend the form.
 - Fix (behind a flag):
-  1. When ON, replace the whitelist with `$form.serializeArray()` filtered by a small WP-nonce/referer denylist, so every bundle field forwards to `WC_AJAX::add_to_cart`.
-  2. Before the capture-phase shortcut runs, scan the form for any name-prefix in the marker list (`woosb_`, `wcfbt_` by default; filterable via `freeman_core/variation_swatches/bundle_markers`). If found, skip the shortcut entirely and let the bundle plugin's bubble-phase AJAX handler take the click.
+  1. When ON, replace the whitelist with `$form.serializeArray()` filtered by a small WP-nonce/referer denylist, so every bundle field forwards to `WC_AJAX::add_to_cart`. Handles WPC Product Bundles natively (its WC `add_to_cart` action hook processes the forwarded `woosb-ids-*` fields server-side).
+  2. Before the capture-phase shortcut runs, scan the form for any name-prefix in the marker list (default `['woobt_']`; filterable via `freeman_core/variation_swatches/bundle_markers`). If found, step aside (no `stopImmediatePropagation`) and let the plugin's bubble-phase handler take the click. Required for WPC Frequently Bought Together because it posts to its own `woobt_add_all_to_cart` AJAX endpoint that WC's `add_to_cart` can't parse.
+- Markers verified against actual plugin source on 2026-04-30 (wp.org slugs `woo-bought-together` for FBT, `woo-product-bundle` for Bundles). 1.11.13's first attempt used `wcfbt_` based on a guess and broke FBT sites — corrected in 1.11.14.
 - Flag: `freeman_core_variation_swatches_bundle_compat_enabled` (default `false`).
 - Files touched: `freeman-core/src/Modules/VariationSwatches/assets/js/etucart-swatches.js` (`handleEtucartAdd` data build + new `formOwnedByBundlePlugin()` helper called from both click and submit interceptors); `freeman-core/src/Modules/VariationSwatches/Module.php` (new `inject_feature_flags()` exposes flag value + filtered markers via `window.FreemanCoreVSFlags`). No `legacy/` edits.
 - PHP-side archive parity (`legacy/includes/class-archive.php` has the same hardcoded whitelist) deferred; archive-page bundle add-to-cart is rare in practice and would require a legacy-migration plan.

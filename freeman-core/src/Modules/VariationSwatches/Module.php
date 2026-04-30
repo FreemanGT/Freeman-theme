@@ -165,9 +165,28 @@ final class Module extends Module_Base {
 		/**
 		 * Filter the bundle-plugin marker prefixes. When a form contains a
 		 * hidden field whose name starts with any of these, our capture-phase
-		 * click handler skips the shortcut so the bundle plugin's own AJAX
-		 * handler can run. Defaults cover WPC Product Bundles (`woosb_`) and
-		 * WPC Frequently Bought Together (`wcfbt_`).
+		 * click handler steps aside (no `stopImmediatePropagation`) so the
+		 * bundle plugin's own bubble-phase click handler can run.
+		 *
+		 * Default markers — verified against actual plugin source 2026-04-30:
+		 *
+		 * - `woobt_` — WPC Frequently Bought Together (wp.org slug
+		 *   `woo-bought-together`). The plugin POSTs to its own AJAX endpoint
+		 *   `woobt_add_all_to_cart` and packs all bundle items into a single
+		 *   `woobt_ids` field. If we intercept, WC's standard add_to_cart
+		 *   endpoint can't parse it; the AJAX fails and we fall back to
+		 *   native form submit, which navigates to the form `action` URL
+		 *   (the product permalink) — that's the "QV opens product page"
+		 *   symptom we hit in 1.11.13's first try.
+		 *
+		 * NOT included:
+		 *
+		 * - WPC Product Bundles (`woosb-ids-*` with hyphen). That plugin
+		 *   relies on WC's standard add_to_cart endpoint server-side; the
+		 *   flag-ON `serializeArray()` payload already forwards every
+		 *   `woosb-ids-*` field, and the bundle plugin's PHP action hook
+		 *   processes them. Stepping aside would force a slow page reload
+		 *   via native submit instead. Don't add `woosb-` here.
 		 *
 		 * @since 1.11.13
 		 *
@@ -175,7 +194,7 @@ final class Module extends Module_Base {
 		 */
 		$markers = apply_filters(
 			'freeman_core/variation_swatches/bundle_markers',
-			array( 'woosb_', 'wcfbt_' )
+			array( 'woobt_' )
 		);
 		$markers = array_values( array_filter( array_map( 'strval', (array) $markers ) ) );
 

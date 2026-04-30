@@ -605,36 +605,13 @@
 			return true; // handled
 		}
 
-		// Wave 4.5: when bundle compatibility is on AND the form carries any
-		// known bundle plugin's hidden fields, our capture-phase shortcut
-		// must step out so the bundle plugin's bubble-phase click handler
-		// runs natively. WC's add_to_cart endpoint can't process a bundle
-		// payload — only the plugin's own AJAX handler can.
-		function formOwnedByBundlePlugin(formEl) {
-			var flags = window.FreemanCoreVSFlags || {};
-			if (!flags.bundleCompat) return false;
-			var markers = flags.bundleMarkers || ['woobt_'];
-			for (var i = 0; i < markers.length; i++) {
-				var marker = String(markers[i] || '');
-				if (!marker) continue;
-				if (formEl.querySelector('[name^="' + marker + '"]')) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		// Wave 4.5 (1.11.16): bridge FBT's success event to wc_fragment_refresh.
-		// FBT fires `added_to_cart` (good — passes its fragments to WC's
-		// fragment update) and `woobt_added_to_cart` (its own event), but
-		// NOT `wc_fragment_refresh`. FunnelKit Cart's auto-open and
-		// re-fetch logic listen for `wc_fragment_refresh` specifically, so
-		// after an FBT add the side cart neither auto-opens nor reflects
-		// the freshly-added items until the next fragment-refresh trigger
-		// (any other action). Re-firing wc_fragment_refresh here closes the
-		// gap. No-op when FBT isn't installed (event never fires) and
-		// no-op when our flag is OFF (FBT's handler is intercepted by our
-		// capture-phase shortcut, so it never reaches its success path).
+		// Wave 4.5 (1.11.17): keep this listener defensive even though
+		// 1.11.17 dropped the step-aside path that needed it. WPC FBT's
+		// "Add All" button on its bundle widget posts to its own
+		// `woobt_add_all_to_cart` endpoint and fires this event without
+		// `wc_fragment_refresh`, leaving FunnelKit Cart unaware. Bridging
+		// the events keeps the side cart in sync regardless of which path
+		// triggered the add. No-op when FBT isn't installed.
 		$(document.body).on('woobt_added_to_cart', function () {
 			$(document.body).trigger('wc_fragment_refresh');
 		});
@@ -656,10 +633,6 @@
 			// focus-the-empty-select nudge for disabled buttons.
 			if ($btn.hasClass('disabled') || btn.getAttribute('aria-disabled') === 'true') {
 				return;
-			}
-
-			if (formOwnedByBundlePlugin(form)) {
-				return; // bundle plugin owns this submit
 			}
 
 			if (handleEtucartAdd($form, $btn)) {
@@ -686,10 +659,6 @@
 
 			if ($btn.hasClass('disabled') || $btn.attr('aria-disabled') === 'true') {
 				return;
-			}
-
-			if (formOwnedByBundlePlugin(form)) {
-				return; // bundle plugin owns this submit
 			}
 
 			if (handleEtucartAdd($form, $btn)) {

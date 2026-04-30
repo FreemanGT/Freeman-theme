@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.17] — 2026-04-30
+
+- Wave 4.5 simplification: drop the bundle-marker step-aside path. Reading WPC FBT's class-woobt.php source confirmed `woobt_ids` is processed server-side via a `woocommerce_add_to_cart` action hook — meaning WC's standard `wc-ajax=add_to_cart` endpoint already handles it when the flag-ON `serializeArray()` path forwards the field. The step-aside was based on a wrong assumption; it caused QV-add-to-cart to fall through to native form submit (the `?added_to_cart=1` URL the user saw on 1.11.16). Now everything goes through our AJAX, which means our explicit `wc_fragment_refresh` + `added_to_cart` triggers fire on every add → FunnelKit Cart auto-opens and refreshes correctly on PDP and QV alike. Removed the `freeman_core/variation_swatches/bundle_markers` filter and the `bundleMarkers` payload (no longer used). Kept the defensive `woobt_added_to_cart` → `wc_fragment_refresh` bridge for FBT's "Add All" widget button which has its own AJAX endpoint.
+
 ## [1.11.16] — 2026-04-30
 
 - Wave 4.5 polish: bridge WPC FBT's `woobt_added_to_cart` event to `wc_fragment_refresh`. FBT only fires `added_to_cart`, but FunnelKit Cart's auto-open and side-cart re-fetch listen for `wc_fragment_refresh`. Without the bridge, after an FBT add the side cart didn't auto-open and showed stale state until any other fragment-refresh trigger. Universal listener (no flag), no-op when FBT isn't installed.

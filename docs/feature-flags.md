@@ -75,7 +75,7 @@ Listeners receive `( bool $enabled, string $module, string $feature )`.
 | Flag | Default | Gates |
 |---|---|---|
 | `freeman_core_tools_settings_import_enabled` | `false` | Settings → Tools → Import form (Wave 0.3). Export, backup listing, and restore are ungated so rollback works even after disabling import. |
-| `freeman_core_variation_swatches_bundle_compat_enabled` | `false` | Wave 4.5. ON: forwards every form field (minus a WP-nonce denylist) to `WC_AJAX::add_to_cart`, and steps aside (no `stopImmediatePropagation`) when the form contains hidden fields prefixed by any marker in `freeman_core/variation_swatches/bundle_markers` (default `['woobt_']` — WPC FBT, verified against plugin source). WPC Product Bundles (`woosb-ids-*`, hyphen) is handled by the field-forwarding path alone — its server-side `add_to_cart` action hook processes the forwarded fields. WPC FBT (`woobt_ids`) needs the step-aside because it posts to its own `woobt_add_all_to_cart` endpoint that WC's `add_to_cart` can't parse. OFF preserves the legacy hardcoded whitelist. |
+| `freeman_core_variation_swatches_bundle_compat_enabled` | `false` | Wave 4.5. ON: forwards every form field (minus a small WP-nonce/referer denylist) to `WC_AJAX::add_to_cart`. Both WPC Product Bundles (`woosb-ids-*`) and WPC Frequently Bought Together (`woobt_ids`) process their fields via server-side `woocommerce_add_to_cart` action hooks, so the standard endpoint handles bundle/FBT submissions correctly once the fields actually reach it. OFF preserves the legacy hardcoded whitelist (drops bundle/FBT fields). |
 
 ## Settings export/import notes (Wave 0.3)
 

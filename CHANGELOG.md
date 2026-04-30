@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.17] — 2026-04-30
+
+- Wave 4.5 simplification: drop bundle-marker step-aside path. WPC FBT's `woobt_ids` is processed server-side via the `woocommerce_add_to_cart` action hook, so flag-ON's `serializeArray()` + standard `wc-ajax=add_to_cart` already handles it. Step-aside was a wrong assumption that caused QV add-to-cart to fall through to native form submit (`?added_to_cart=1` URL). Now PDP and QV both go through our AJAX → explicit `wc_fragment_refresh` fires → FunnelKit auto-opens and refreshes.
+
 ## [1.11.16] — 2026-04-30
 
 - Wave 4.5 polish: bridge WPC FBT's `woobt_added_to_cart` event to `wc_fragment_refresh` so FunnelKit Cart auto-opens and re-fetches its side cart after FBT adds. No-op when FBT isn't installed.

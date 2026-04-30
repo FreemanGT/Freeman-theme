@@ -613,7 +613,7 @@
 		function formOwnedByBundlePlugin(formEl) {
 			var flags = window.FreemanCoreVSFlags || {};
 			if (!flags.bundleCompat) return false;
-			var markers = flags.bundleMarkers || ['woosb_', 'wcfbt_'];
+			var markers = flags.bundleMarkers || ['woobt_'];
 			for (var i = 0; i < markers.length; i++) {
 				var marker = String(markers[i] || '');
 				if (!marker) continue;
@@ -623,6 +623,21 @@
 			}
 			return false;
 		}
+
+		// Wave 4.5 (1.11.16): bridge FBT's success event to wc_fragment_refresh.
+		// FBT fires `added_to_cart` (good — passes its fragments to WC's
+		// fragment update) and `woobt_added_to_cart` (its own event), but
+		// NOT `wc_fragment_refresh`. FunnelKit Cart's auto-open and
+		// re-fetch logic listen for `wc_fragment_refresh` specifically, so
+		// after an FBT add the side cart neither auto-opens nor reflects
+		// the freshly-added items until the next fragment-refresh trigger
+		// (any other action). Re-firing wc_fragment_refresh here closes the
+		// gap. No-op when FBT isn't installed (event never fires) and
+		// no-op when our flag is OFF (FBT's handler is intercepted by our
+		// capture-phase shortcut, so it never reaches its success path).
+		$(document.body).on('woobt_added_to_cart', function () {
+			$(document.body).trigger('wc_fragment_refresh');
+		});
 
 		// Capture-phase native listener: runs before any other click handler
 		// in the document, regardless of what order plugins were loaded.

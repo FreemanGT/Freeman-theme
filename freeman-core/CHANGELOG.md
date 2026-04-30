@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.16] — 2026-04-30
+
+- Wave 4.5 polish: bridge WPC FBT's `woobt_added_to_cart` event to `wc_fragment_refresh`. FBT only fires `added_to_cart`, but FunnelKit Cart's auto-open and side-cart re-fetch listen for `wc_fragment_refresh`. Without the bridge, after an FBT add the side cart didn't auto-open and showed stale state until any other fragment-refresh trigger. Universal listener (no flag), no-op when FBT isn't installed.
+
 ## [1.11.15] — 2026-04-30
 
 - Wave 4.5 (final): fire `woocommerce_before_add_to_cart_button` action inside the buy-box template. Without it, plugins that hook this standard WC action (WPC FBT injects the `woobt_ids` hidden input here) never get to add their markup, and bundle/FBT extras silently drop on add-to-cart. The hook now fires inside `.etucart-actions`, mirroring WC's own `variations_button` placement. Single-line legacy template addition (approved exception to hard rule #3); purely additive — actions with no listeners are no-ops, with listeners they fire intended hook behavior. Combined with 1.11.14's marker correction this completes Wave 4.5: WPC FBT's woobt_ids now lands in our form, my marker scan detects it, capture-phase steps aside, and FBT's own bubble-phase handler posts to its `woobt_add_all_to_cart` endpoint.

@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.16] — 2026-04-30
+
+- Wave 4.5 polish: bridge WPC FBT's `woobt_added_to_cart` event to `wc_fragment_refresh` so FunnelKit Cart auto-opens and re-fetches its side cart after FBT adds. No-op when FBT isn't installed.
+
 ## [1.11.15] — 2026-04-30
 
 - Wave 4.5 (final): fire `woocommerce_before_add_to_cart_button` action inside the buy-box template. Plugins that hook this standard WC action (WPC FBT for `woobt_ids` hidden input, others) now actually get to inject — without this, our custom buy-box was silently dropping FBT/bundle extras at submit. Single-line legacy template addition, approved exception to hard rule #3, purely additive. Completes Wave 4.5 alongside 1.11.14's marker correction.

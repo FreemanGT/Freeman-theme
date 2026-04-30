@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.18] — 2026-04-30
+
+- Bugfix: ProductSlider drag overshoot — clamp drag bounds at last card edge instead of scrollWidth (RTL-safe via getBoundingClientRect)
+
 ## [1.11.6] — 2026-04-29
 
 - Bug fix: cap shop variation-pill width so long option names cannot stretch the product card column and break the archive grid (RTL: pushed cards off-screen left).

@@ -24,11 +24,11 @@ freeman-core/src/Modules/RestockNotify/Frontend.php:92:		$should = (bool) apply_
 freeman-core/src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:75:        $should = (bool) apply_filters( 'rsn_should_enqueue', $should );
 freeman-core/src/Modules/VariableStockFix/Module.php:294:		if ( ! apply_filters( 'freeman_core/variable_stock_fix/should_check', true, $product ) ) {
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-ajax.php:44:			$checkout = (string) apply_filters( 'etucart_vs_checkout_url', $checkout );
-freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:503:			$image_payload = (array) apply_filters(
-freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:622:			$card_image_selector = (string) apply_filters(
-freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:712:		$gate = apply_filters( 'freeman_core_variation_swatches_shop_add_to_cart_gate', null, $product_id, $variation_id, $variation );
-freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:779:		$passed = apply_filters(
-freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:847:		do_action(
+freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:513:			$image_payload = (array) apply_filters(
+freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:634:			$card_image_selector = (string) apply_filters(
+freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:724:		$gate = apply_filters( 'freeman_core_variation_swatches_shop_add_to_cart_gate', null, $product_id, $variation_id, $variation );
+freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:791:		$passed = apply_filters(
+freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:859:		do_action(
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-frontend.php:265:		$checkout_url = (string) apply_filters( 'etucart_vs_checkout_url', $checkout_url );
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-plugin.php:236:		return (string) apply_filters( 'freeman_core/variation_swatches/term_image_url', $url, $term_id, $size );
 freeman-core/src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:108:	<?php do_action( 'woocommerce_after_add_to_cart_button' ); ?>
@@ -38,13 +38,13 @@ freeman-core/src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:3
 freeman-core/src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:40:	<?php do_action( 'woocommerce_before_add_to_cart_button' ); ?>
 freeman-core/src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:58:						'min_value'   => apply_filters( 'woocommerce_quantity_input_min', $product->get_min_purchase_quantity(), $product ),
 freeman-core/src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:59:						'max_value'   => apply_filters( 'woocommerce_quantity_input_max', $product->get_max_purchase_quantity(), $product ),
-freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:126:<?php do_action( 'woocommerce_before_add_to_cart_form' ); ?>
-freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:129:	  action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>"
-freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:136:	<?php do_action( 'woocommerce_before_variations_form' ); ?>
-freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:140:			<?php echo esc_html( apply_filters( 'woocommerce_out_of_stock_message', __( 'This product is currently out of stock and unavailable.', 'woocommerce' ) ) ); ?>
-freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:244:		<?php do_action( 'woocommerce_before_single_variation' ); ?>
-freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:268:							'min_value'   => apply_filters( 'woocommerce_quantity_input_min', $product->get_min_purchase_quantity(), $product ),
-freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:269:							'max_value'   => apply_filters( 'woocommerce_quantity_input_max', $product->get_max_purchase_quantity(), $product ),
-freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:315:		<?php do_action( 'woocommerce_after_single_variation' ); ?>
-freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:319:	<?php do_action( 'woocommerce_after_variations_form' ); ?>
-freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:322:<?php do_action( 'woocommerce_after_add_to_cart_form' ); ?>
+freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:134:<?php do_action( 'woocommerce_before_add_to_cart_form' ); ?>
+freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:137:	  action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>"
+freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:144:	<?php do_action( 'woocommerce_before_variations_form' ); ?>
+freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:148:			<?php echo esc_html( apply_filters( 'woocommerce_out_of_stock_message', __( 'This product is currently out of stock and unavailable.', 'woocommerce' ) ) ); ?>
+freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:259:		<?php do_action( 'woocommerce_before_single_variation' ); ?>
+freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:283:							'min_value'   => apply_filters( 'woocommerce_quantity_input_min', $product->get_min_purchase_quantity(), $product ),
+freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:284:							'max_value'   => apply_filters( 'woocommerce_quantity_input_max', $product->get_max_purchase_quantity(), $product ),
+freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:330:		<?php do_action( 'woocommerce_after_single_variation' ); ?>
+freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:334:	<?php do_action( 'woocommerce_after_variations_form' ); ?>
+freeman-core/src/Modules/VariationSwatches/legacy/templates/variation-buy-box.php:337:<?php do_action( 'woocommerce_after_add_to_cart_form' ); ?>

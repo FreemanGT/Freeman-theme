@@ -122,6 +122,7 @@ JS;
 			</p>
 		</div>
 		<?php $this->render_image_field( 0 ); ?>
+		<?php $this->render_tooltip_field( 0 ); ?>
 		<?php
 	}
 
@@ -138,6 +139,7 @@ JS;
 			</td>
 		</tr>
 		<?php $this->render_image_field( $term->term_id ); ?>
+		<?php $this->render_tooltip_field( $term->term_id ); ?>
 		<?php
 	}
 
@@ -178,6 +180,46 @@ JS;
 			<div class="form-field term-etucart-image-wrap etucart-image-field-wrap">
 				<label for="etucart_swatch_image_id"><?php esc_html_e( 'Swatch image', 'freeman-core' ); ?></label>
 				<?php $this->render_image_field_inner( $attachment_id, $preview_url, $has_image ); ?>
+			</div>
+			<?php
+		endif;
+	}
+
+	/**
+	 * Wave 2.2 / 4c (1.11.25) — tooltip text override field.
+	 *
+	 * Plain text input. Empty value = use the term name as tooltip. Filled
+	 * value = override. Gated behind the tooltip feature flag — when off,
+	 * returns nothing.
+	 */
+	private function render_tooltip_field( int $term_id ): void {
+		if ( ! \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'tooltip' ) ) {
+			return;
+		}
+
+		$value          = $term_id > 0 ? Etucart_VS_Plugin::term_tooltip_text( $term_id ) : '';
+		$is_edit_screen = $term_id > 0;
+
+		if ( $is_edit_screen ) :
+			?>
+			<tr class="form-field term-etucart-tooltip-wrap">
+				<th scope="row"><label for="etucart_swatch_tooltip"><?php esc_html_e( 'Hover tooltip override', 'freeman-core' ); ?></label></th>
+				<td>
+					<input type="text" name="etucart_swatch_tooltip" id="etucart_swatch_tooltip" value="<?php echo esc_attr( $value ); ?>" class="regular-text" />
+					<p class="description">
+						<?php esc_html_e( 'Text shown on hover. Leave empty to default to the term name.', 'freeman-core' ); ?>
+					</p>
+				</td>
+			</tr>
+			<?php
+		else :
+			?>
+			<div class="form-field term-etucart-tooltip-wrap">
+				<label for="etucart_swatch_tooltip"><?php esc_html_e( 'Hover tooltip override', 'freeman-core' ); ?></label>
+				<input type="text" name="etucart_swatch_tooltip" id="etucart_swatch_tooltip" value="" />
+				<p class="description">
+					<?php esc_html_e( 'Text shown on hover. Leave empty to default to the term name.', 'freeman-core' ); ?>
+				</p>
 			</div>
 			<?php
 		endif;
@@ -260,6 +302,22 @@ JS;
 				update_term_meta( $term_id, $image_key, $attachment_id );
 			} else {
 				delete_term_meta( $term_id, $image_key );
+			}
+		}
+
+		// Wave 2.2 / 4c (1.11.25) — tooltip text override. Same flag-gated +
+		// defence-in-depth pattern as image_id above. Empty value clears the
+		// override (term reverts to name-as-tooltip).
+		if ( \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'tooltip' )
+			&& isset( $_POST['etucart_swatch_tooltip'] )
+		) {
+			$tooltip_key = Etucart_VS_Plugin::tooltip_meta_key();
+			$raw         = (string) wp_unslash( $_POST['etucart_swatch_tooltip'] );
+			$clean       = sanitize_text_field( $raw );
+			if ( '' === $clean ) {
+				delete_term_meta( $term_id, $tooltip_key );
+			} else {
+				update_term_meta( $term_id, $tooltip_key, $clean );
 			}
 		}
 	}

@@ -237,6 +237,33 @@ final class Etucart_VS_Plugin {
 	}
 
 	/**
+	 * Get the term-meta key where the per-term tooltip override is stored.
+	 *
+	 * Wave 2.2 / 4c (1.11.25). Same canonical-namespace decision as 4b's
+	 * image_meta_key() — keeps new term-meta keys in `freeman_core_*` so the
+	 * legacy `etucart_*` namespace doesn't grow further.
+	 */
+	public static function tooltip_meta_key(): string {
+		return 'freeman_core_variation_swatches_term_tooltip_text';
+	}
+
+	/**
+	 * Get the swatch tooltip text for a term, falling back to a caller-provided
+	 * default (typically the term name) when no override is stored.
+	 *
+	 * Returns empty string when both the override and the default are empty.
+	 * No filter is exposed at this layer — the tooltip text is plain UI copy
+	 * and adding a filter would be premature flexibility we don't need yet.
+	 */
+	public static function term_tooltip_text( int $term_id, string $default = '' ): string {
+		$value = get_term_meta( $term_id, self::tooltip_meta_key(), true );
+		if ( is_string( $value ) && '' !== $value ) {
+			return $value;
+		}
+		return $default;
+	}
+
+	/**
 	 * Decide whether an attribute has any term with a swatch image set.
 	 *
 	 * An attribute mixed with image and color terms still renders as image

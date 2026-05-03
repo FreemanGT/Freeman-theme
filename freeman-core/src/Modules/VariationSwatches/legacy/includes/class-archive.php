@@ -320,7 +320,10 @@ class Etucart_VS_Archive {
 		// Wave 2.2 / 4b (1.11.24) — when the image-swatches flag is on, every
 		// option entry also carries an `img` field (URL or empty). Flag-OFF:
 		// no img field emitted; payload byte-identical to pre-1.11.24.
+		// Wave 2.2 / 4c (1.11.25) — same shape for the `tt` field (per-term
+		// tooltip text — override or term-name fallback).
 		$image_swatches_on = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'image_swatches' );
+		$tooltip_on        = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'tooltip' );
 
 		$attrs_out = [];
 		foreach ( $attributes as $attribute_name => $options ) {
@@ -336,6 +339,7 @@ class Etucart_VS_Archive {
 				$name  = $value;
 				$hex   = '';
 				$img   = '';
+				$tt    = '';
 				if ( $taxonomy ) {
 					$term = get_term_by( 'slug', $value, $taxonomy );
 					if ( $term && ! is_wp_error( $term ) ) {
@@ -343,6 +347,9 @@ class Etucart_VS_Archive {
 						$hex  = Etucart_VS_Plugin::term_color( (int) $term->term_id );
 						if ( $image_swatches_on ) {
 							$img = Etucart_VS_Plugin::term_image_url( (int) $term->term_id, 'thumbnail' );
+						}
+						if ( $tooltip_on ) {
+							$tt = Etucart_VS_Plugin::term_tooltip_text( (int) $term->term_id, $name );
 						}
 					}
 				}
@@ -353,6 +360,9 @@ class Etucart_VS_Archive {
 				];
 				if ( $image_swatches_on ) {
 					$item['img'] = $img;
+				}
+				if ( $tooltip_on ) {
+					$item['tt'] = $tt;
 				}
 				$option_items[] = $item;
 			}
@@ -547,7 +557,9 @@ class Etucart_VS_Archive {
 		// flipping it invalidates payloads that were built without per-option
 		// image_url fields.
 		$image_flag    = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'image_swatches' ) ? '1' : '0';
-		$signature     = implode( '|', [ $pid, $wc_ver, $display, $curr, $curr_pos, $dec_sep, $thou_sep, $decimals, $swap_flag, $image_flag ] );
+		// Wave 2.2 / 4c (1.11.25) — same trick for the tooltip flag.
+		$tooltip_flag  = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'tooltip' ) ? '1' : '0';
+		$signature     = implode( '|', [ $pid, $wc_ver, $display, $curr, $curr_pos, $dec_sep, $thou_sep, $decimals, $swap_flag, $image_flag, $tooltip_flag ] );
 		return 'freeman_vs_pd_' . md5( $signature );
 	}
 

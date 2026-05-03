@@ -69,6 +69,9 @@ foreach ( $attributes as $attribute_name => $options ) {
 	// Flag-OFF: $img stays empty for every option and the render branch is
 	// dead code, so output is byte-identical to pre-1.11.24.
 	$image_swatches_on = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'image_swatches' );
+	// Wave 2.2 / 4c (1.11.25) — tooltip text per option. Default = term name;
+	// admin-overridable via term meta. Flag-OFF: $tt stays empty.
+	$tooltip_on        = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'tooltip' );
 
 	$option_items = [];
 	foreach ( $options as $option ) {
@@ -76,6 +79,7 @@ foreach ( $attributes as $attribute_name => $options ) {
 		$name  = $value;
 		$hex   = '';
 		$img   = '';
+		$tt    = '';
 		if ( $taxonomy ) {
 			$term = get_term_by( 'slug', $value, $taxonomy );
 			if ( $term && ! is_wp_error( $term ) ) {
@@ -84,6 +88,9 @@ foreach ( $attributes as $attribute_name => $options ) {
 				if ( $image_swatches_on ) {
 					$img = Etucart_VS_Plugin::term_image_url( (int) $term->term_id, 'thumbnail' );
 				}
+				if ( $tooltip_on ) {
+					$tt = Etucart_VS_Plugin::term_tooltip_text( (int) $term->term_id, $name );
+				}
 			}
 		}
 		$option_items[] = [
@@ -91,6 +98,7 @@ foreach ( $attributes as $attribute_name => $options ) {
 			'name'  => $name,
 			'hex'   => $hex,
 			'img'   => $img,
+			'tt'    => $tt,
 		];
 	}
 
@@ -170,12 +178,18 @@ $pdp_min_html   = wc_price( $pdp_min );
 							// gating on the value is enough.
 							$opt_img = (string) ( $opt['img'] ?? '' );
 							$is_image_opt = '' !== $opt_img;
+							// Wave 2.2 / 4c (1.11.25) — tooltip text per option.
+							// Empty string when flag is off, so the data-tooltip
+							// attribute is omitted in that case.
+							$opt_tt = (string) ( $opt['tt'] ?? '' );
+							$emit_tooltip = ( $is_image_opt || $p['is_color'] ) && '' !== $opt_tt;
 							?>
 							<?php if ( $is_image_opt ) : ?>
 								<button type="button"
 										class="etucart-swatch etucart-swatch--image<?php echo $is_selected ? ' is-selected' : ''; ?>"
 										data-value="<?php echo esc_attr( $opt['value'] ); ?>"
 										data-name="<?php echo esc_attr( $opt['name'] ); ?>"
+										<?php if ( $emit_tooltip ) : ?>data-tooltip="<?php echo esc_attr( $opt_tt ); ?>"<?php endif; ?>
 										aria-label="<?php echo esc_attr( $opt['name'] ); ?>">
 									<span class="etucart-swatch__img" aria-hidden="true"
 										style="background-image:url('<?php echo esc_url( $opt_img ); ?>')"></span>
@@ -192,6 +206,7 @@ $pdp_min_html   = wc_price( $pdp_min );
 										data-value="<?php echo esc_attr( $opt['value'] ); ?>"
 										data-name="<?php echo esc_attr( $opt['name'] ); ?>"
 										data-hex="<?php echo esc_attr( $safe_hex ); ?>"
+										<?php if ( $emit_tooltip ) : ?>data-tooltip="<?php echo esc_attr( $opt_tt ); ?>"<?php endif; ?>
 										aria-label="<?php echo esc_attr( $opt['name'] ); ?>">
 									<span class="etucart-swatch__dot" aria-hidden="true"<?php if ( $safe_hex ) : ?> style="background-color:<?php echo esc_attr( $safe_hex ); ?>"<?php endif; ?>></span>
 									<span class="screen-reader-text"><?php echo esc_html( $opt['name'] ); ?></span>

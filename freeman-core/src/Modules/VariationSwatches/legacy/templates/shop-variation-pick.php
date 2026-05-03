@@ -111,6 +111,10 @@ $cart_url  = esc_url(  $prepared['cart_url'] ?? '' );
 						// dead code and renders identically to pre-1.11.24.
 						$img_url    = (string) ( $opt['img'] ?? '' );
 						$is_image   = '' !== $img_url;
+						// Wave 2.2 / 4c (1.11.25) — tooltip text per option. The 'tt'
+						// key is only emitted when the tooltip flag is on; flag-OFF
+						// renders no data-tooltip attribute.
+						$tooltip_text = (string) ( $opt['tt'] ?? '' );
 						$is_selected = ( '' !== $selected && $value === $selected );
 						$is_overflow = ( $i >= $hide_after );
 						$classes     = [ 'etucart-shop-pick__opt' ];
@@ -124,12 +128,17 @@ $cart_url  = esc_url(  $prepared['cart_url'] ?? '' );
 						if ( $is_selected ) $classes[] = 'is-selected';
 						if ( $is_overflow ) $classes[] = 'is-overflow';
 						if ( $is_light   )  $classes[] = 'is-light';
+						// Tooltip applies to color and image swatches only — text
+						// buttons already render the label inline so a hover tooltip
+						// would be redundant.
+						$emit_tooltip = ( $is_image || $is_color ) && '' !== $tooltip_text;
 						?>
 						<button type="button"
 								class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 								data-value="<?php echo esc_attr( $value ); ?>"
 								data-name="<?php echo esc_attr( $display ); ?>"
 								<?php if ( $is_color && $safe_hex ) : ?>data-hex="<?php echo esc_attr( $safe_hex ); ?>"<?php endif; ?>
+								<?php if ( $emit_tooltip ) : ?>data-tooltip="<?php echo esc_attr( $tooltip_text ); ?>"<?php endif; ?>
 								aria-label="<?php echo esc_attr( $display ); ?>"
 								aria-pressed="<?php echo $is_selected ? 'true' : 'false'; ?>"
 								<?php if ( $is_overflow ) : ?>hidden<?php endif; ?>>

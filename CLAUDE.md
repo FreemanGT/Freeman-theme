@@ -73,7 +73,7 @@ The guidelines above apply universally. The rules below are specific to this rep
 ## Repo state
 
 - Path: `/Users/freemansmain/Ai Projects/Freeman Theme/`
-- Packages: `freeman-core` (v1.11.24), `freeman-digital` (v1.7.3), `freeman-theme` (v1.11.22)
+- Packages: `freeman-core` (v1.11.25), `freeman-digital` (v1.7.3), `freeman-theme` (v1.11.22)
 - Audit: `/docs/audit-2026-04-28.md`
 - Decisions: `/docs/decisions-2026-04-28.md` — read this before any roadmap work
 - Roadmap: `/docs/roadmap.md`
@@ -83,7 +83,7 @@ The guidelines above apply universally. The rules below are specific to this rep
 
 *Last verified: 2026-05-03.*
 
-- **PHPUnit**: configured for freeman-core (root `phpunit.xml.dist`, `tests/bootstrap.php`, 226 tests reported / 195 test methods, all green). PHPUnit's reported count exceeds the method count because `@dataProvider` cases expand to one reported test per dataset (notably `FeatureFlagsTest`). When updating this number, run `vendor/bin/phpunit` and copy the reported total. Runs in CI on PHP 8.0–8.3 lanes (PHP 7.4 dropped 2026-05-03 / 1.11.22 — shipped freeman-core already used PHP 8.0+ idioms baked in by Wave 2.3a–c, so the 7.4 PHPUnit lane was de-facto failing; aligning CI to reality rather than retrofitting polyfills, since no client site runs PHP 7.4). Locally: `composer install` once, then `PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test` (system `php` is 8.5, outside PHPUnit 10's supported range). freeman-digital has its own separate test config; freeman-theme has none.
+- **PHPUnit**: configured for freeman-core (root `phpunit.xml.dist`, `tests/bootstrap.php`, 233 tests reported / 202 test methods, all green). PHPUnit's reported count exceeds the method count because `@dataProvider` cases expand to one reported test per dataset (notably `FeatureFlagsTest`). When updating this number, run `vendor/bin/phpunit` and copy the reported total. Runs in CI on PHP 8.0–8.3 lanes (PHP 7.4 dropped 2026-05-03 / 1.11.22 — shipped freeman-core already used PHP 8.0+ idioms baked in by Wave 2.3a–c, so the 7.4 PHPUnit lane was de-facto failing; aligning CI to reality rather than retrofitting polyfills, since no client site runs PHP 7.4). Locally: `composer install` once, then `PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test` (system `php` is 8.5, outside PHPUnit 10's supported range). freeman-digital has its own separate test config; freeman-theme has none.
 - **Snapshot harness**: shipped in Wave 0.5. See `/tests/snapshots/` (`SnapshotTestCase` trait, `Scrubber`, three example tests with committed goldens) and `/tests/snapshots/README.md`.
 - **Staging**: not yet provisioned. Manual local testing on a separate WP install for now.
 - **WP-CLI**: not currently installed locally. Wave 0.4 needs it installed (or a substitute) before regression baselines can be captured.

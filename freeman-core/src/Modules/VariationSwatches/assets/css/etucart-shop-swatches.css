@@ -319,6 +319,34 @@
 	border-color: var(--eshop-border-strong) !important;
 }
 
+/*
+ * Wave 2.2 / 4c (1.11.25) — hover tooltip on color and image swatches.
+ * Pure CSS via [data-tooltip] + ::after, mirroring the existing pattern
+ * at .etucart-shop-pick__attr-selected:empty::before above. Text-button
+ * swatches deliberately omit data-tooltip in PHP because they render the
+ * label inline, so this rule never matches them.
+ */
+.etucart-shop-pick__opt[data-tooltip] {
+	position: relative;
+}
+
+.etucart-shop-pick__opt[data-tooltip]:hover::after {
+	content: attr(data-tooltip);
+	position: absolute;
+	bottom: calc(100% + 6px);
+	left: 50%;
+	transform: translateX(-50%);
+	background: rgba(20, 20, 20, 0.92);
+	color: #fff;
+	font-size: 11px;
+	line-height: 1.2;
+	padding: 4px 8px;
+	border-radius: 4px;
+	white-space: nowrap;
+	pointer-events: none;
+	z-index: 10;
+}
+
 .etucart-shop-pick__opt--color.is-selected {
 	border-color: var(--eshop-border-strong) !important;
 }

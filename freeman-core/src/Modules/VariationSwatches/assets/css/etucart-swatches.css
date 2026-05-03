@@ -387,6 +387,34 @@
 	border-color: var(--etucart-border-strong) !important;
 }
 
+/*
+ * Wave 2.2 / 4c (1.11.25) — hover tooltip on color and image swatches in
+ * the buy-box. Same shape as the shop-picker tooltip in
+ * etucart-shop-swatches.css; rendered via [data-tooltip] + ::after.
+ * Text-button swatches deliberately omit data-tooltip in PHP because they
+ * render the label inline.
+ */
+.etucart-buy-box .etucart-swatch[data-tooltip] {
+	position: relative;
+}
+
+.etucart-buy-box .etucart-swatch[data-tooltip]:hover::after {
+	content: attr(data-tooltip);
+	position: absolute;
+	bottom: calc(100% + 6px);
+	left: 50%;
+	transform: translateX(-50%);
+	background: rgba(20, 20, 20, 0.92);
+	color: #fff;
+	font-size: 12px;
+	line-height: 1.2;
+	padding: 4px 8px;
+	border-radius: 4px;
+	white-space: nowrap;
+	pointer-events: none;
+	z-index: 10;
+}
+
 /* Selected color swatch: strong black ring around the colored dot. */
 .etucart-buy-box .etucart-swatch--color.is-selected {
 	border-color: var(--etucart-border-strong) !important;

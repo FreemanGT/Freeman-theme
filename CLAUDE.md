@@ -127,7 +127,14 @@ If touching >12 files or >3 modules: STOP and ask whether to split.
 When asked to implement a roadmap item, follow §4 (Goal-Driven Execution) with this concrete shape:
 
 1. **Pre-flight**: which decisions in `/docs/decisions-2026-04-28.md` does this depend on; which Wave-0/1 prerequisites are satisfied. Include a **Roadmap delta** section listing roadmap changes, or `none` if truly none, as a flag to double-check. Roadmap freshness: every wave's PR must update `/docs/roadmap.md` in the same PR by marking the wave shipped with version + date, bumping the "Last updated" line, and reconciling any scope drift between predicted and actual. **If the wave adds tests**, note that the "Current infrastructure state" PHPUnit count above must be updated in the same PR — copy the new totals (reported tests / assertions) from `vendor/bin/phpunit` verbatim.
-2. **Plan**: file list, hook list, option keys, feature flag name, default value, test list. **No code yet.**
+2. **Plan**: file list, hook list, option keys, feature flag name, default value, test list. **No code yet.** When sealing the file list, anticipate these mechanical files up front so they don't surface mid-implementation:
+   - **Version bump touches two PHP files**, not one. `tools/release.sh`'s `bump_core` always edits both `freeman-core/freeman-core.php` (header + `FREEMAN_CORE_VERSION` constant) AND `freeman-core/src/Core/Plugin.php` (`const VERSION`). Any wave bumping `freeman-core` must list both.
+   - **Hook-bearing file mods imply baseline regeneration.** `tests/BaselinesIntegrityTest` re-runs `tools/capture-baselines.sh` and asserts byte-identity against committed baselines. Modifying any file containing the corresponding surface drifts line numbers and breaks the assertion — mechanical, no behavioral change. Anticipate the matching baseline file in §5 ahead of implementation:
+     - file contains `apply_filters` or `do_action` → `tests/baseline-hooks.txt`
+     - file contains `register_rest_route` → `tests/baseline-rest.txt`
+     - file contains `WP_CLI::add_command` → `tests/baseline-cli.txt`
+     - file declares a `freeman_` or `etucart_` option key → `tests/baseline-options-declared.txt` and/or `tests/baseline-options-legacy.txt`
+     Regenerate via `bash tools/capture-baselines.sh` and commit verbatim; never hand-edit. The committed diff must consist only of line-number / position changes on existing entries — anything else means a real surface change snuck in and the §6 inventory is stale.
 3. *Wait for human approval of the plan before proceeding.*
 4. **Execution**: code changes, one logical commit per file group.
 5. **Verification**: snapshot diff, test results, manual QA checklist filled in.

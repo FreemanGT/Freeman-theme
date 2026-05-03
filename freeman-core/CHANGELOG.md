@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.26] — 2026-05-03
+
+- Bugfix: Settings_Hub storage-shape mismatch in 4a's read-shim — Settings_Reader returned 1/0/string verbatim from new keys, breaking Etucart_VS_Settings::bool yes/no comparisons and excluded_category_ids array shape on flag-ON sites. Adds normalize_new_value_for_legacy_reader path and fixes Settings_Hub render_field checkbox checked() call to FILTER_VALIDATE_BOOLEAN
+
 ## [1.11.25] — 2026-05-03
 
 - Wave 2.2 / 4c — Hover tooltip on swatches: pure CSS via data-tooltip attr + hover::after, per-term admin override via freeman_core_variation_swatches_term_tooltip_text term-meta, gated on freeman_core_variation_swatches_tooltip_enabled flag, flag folded into transient cache key

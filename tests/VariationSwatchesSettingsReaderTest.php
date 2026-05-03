@@ -81,6 +81,46 @@ final class VariationSwatchesSettingsReaderTest extends TestCase {
 		update_option( self::LEGACY, 'yes' );
 		update_option( self::NEW_KEY, '0' );
 
-		$this->assertSame( '0', Settings_Reader::get( self::LEGACY, 'fallback' ) );
+		$this->assertSame( 'no', Settings_Reader::get( self::LEGACY, 'fallback' ) );
+	}
+
+	public function test_flag_on_normalizes_settings_hub_checkbox_values_to_legacy_strings(): void {
+		update_option( self::FLAG_OPT, 1 );
+
+		update_option( self::NEW_KEY, 1 );
+		$this->assertSame( 'yes', Settings_Reader::get( self::LEGACY, 'fallback' ) );
+
+		update_option( self::NEW_KEY, 0 );
+		$this->assertSame( 'no', Settings_Reader::get( self::LEGACY, 'fallback' ) );
+	}
+
+	public function test_flag_on_normalizes_settings_hub_checkbox_strings_to_legacy_strings(): void {
+		update_option( self::FLAG_OPT, 1 );
+
+		update_option( self::NEW_KEY, 'yes' );
+		$this->assertSame( 'yes', Settings_Reader::get( self::LEGACY, 'fallback' ) );
+
+		update_option( self::NEW_KEY, 'no' );
+		$this->assertSame( 'no', Settings_Reader::get( self::LEGACY, 'fallback' ) );
+	}
+
+	public function test_flag_on_normalizes_comma_separated_excluded_categories(): void {
+		update_option( self::FLAG_OPT, 1 );
+		update_option( 'freeman_core_variation_swatches_shop_excluded_categories', '12, 34, invalid, 0, 56' );
+
+		$this->assertSame(
+			array( 12, 34, 56 ),
+			Settings_Reader::get( 'etucart_vs_shop_excluded_categories', array() )
+		);
+	}
+
+	public function test_flag_on_preserves_array_excluded_categories_from_migration(): void {
+		update_option( self::FLAG_OPT, 1 );
+		update_option( 'freeman_core_variation_swatches_shop_excluded_categories', array( 12, 34, 56 ) );
+
+		$this->assertSame(
+			array( 12, 34, 56 ),
+			Settings_Reader::get( 'etucart_vs_shop_excluded_categories', array() )
+		);
 	}
 }

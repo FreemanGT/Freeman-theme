@@ -344,7 +344,7 @@ class Etucart_VS_Archive {
 					$term = get_term_by( 'slug', $value, $taxonomy );
 					if ( $term && ! is_wp_error( $term ) ) {
 						$name = $term->name;
-						$hex  = Etucart_VS_Plugin::term_color( (int) $term->term_id );
+						$hex  = \Freeman\Core\Modules\VariationSwatches\Color_Sampler::resolve_term_color( (int) $term->term_id, (int) $pid );
 						if ( $image_swatches_on ) {
 							$img = Etucart_VS_Plugin::term_image_url( (int) $term->term_id, 'thumbnail' );
 						}

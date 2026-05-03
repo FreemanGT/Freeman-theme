@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-04-29 (2.3c shipped)
+**Last updated**: 2026-05-03 (Wave 2.2 master plan approved)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -138,15 +138,24 @@ Wave 2.3 and the Wave 3.1 expansion below are committed work, approved 2026-04-2
 - Feature flag: `freeman_core_product_feed_multichannel_enabled`
 - **Before extending Generator's surface**: read the header comment in `tests/snapshots/__fixtures__/wc_product_stub.php` — it lists which `\WC_Product` methods the snapshot stub already covers and which still need to be added (variable-product branch + `\WC_Product_Variation` stub) before variation XML can be snapshotted.
 
-**2.2 — VariationSwatches migration plan (Roadmap #4)**
-- **STOP after writing the plan.** Wait for human approval before coding.
-- Plan must cover:
-  - Option-key mapping (`etucart_vs_*` → `freeman_core_variation_swatches_*`)
-  - Read-shim that reads new key first, falls back to legacy
-  - Legacy filter compatibility (`freeman_core_variation_swatches_shop_add_to_cart_gate` preserved)
-  - Uninstall behavior (do not delete legacy keys)
-  - Version-skew handling during rollout
-- After approval: split into 4a (settings migration), 4b (image swatches), 4c (tooltip), each its own PR
+**2.2 — VariationSwatches migration + image swatches + tooltip + auto-color + card-image-swap (Roadmap #4)**
+
+Master plan approved 2026-05-03 — see [/docs/wave-2.2-master-plan.md](wave-2.2-master-plan.md). The plan doc is the source of truth for cross-cutting concerns (hard rule #3 legacy/ coverage, decision dependencies, version-skew model, read-shim contract, feature-flag table). Sub-PR pre-flights cite anchors in the plan doc instead of re-litigating.
+
+**Scope expansion call-out**: this wave was originally scoped as 3 sub-PRs (4a settings migration, 4b image swatches, 4c tooltip — per the audit). The approved master plan **expands to 6 sub-PRs**, adding 4d (auto-color sampler), 4e (auto-color fallback wiring), 4f (variation-image-on-card swap). 4d/4e/4f were not in the audit; they came from the 2026-05-03 pre-flight and are in some tension with §4.1 of the decisions doc (competitor-parity caution). The master plan §1 explains why they were approved despite §4.1 (cheap follow-ons on top of 4a's infrastructure; gated by flag, off by default).
+
+Sub-PR ship order: **4a → 4f → 4b → 4c → 4d → 4e** (rationale in master plan §7). 4d and 4e share a flag — see master plan §6.
+
+Sub-PR statuses (to be updated as each ships):
+
+- **4a — Settings migration to Settings_Hub** — _not started_ — flag `freeman_core_variation_swatches_settings_hub_enabled`
+- **4f — Variation-image-on-card swap** — _not started_ — flag `freeman_core_variation_swatches_card_image_swap_enabled`
+- **4b — Image swatches** — _not started, sealed against 4a's schema_ — flag `freeman_core_variation_swatches_image_swatches_enabled`
+- **4c — Tooltip on hover** — _not started, sealed against 4a's schema_ — flag `freeman_core_variation_swatches_tooltip_enabled`
+- **4d — Auto-color sampler (pipeline + caching)** — _not started_ — flag `freeman_core_variation_swatches_auto_color_enabled` _(shared with 4e)_
+- **4e — Auto-color fallback wiring (render path)** — _not started_ — flag `freeman_core_variation_swatches_auto_color_enabled` _(shared with 4d)_
+
+Wave 2.2's parent shipped-marker lands when the last sub-PR (4e per ship order) ships, per CLAUDE.md hard rule #9 ("parent wave stays open until all sub-PRs ship").
 
 **2.3 — RestockNotify legacy migration (committed 2026-04-29)**
 

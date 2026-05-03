@@ -1,5 +1,12 @@
 # Category Slider — Changelog
 
+## 1.1.0 — Wave 3.2a (autoplay / loop / indicator)
+- New Elementor controls (gated on `freeman_core_sliders_advanced_controls_enabled`, default off): **Autoplay**, **Autoplay delay** (clamped 1000–15000 ms), **Loop** (autoplay-wrap-to-start; drag-past-end-wraps deliberately out of scope), and **Indicator** (`progress` / `dots` / `none`). The legacy **Show progress bar** switcher stays in place as a back-compat alias — when `Indicator` is unset on a pre-existing widget, render falls through to the legacy value, so flipping the flag on doesn't move any saved widget away from its current behavior.
+- Pagination dots renderer (`.cs-dots` / `.cs-dot` / `.cs-dot-active`) is mutually exclusive with the progress bar — both occupy the same `.cs-foot` region. Per-page count = `ceil(total / per_view)`. Click jumps the track to that page; the active dot tracks scroll position from any source (drag, arrow, autoplay, native overflow).
+- Autoplay engine pauses on hover or focus, halts on tab-hidden, respects `prefers-reduced-motion: reduce` (does not start). When loop=on and the end is reached, smoothly scrolls back to 0.
+- Render path is gated on the flag: with the flag off, no `data-cs-indicator` / `data-cs-autoplay` / `data-cs-loop` attributes are emitted on the root, regardless of saved widget settings — rollback is byte-identical.
+- Roadmap line "Add `loading=\"lazy\"` to images beyond first viewport" (Roadmap #6) is **a no-op for CategorySlider** — category thumbnails are CSS `background-image`, not `<img>`, so the HTML lazy-loading attribute does not apply. Real lazy on CSS backgrounds (IntersectionObserver) would be a separate item; not in scope here.
+
 ## 1.0.9
 - **Touch on phones now scrolls.** The track was unresponsive to swipe gestures because `touch-action: pan-y` blocked native horizontal pan while the JS pointer-drag waited for its three gates (10px / 80ms / horizontal-dominance) to commit — an early flick fell into the dead zone with neither the browser nor JS applying scroll. The JS now skips its drag handler for non-mouse pointer types (`if (e.pointerType !== 'mouse') return;`) and the track is `touch-action: pan-x pan-y`, so horizontal swipes scroll natively (with OS momentum) and vertical swipes scroll the page. The progress bar still tracks the position because it listens to the track's `scroll` event, which fires for native scrolls too. Desktop-mouse drag, the progress scrubber, click-suppression on confirmed drag, and arrows are unchanged.
 

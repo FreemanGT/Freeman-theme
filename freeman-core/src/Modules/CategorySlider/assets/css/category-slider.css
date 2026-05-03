@@ -398,6 +398,34 @@
 }
 .cs-foot-sep { color: var(--cs-line); margin-inline-start: 2px; }
 
+/* ── Pagination dots (Wave 3.2a) ──────────────────── */
+.cs-foot-dots {
+	justify-content: center;
+}
+.cs-dots {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+.cs-dot {
+	appearance: none;
+	background: transparent;
+	border: 1px solid var(--cs-line);
+	border-radius: 999px;
+	width: 8px;
+	height: 8px;
+	padding: 0;
+	cursor: pointer;
+	transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+}
+.cs-dot:hover { border-color: var(--cs-mute); }
+.cs-dot:focus-visible { outline: 2px solid var(--cs-ink); outline-offset: 2px; }
+.cs-dot-active {
+	background: var(--cs-ink);
+	border-color: var(--cs-ink);
+	transform: scale(1.15);
+}
+
 /* ── Editor empty state ───────────────────────────── */
 .cs-empty {
 	padding: 48px;
@@ -435,5 +463,6 @@
 	.cs-img,
 	.cs-ring,
 	.cs-progress-bar,
-	.cs-count-hover { transition: none; }
+	.cs-count-hover,
+	.cs-dot { transition: none; }
 }

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.29] — 2026-05-03
+
+- Wave 3.2a — CategorySlider autoplay / loop / indicator (Roadmap #6, sub-PR 1 of 2). New Elementor controls gated on `freeman_core_sliders_advanced_controls_enabled` (default off): Autoplay, Autoplay delay (clamped 1000–15000 ms), Loop (autoplay-wrap only), Indicator (`progress` / `dots` / `none`). Legacy `show_progress` switcher preserved as a back-compat alias — pre-existing widgets fall through to the legacy value when `indicator` is unset. Render path also gated on flag, so rollback is byte-identical. Roadmap's `loading="lazy"` line is a no-op for CategorySlider (CSS background-image, not `<img>`); real bg lazy is a separate future item. Wave 3.2b (ProductSlider) queued.
+
 ## [1.11.28] — 2026-05-03
 
 - Wave 2.2 / 4e — auto-color render wiring (Color_Sampler::resolve_term_color wraps manual->sampled->fallback chain at archive.php and variation-buy-box.php render callsites; flag-OFF byte-identical; closes Wave 2.2)

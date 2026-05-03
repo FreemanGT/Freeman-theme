@@ -73,7 +73,7 @@ The guidelines above apply universally. The rules below are specific to this rep
 ## Repo state
 
 - Path: `/Users/freemansmain/Ai Projects/Freeman Theme/`
-- Packages: `freeman-core` (v1.11.28), `freeman-digital` (v1.7.3), `freeman-theme` (v1.11.22)
+- Packages: `freeman-core` (v1.11.29), `freeman-digital` (v1.7.3), `freeman-theme` (v1.11.22)
 - Audit: `/docs/audit-2026-04-28.md`
 - Decisions: `/docs/decisions-2026-04-28.md` — read this before any roadmap work
 - Roadmap: `/docs/roadmap.md`
@@ -83,7 +83,7 @@ The guidelines above apply universally. The rules below are specific to this rep
 
 *Last verified: 2026-05-03.*
 
-- **PHPUnit**: configured for freeman-core (root `phpunit.xml.dist`, `tests/bootstrap.php`, 279 tests reported / 248 test methods, all green; Wave 2.2 / 4e (1.11.28) added 8 test methods, +8 reported total — none of the new tests use `@dataProvider` so the deltas match). PHPUnit's reported count exceeds the method count because `@dataProvider` cases expand to one reported test per dataset (notably `FeatureFlagsTest`). When updating this number, run `vendor/bin/phpunit` and copy the reported total. Runs in CI on PHP 8.0–8.3 lanes (PHP 7.4 dropped 2026-05-03 / 1.11.22 — shipped freeman-core already used PHP 8.0+ idioms baked in by Wave 2.3a–c, so the 7.4 PHPUnit lane was de-facto failing; aligning CI to reality rather than retrofitting polyfills, since no client site runs PHP 7.4). Locally: `composer install` once, then `PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test` (system `php` is 8.5, outside PHPUnit 10's supported range). freeman-digital has its own separate test config; freeman-theme has none.
+- **PHPUnit**: configured for freeman-core (root `phpunit.xml.dist`, `tests/bootstrap.php`, **287 tests / 846 assertions**, all green; Wave 3.2a (1.11.29) added 8 reported tests, +8 reported total). The standing reporting unit going forward is `<reported tests> / <assertions>`. When updating this number, run `vendor/bin/phpunit` and copy the reported total verbatim. Runs in CI on PHP 8.0–8.3 lanes (PHP 7.4 dropped 2026-05-03 / 1.11.22 — shipped freeman-core already used PHP 8.0+ idioms baked in by Wave 2.3a–c, so the 7.4 PHPUnit lane was de-facto failing; aligning CI to reality rather than retrofitting polyfills, since no client site runs PHP 7.4). Locally: `composer install` once, then `PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test` (system `php` is 8.5, outside PHPUnit 10's supported range). freeman-digital has its own separate test config; freeman-theme has none.
 - **Snapshot harness**: shipped in Wave 0.5. See `/tests/snapshots/` (`SnapshotTestCase` trait, `Scrubber`, three example tests with committed goldens) and `/tests/snapshots/README.md`.
 - **Staging**: not yet provisioned. Manual local testing on a separate WP install for now.
 - **WP-CLI**: not currently installed locally. Wave 0.4 needs it installed (or a substitute) before regression baselines can be captured.
@@ -126,7 +126,7 @@ If touching >12 files or >3 modules: STOP and ask whether to split.
 
 When asked to implement a roadmap item, follow §4 (Goal-Driven Execution) with this concrete shape:
 
-1. **Pre-flight**: which decisions in `/docs/decisions-2026-04-28.md` does this depend on; which Wave-0/1 prerequisites are satisfied. Include a **Roadmap delta** section listing roadmap changes, or `none` if truly none, as a flag to double-check. Roadmap freshness: every wave's PR must update `/docs/roadmap.md` in the same PR by marking the wave shipped with version + date, bumping the "Last updated" line, and reconciling any scope drift between predicted and actual. **If the wave adds tests**, note that the "Current infrastructure state" PHPUnit count above must be updated in the same PR — copy the new total from `vendor/bin/phpunit`'s reported count, not the method count.
+1. **Pre-flight**: which decisions in `/docs/decisions-2026-04-28.md` does this depend on; which Wave-0/1 prerequisites are satisfied. Include a **Roadmap delta** section listing roadmap changes, or `none` if truly none, as a flag to double-check. Roadmap freshness: every wave's PR must update `/docs/roadmap.md` in the same PR by marking the wave shipped with version + date, bumping the "Last updated" line, and reconciling any scope drift between predicted and actual. **If the wave adds tests**, note that the "Current infrastructure state" PHPUnit count above must be updated in the same PR — copy the new totals (reported tests / assertions) from `vendor/bin/phpunit` verbatim.
 2. **Plan**: file list, hook list, option keys, feature flag name, default value, test list. **No code yet.**
 3. *Wait for human approval of the plan before proceeding.*
 4. **Execution**: code changes, one logical commit per file group.

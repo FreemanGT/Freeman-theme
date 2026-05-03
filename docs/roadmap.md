@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-03 (Wave 2.2 / 4e shipped — auto-color render wiring; Wave 2.2 closed)
+**Last updated**: 2026-05-03 (Wave 3.2a shipped — CategorySlider autoplay / loop / indicator; Wave 3.2b queued)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -188,10 +188,14 @@ Each item is its own PR with its own feature flag. Order within wave doesn't mat
   - `freeman_core/infinite_scroll/after_render` (action) — fires after.
   - Each hook gets `@since` matching the version this wave ships in, plus a hook test asserting firing + payload.
 
-**3.2 — Slider autoplay/loop/dots/lazy (Roadmap #6)**
+**3.2 — Slider autoplay/loop/dots/lazy (Roadmap #6)** — 🟡 in progress (3.2a shipped 1.11.29 (#TBD, 2026-05-03); 3.2b queued)
 - New Elementor controls: autoplay, autoplay delay, loop, pagination dots
 - Add `loading="lazy"` to images beyond first viewport
-- Flag: `freeman_core_sliders_advanced_controls_enabled`
+- Flag: `freeman_core_sliders_advanced_controls_enabled` (introduced in 3.2a; reused — not redefined — by 3.2b)
+- Split into 2 sub-PRs sharing the same flag (precedent: Wave 2.2 / 4d+4e):
+  - **3.2a** ✅ shipped 1.11.29 (#TBD, 2026-05-03) — CategorySlider only. Indicator selector (`progress` / `dots` / `none`) supersedes the legacy `show_progress` switcher with a back-compat shim. Autoplay-wrap loop only (drag-past-end-wraps deliberately out of scope). Render path also gated on flag — rollback is byte-identical.
+  - **3.2b** — queued. ProductSlider only. Cut from main after 3.2a merges.
+- **Lazy-load line is a no-op for in-wave work** — CategorySlider uses CSS `background-image` (not `<img>`), so the HTML `loading="lazy"` attribute does not apply. ProductSlider's `<img>` markup already receives WP-core auto-lazy (since WP 5.5). Real lazy-loading on CategorySlider's CSS backgrounds, if ever wanted, would be a separate Wave 3.x or later item using `IntersectionObserver`. This explicit acknowledgement exists so a future auditor doesn't read the original roadmap line as unmet.
 
 **3.3 — CheapestDefaultVariation strategy selector (Roadmap #9)**
 - Setting: `cheapest` / `first_in_stock` / `featured` / `disabled`

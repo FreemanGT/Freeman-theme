@@ -242,6 +242,13 @@ final class Module extends Module_Base {
 			define( 'ETUCART_VS_BOOTED', true );
 			\Etucart_VS_Plugin::instance()->boot();
 		}
+
+		// Wave 2.2 / 4d (1.11.27) — register the auto-color sampler scheduler
+		// listeners + cron callback. Listeners flag-gate internally so
+		// flag-OFF sites pay only the option read on hook entry; the
+		// flag-flip listeners (handle_flag_add / handle_flag_update) fire
+		// regardless because they ARE the flip detector.
+		Sampler_Scheduler::register();
 	}
 
 	/**

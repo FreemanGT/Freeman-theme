@@ -259,6 +259,56 @@ if ( ! function_exists( 'wp_get_attachment_image_src' ) ) {
 		return array( $url, 100, 100, false );
 	}
 }
+
+// Cron stubs (Wave 2.2 / 4d — promoted from inline test stubs after the
+// blanket null-return entries in the $stubs list below broke the auto-color
+// sampler scheduler tests). Same pattern as the 4b stub promotion: tests set
+// $GLOBALS['fr_cron'][hook] = list of {ts, args}; reads return false/int as
+// WP would.
+$GLOBALS['fr_cron'] = $GLOBALS['fr_cron'] ?? array();
+
+if ( ! function_exists( 'wp_schedule_single_event' ) ) {
+	function wp_schedule_single_event( $timestamp, $hook, $args = array() ) {
+		$GLOBALS['fr_cron'][ $hook ][] = array( 'ts' => (int) $timestamp, 'args' => $args );
+		return true;
+	}
+}
+if ( ! function_exists( 'wp_next_scheduled' ) ) {
+	function wp_next_scheduled( $hook, $args = array() ) {
+		if ( empty( $GLOBALS['fr_cron'][ $hook ] ) ) {
+			return false;
+		}
+		$next = PHP_INT_MAX;
+		foreach ( $GLOBALS['fr_cron'][ $hook ] as $event ) {
+			if ( (int) $event['ts'] < $next ) {
+				$next = (int) $event['ts'];
+			}
+		}
+		return $next;
+	}
+}
+if ( ! function_exists( 'wp_clear_scheduled_hook' ) ) {
+	function wp_clear_scheduled_hook( $hook, $args = array() ) {
+		unset( $GLOBALS['fr_cron'][ $hook ] );
+		return true;
+	}
+}
+if ( ! function_exists( 'wp_unschedule_event' ) ) {
+	function wp_unschedule_event( $timestamp, $hook, $args = array() ) {
+		if ( empty( $GLOBALS['fr_cron'][ $hook ] ) ) {
+			return false;
+		}
+		$GLOBALS['fr_cron'][ $hook ] = array_values(
+			array_filter(
+				$GLOBALS['fr_cron'][ $hook ],
+				static function ( $event ) use ( $timestamp ) {
+					return (int) $event['ts'] !== (int) $timestamp;
+				}
+			)
+		);
+		return true;
+	}
+}
 if ( ! function_exists( 'get_transient' ) ) {
 	function get_transient( $k ) { $row = $GLOBALS['fr_transients'][ $k ] ?? null; if ( ! $row ) return false; if ( $row['exp'] > 0 && $row['exp'] < time() ) { unset( $GLOBALS['fr_transients'][ $k ] ); return false; } return $row['v']; }
 }
@@ -480,7 +530,11 @@ $stubs = array(
 	'plugin_dir_path', 'plugin_dir_url',
 	'wp_enqueue_script', 'wp_enqueue_style', 'wp_register_style', 'wp_register_script',
 	'wp_localize_script', 'wp_add_inline_script',
-	'wp_schedule_event', 'wp_next_scheduled', 'wp_clear_scheduled_hook', 'wp_schedule_single_event',
+	'wp_schedule_event',
+	// wp_next_scheduled / wp_clear_scheduled_hook / wp_schedule_single_event /
+	// wp_unschedule_event are promoted to smart stubs below (Wave 2.2 / 4d
+	// — see "Cron stubs" block) so the auto-color sampler scheduler tests
+	// can verify scheduling behavior. Keep them out of this null-return list.
 	'wp_upload_dir', 'wp_mkdir_p',
 	'load_plugin_textdomain', 'load_child_theme_textdomain',
 	'is_admin', 'is_rtl', 'current_user_can',

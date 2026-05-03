@@ -34,7 +34,12 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, json, mbstring, zip
+          # Wave 2.2 / 4d (1.11.27) — gd + imagick added so the auto-color
+          # sampler's two paths (GD universal fallback, Imagick auto-upgrade
+          # when present) both get exercised on every lane. Cheap (~few
+          # seconds per lane install) and catches Imagick regressions that
+          # would otherwise rot silently.
+          extensions: dom, gd, imagick, json, mbstring, zip
           coverage: none
           tools: composer:v2
 

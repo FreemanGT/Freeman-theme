@@ -24,6 +24,9 @@
 	var i18n = (window.EtucartShopVS && window.EtucartShopVS.i18n) || {};
 	var AJAX_URL = (window.EtucartShopVS && window.EtucartShopVS.ajaxUrl) || '';
 	var CART_URL = (window.EtucartShopVS && window.EtucartShopVS.cartUrl) || '';
+	// Wave 2.2 / 4f (1.11.23) — empty when the card_image_swap flag is off, so
+	// refreshCardImage() short-circuits and the JS adds zero behavior.
+	var CARD_IMAGE_SELECTOR = (window.EtucartShopVS && window.EtucartShopVS.cardImageSelector) || '';
 
 	/* ------------------------------------------------------------------ *
 	 * Small helpers
@@ -306,6 +309,62 @@
 		}
 	}
 
+	/* ------------------------------------------------------------------ *
+	 * Wave 2.2 / 4f (1.11.23) — card-image swap.
+	 *
+	 * When a swatch is clicked on a shop / archive listing and a single
+	 * variation resolves, swap the product card's main image to that
+	 * variation's image. Reset on unresolved-state. Mirrors the price
+	 * stash/restore pattern in refreshPrice().
+	 *
+	 * Short-circuits when:
+	 *   - The card_image_swap flag is off (CARD_IMAGE_SELECTOR is empty).
+	 *   - The variation payload has no image_src field (server-side flag was
+	 *     off at the time prepare_product_data() ran — also a no-op).
+	 *   - We can't find a card ancestor or img matching the selector.
+	 * ------------------------------------------------------------------ */
+	function refreshCardImage(picker) {
+		if (!CARD_IMAGE_SELECTOR) return;
+
+		var card = closest(picker, 'li.product, .product, [data-product-id]');
+		if (!card) return;
+		var img = card.querySelector(CARD_IMAGE_SELECTOR);
+		if (!img) return;
+
+		var variation = findMatchingVariation(picker);
+
+		// Stash the original image attributes once so we can restore them
+		// when the user de-selects a swatch back to an unresolved state.
+		if (!picker._etucartOriginalCardImage) {
+			picker._etucartOriginalCardImage = {
+				src:    img.getAttribute('src') || '',
+				srcset: img.getAttribute('srcset') || '',
+				sizes:  img.getAttribute('sizes') || ''
+			};
+		}
+
+		if (variation && variation.image_src) {
+			img.setAttribute('src', variation.image_src);
+			if (variation.image_srcset) {
+				img.setAttribute('srcset', variation.image_srcset);
+			} else {
+				img.removeAttribute('srcset');
+			}
+			if (variation.image_sizes) {
+				img.setAttribute('sizes', variation.image_sizes);
+			} else {
+				img.removeAttribute('sizes');
+			}
+			return;
+		}
+
+		// Unresolved or no-image variation → restore originals.
+		var orig = picker._etucartOriginalCardImage;
+		img.setAttribute('src', orig.src);
+		if (orig.srcset) { img.setAttribute('srcset', orig.srcset); } else { img.removeAttribute('srcset'); }
+		if (orig.sizes)  { img.setAttribute('sizes', orig.sizes); }   else { img.removeAttribute('sizes'); }
+	}
+
 	function refreshAll(picker) {
 		// Simple-product pickers have no attributes / variations — the
 		// button is already in its final enabled/OOS state from the PHP
@@ -320,6 +379,7 @@
 		refreshHeadLabels(picker);
 		refreshPrice(picker);
 		refreshAddState(picker);
+		refreshCardImage(picker);
 		refreshOverflow(picker);
 	}
 

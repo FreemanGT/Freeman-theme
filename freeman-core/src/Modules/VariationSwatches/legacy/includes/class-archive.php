@@ -377,24 +377,18 @@ class Etucart_VS_Archive {
 		}
 
 		// --- Build the compact variations list -----------------------------
+		// Wave 2.2 / 4f (1.11.23) — when the card-image-swap flag is on, attach
+		// per-variation image data (src, srcset, sizes) so the JS click handler
+		// can swap the card's main image without navigating. Flag-OFF: no
+		// image fields emitted; payload byte-identical to pre-PR.
+		$swap_card_image = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'card_image_swap' );
+
 		$variations_out = [];
 		foreach ( (array) $available_variations as $v ) {
 			if ( ! is_array( $v ) ) {
 				continue;
 			}
-			$attrs_map = [];
-			if ( isset( $v['attributes'] ) && is_array( $v['attributes'] ) ) {
-				foreach ( $v['attributes'] as $k => $val ) {
-					$attrs_map[ (string) $k ] = (string) $val;
-				}
-			}
-			$variations_out[] = [
-				'id'             => isset( $v['variation_id'] ) ? (int) $v['variation_id'] : 0,
-				'attrs'          => $attrs_map,
-				'in_stock'       => ! empty( $v['is_in_stock'] ),
-				'is_purchasable' => ! empty( $v['is_purchasable'] ),
-				'price_html'     => isset( $v['price_html'] ) ? (string) $v['price_html'] : '',
-			];
+			$variations_out[] = self::build_variation_entry( $v, $product, $swap_card_image );
 		}
 
 		// --- "From:" price string (החל מ: ₪X) -----------------------------
@@ -433,6 +427,75 @@ class Etucart_VS_Archive {
 	}
 
 	/**
+	 * Build one entry of the JSON variations payload.
+	 *
+	 * Extracted from prepare_product_data() in 1.11.23 so the new image-payload
+	 * branch can be unit-tested without standing up the full `\WC_Product_Variable`
+	 * stub stack. Behavior is unchanged from the inline loop body.
+	 *
+	 * When $with_image is true and the WC variation array carries an `image`
+	 * subarray, the entry gets `image_src` / `image_srcset` / `image_sizes`
+	 * appended (passing through the `freeman_core/variation_swatches/card_image_payload`
+	 * filter). When false, the entry has only id / attrs / in_stock / is_purchasable
+	 * / price_html — byte-identical to pre-1.11.23.
+	 *
+	 * @internal Used by Etucart_VS_Archive only; signature may change without notice.
+	 *
+	 * @param array       $v          Variation array as returned by
+	 *                                WC_Product_Variable::get_available_variations().
+	 * @param \WC_Product $product    The variable parent product (passed to the filter).
+	 * @param bool        $with_image Whether to attach the image payload.
+	 * @return array
+	 */
+	public static function build_variation_entry( array $v, WC_Product $product, bool $with_image ): array {
+		$attrs_map = [];
+		if ( isset( $v['attributes'] ) && is_array( $v['attributes'] ) ) {
+			foreach ( $v['attributes'] as $k => $val ) {
+				$attrs_map[ (string) $k ] = (string) $val;
+			}
+		}
+
+		$entry = [
+			'id'             => isset( $v['variation_id'] ) ? (int) $v['variation_id'] : 0,
+			'attrs'          => $attrs_map,
+			'in_stock'       => ! empty( $v['is_in_stock'] ),
+			'is_purchasable' => ! empty( $v['is_purchasable'] ),
+			'price_html'     => isset( $v['price_html'] ) ? (string) $v['price_html'] : '',
+		];
+
+		if ( $with_image && isset( $v['image'] ) && is_array( $v['image'] ) ) {
+			$image_payload = [
+				'image_src'    => isset( $v['image']['url'] ) ? (string) $v['image']['url'] : '',
+				'image_srcset' => isset( $v['image']['srcset'] ) ? (string) $v['image']['srcset'] : '',
+				'image_sizes'  => isset( $v['image']['sizes'] ) ? (string) $v['image']['sizes'] : '',
+			];
+
+			/**
+			 * Filter the per-variation image payload before it's serialized into
+			 * the picker's data-variations JSON. Lets sites strip fields, plug in
+			 * a different srcset, etc.
+			 *
+			 * @since 1.11.23
+			 *
+			 * @param array       $image_payload  ['image_src','image_srcset','image_sizes'] — strings.
+			 * @param array       $variation      The full variation array as returned by
+			 *                                    WC_Product_Variable::get_available_variations().
+			 * @param \WC_Product $product        The variable parent product.
+			 */
+			$image_payload = (array) apply_filters(
+				'freeman_core/variation_swatches/card_image_payload',
+				$image_payload,
+				$v,
+				$product
+			);
+
+			$entry += $image_payload;
+		}
+
+		return $entry;
+	}
+
+	/**
 	 * Build a transient key that folds the product id together with every
 	 * WC option that affects the formatted price HTML we cache. Changing
 	 * any of these in WC → Settings → General invalidates the cache so the
@@ -458,7 +521,11 @@ class Etucart_VS_Archive {
 		$dec_sep       = function_exists( 'wc_get_price_decimal_separator' ) ? (string) wc_get_price_decimal_separator() : '.';
 		$thou_sep      = function_exists( 'wc_get_price_thousand_separator' ) ? (string) wc_get_price_thousand_separator() : ',';
 		$decimals      = function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2;
-		$signature     = implode( '|', [ $pid, $wc_ver, $display, $curr, $curr_pos, $dec_sep, $thou_sep, $decimals ] );
+		// Wave 2.2 / 4f (1.11.23) — fold the card-image-swap flag state into
+		// the cache key so flipping the flag implicitly invalidates stale
+		// payloads (which were built without per-variation image fields).
+		$swap_flag     = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'card_image_swap' ) ? '1' : '0';
+		$signature     = implode( '|', [ $pid, $wc_ver, $display, $curr, $curr_pos, $dec_sep, $thou_sep, $decimals, $swap_flag ] );
 		return 'freeman_vs_pd_' . md5( $signature );
 	}
 
@@ -517,10 +584,30 @@ class Etucart_VS_Archive {
 			true
 		);
 
+		// Wave 2.2 / 4f (1.11.23) — when the card-image-swap flag is on, expose
+		// the CSS selector the JS uses to find the card's main image element.
+		// Filterable so themes can override the default WooCommerce loop class.
+		$card_image_selector = '';
+		if ( \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'card_image_swap' ) ) {
+			/**
+			 * Filter the CSS selector used to locate the card image element
+			 * to swap when a swatch is clicked on the shop / archive.
+			 *
+			 * @since 1.11.23
+			 *
+			 * @param string $selector Default `.woocommerce-loop-product__link img, .product-thumb img`.
+			 */
+			$card_image_selector = (string) apply_filters(
+				'freeman_core/variation_swatches/card_image_selector',
+				'.woocommerce-loop-product__link img, .product-thumb img'
+			);
+		}
+
 		wp_localize_script( 'etucart-vs-shop', 'EtucartShopVS', [
-			'ajaxUrl' => \WC_AJAX::get_endpoint( 'etucart_shop_add_to_cart' ),
-			'cartUrl' => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
-			'i18n'    => [
+			'ajaxUrl'            => \WC_AJAX::get_endpoint( 'etucart_shop_add_to_cart' ),
+			'cartUrl'            => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
+			'cardImageSelector'  => $card_image_selector,
+			'i18n'               => [
 				'choose'       => __( 'Choose an option', 'freeman-core' ),
 				'notAvailable' => __( 'This combination is not available', 'freeman-core' ),
 				'addedToCart'  => __( 'נוסף לעגלה', 'freeman-core' ),

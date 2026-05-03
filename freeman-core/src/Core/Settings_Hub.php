@@ -306,10 +306,11 @@ final class Settings_Hub {
 				);
 				break;
 			case 'checkbox':
+				$checked = filter_var( $value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
 				printf(
 					'<label><input type="checkbox" id="%1$s" name="%1$s" value="1" %2$s/> %3$s</label>',
 					esc_attr( $option ),
-					checked( $value, 1, false ),
+					checked( true === $checked, true, false ),
 					esc_html( isset( $def['checkbox_label'] ) ? $def['checkbox_label'] : '' )
 				);
 				break;

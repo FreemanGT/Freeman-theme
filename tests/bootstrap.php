@@ -145,6 +145,15 @@ if ( ! function_exists( 'untrailingslashit' ) ) {
 if ( ! function_exists( 'wp_kses_post' ) ) {
 	function wp_kses_post( $v ) { return (string) $v; }
 }
+if ( ! function_exists( 'checked' ) ) {
+	function checked( $checked, $current = true, $display = true ) {
+		$result = ( (string) $checked === (string) $current ) ? ' checked="checked"' : '';
+		if ( $display ) {
+			echo $result;
+		}
+		return $result;
+	}
+}
 if ( ! function_exists( 'wp_upload_dir' ) ) {
 	function wp_upload_dir() {
 		return array(

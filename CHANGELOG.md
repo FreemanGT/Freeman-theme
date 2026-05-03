@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.21] — 2026-05-03
+
+- Wave 2.2 / 4a — VariationSwatches settings migration to Settings_Hub: read-shim, 1.11.21 one-shot migration of 14 etucart_vs_* keys, new admin page gated behind freeman_core_variation_swatches_settings_hub_enabled flag (default off, P1 version-skew model)
+
 ## [1.11.20] — 2026-05-03
 
 - Fix PHP 7.4/8.0 lint failure in SnapshotTestCaseTest: replace PHP 8.1+ octal literal 0o755 with legacy 0755

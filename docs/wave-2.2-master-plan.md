@@ -86,20 +86,19 @@ This expansion is roadmap-of-record edit, not silent drift. The roadmap PR (this
 
 This master plan + the 2026-05-03 written approval discharges hard rule #3 (no `legacy/` edits without a written migration plan and human approval) for every legacy/ file listed below. Sub-PR pre-flights reference this section by anchor instead of re-asking.
 
+**Pre-flight correction (2026-05-03, during 4a's sub-PR pre-flight)**: the original table below assumed every settings read was a literal `get_option('etucart_vs_*')` call scattered across five legacy files. Pre-flight grep showed reality is different: zero callsites use literal `etucart_vs_*` strings — all reads go through three static helpers on `Etucart_VS_Settings` (`bool`, `max_visible`, `excluded_category_ids`) plus one direct `get_option(Etucart_VS_Settings::OPT_PDP_HIDE_OOS, ...)` call in `class-plugin.php`. The cleanest intercept is inside the helpers, not at scattered callsites. The table below is the corrected version. `class-archive.php`, `class-frontend.php`, `class-ajax.php`, and `class-admin.php` drop off 4a's row. 4b/4c/4e become first-touchers of `class-frontend.php`; 4f becomes the first-toucher of `class-archive.php`.
+
 | Sub-PR | Legacy file(s) touched | Nature of edit |
 |---|---|---|
-| 4a | `legacy/includes/class-settings.php` | Replace `get_option('etucart_vs_*')` reads with `Settings_Reader::get()`. **Reads only.** Writes still go to legacy keys via the existing legacy WC settings page (preserved). |
-| 4a | `legacy/includes/class-frontend.php` | Same read replacement. |
-| 4a | `legacy/includes/class-archive.php` | Same read replacement. |
-| 4a | `legacy/includes/class-ajax.php` | Same read replacement. |
-| 4a | `legacy/includes/class-admin.php` | Same read replacement. |
-| 4b | `legacy/includes/class-frontend.php` (already touched in 4a — extending) | Add image-thumbnail render branch when an attribute term has an image. Sealed against 4a's actual term-meta key shape. |
-| 4c | `legacy/includes/class-frontend.php` (already touched in 4a — extending) | Add tooltip markup wrapper around swatch. Sealed against 4a's actual schema. |
+| 4a | `legacy/includes/class-settings.php` | Modify three helper-method bodies (`bool`, `max_visible`, `excluded_category_ids`) to delegate to `Settings_Reader::get()` instead of calling `get_option()` directly. **Reads only.** Writes still go to legacy keys via the existing legacy WC settings page (preserved). |
+| 4a | `legacy/includes/class-plugin.php` | Replace the one direct `get_option(Etucart_VS_Settings::OPT_PDP_HIDE_OOS, ...)` call with `Settings_Reader::get(...)`. The accompanying `update_option` for the activation backfill stays as-is (writes go to legacy). |
+| 4b | `legacy/includes/class-frontend.php` *(first touched in 4b)* | Add image-thumbnail render branch when an attribute term has an image. Sealed against 4a's actual term-meta key shape. |
+| 4c | `legacy/includes/class-frontend.php` *(already touched in 4b — extending)* | Add tooltip markup wrapper around swatch. Sealed against 4a's actual schema. |
 | 4d | none | 4d is sampling pipeline + caching only. No legacy/ touches. |
-| 4e | `legacy/includes/class-frontend.php` (already touched in 4a — extending) | Add color-resolution branch: manual term-meta wins, else read sampled post-meta, else neutral gray fallback. |
-| 4f | `legacy/includes/class-archive.php` (already touched in 4a — extending) | Extend `prepare_product_data()` JSON payload with per-variation `image_src` / `image_srcset` / `image_sizes`. Verify during execution whether already partially present. |
+| 4e | `legacy/includes/class-frontend.php` *(already touched in 4b/4c — extending)* | Add color-resolution branch: manual term-meta wins, else read sampled post-meta, else neutral gray fallback. |
+| 4f | `legacy/includes/class-archive.php` *(first touched in 4f)* | Extend `prepare_product_data()` JSON payload with per-variation `image_src` / `image_srcset` / `image_sizes`. Verify during execution whether already partially present. |
 
-**Counter-list (legacy/ files NOT touched anywhere in Wave 2.2)**: every other file under `legacy/`. Specifically: legacy CSS, legacy JS, legacy templates, and `legacy/etucart-init.php` are untouched.
+**Counter-list (legacy/ files NOT touched anywhere in Wave 2.2)**: `legacy/includes/class-ajax.php`, `legacy/includes/class-admin.php`, every legacy CSS file, every legacy JS file, every legacy template, and `legacy/etucart-init.php`. (The original table speculatively listed `class-ajax.php` and `class-admin.php` under 4a; pre-flight grep confirmed neither file has any settings reads — they drop off the touched-list entirely.)
 
 ---
 
@@ -113,43 +112,64 @@ This master plan + the 2026-05-03 written approval discharges hard rule #3 (no `
 
 **Files (10, all under 12-file ceiling)**:
 
-- `freeman-core/src/Modules/VariationSwatches/Module.php` — populate `settings_schema()` for the new admin page; flag-aware `legacy_settings_url()` (returns legacy URL when flag OFF, new URL when flag ON).
-- `freeman-core/src/Modules/VariationSwatches/Settings_Reader.php` *(new)* — single class, `get($key, $default = null)` reader implementing the read-shim.
-- `freeman-core/src/Modules/VariationSwatches/Migrator.php` *(new)* — one-shot legacy → new copy on `Plugin::maybe_upgrade()`. Never deletes legacy. Marker option locks subsequent runs.
-- `freeman-core/src/Modules/VariationSwatches/legacy/includes/class-settings.php` — replace `get_option('etucart_vs_*')` reads with `Settings_Reader::get()`. Reads only.
-- `freeman-core/src/Modules/VariationSwatches/legacy/includes/class-frontend.php` — same read replacement.
-- `freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php` — same read replacement.
-- `freeman-core/src/Modules/VariationSwatches/legacy/includes/class-ajax.php` — same read replacement.
-- `freeman-core/src/Modules/VariationSwatches/legacy/includes/class-admin.php` — same read replacement.
-- `tests/Unit/Modules/VariationSwatches/Settings_Reader_Test.php` *(new)* — 4 cases: new-key-wins, legacy-fallback, default-fallback, null-safety.
-- `tests/Unit/Modules/VariationSwatches/Migrator_Test.php` *(new)* — 5 cases: one-shot guard, never-overwrite, never-delete, marker, idempotent.
-- `tests/Snapshot/VariationSwatches_Settings_Hub_Test.php` *(new)* — flag-OFF: existing rendering byte-identical; flag-ON: Freeman → Variation Swatches page renders.
+- `freeman-core/src/Modules/VariationSwatches/Module.php` — populate `settings_schema()` for the new admin page (returns full schema when flag ON, empty array when flag OFF so the page disappears from the Settings_Hub menu); existing `legacy_settings_url()` left as-is (legacy WC settings page coexists indefinitely).
+- `freeman-core/src/Modules/VariationSwatches/Settings_Reader.php` *(new)* — single class, static `::get(string $legacy_key, $default = null)` reader implementing the flag-gated read-shim.
+- `freeman-core/src/Core/Migrations.php` — add a version-gated one-shot block (`migrate_to_1_11_21` → `migrate_variation_swatches_settings_to_hub`) that copies legacy → new where new is unset. Inline in `Migrations.php` to match the existing `migrate_to_1_9_0` precedent — no separate Migrator class.
+- `freeman-core/src/Modules/VariationSwatches/legacy/includes/class-settings.php` — modify three helper-method bodies (`bool`, `max_visible`, `excluded_category_ids`) to delegate to `Settings_Reader::get()`. Reads only; writes still go to legacy keys via the legacy WC settings page.
+- `freeman-core/src/Modules/VariationSwatches/legacy/includes/class-plugin.php` — replace one direct `get_option(Etucart_VS_Settings::OPT_PDP_HIDE_OOS, ...)` call (line 90) with `Settings_Reader::get()`. The accompanying `update_option` activation backfill stays as-is.
+- `tests/VariationSwatchesSettingsReaderTest.php` *(new)* — read-shim cases: flag-OFF returns legacy, flag-ON new-wins, flag-ON legacy-fallback, flag-ON default-fallback, null-safety.
+- `tests/VariationSwatchesSettingsMigrationTest.php` *(new)* — exercise the migration via `Migrations::run` with `version_compare` manipulation: copies legacy → new only when new is unset, idempotent, never deletes legacy, runs at most once per install.
+- `tests/VariationSwatchesSettingsHubSnapshotTest.php` *(new)* — flag-OFF: existing legacy rendering byte-identical; flag-ON: Freeman → Variation Swatches page schema renders.
 - `docs/roadmap.md` — mark 4a shipped.
-- `CLAUDE.md` — version sync after release.
 - `docs/feature-flags.md` — add row to Active flags table.
+- `CLAUDE.md` — version sync (1.11.21) and PHPUnit count update.
 
-(Counted as 10 source/test files + 3 docs files. Docs files are conventionally not counted toward the 12-file ceiling per recent precedent in 1.1a/b and 2.3a–c. Will re-verify at pre-flight.)
+**Eleven files** — under the 12-file ceiling. Per master-plan precedent (1.1a/b, 2.3a–c) and the way the §5.1 list above is constructed, mechanical version-bump artifacts (`freeman-core/freeman-core.php` header, `Plugin::VERSION` constant, `freeman-core/CHANGELOG.md`, root `CHANGELOG.md`) are produced by `tools/release.sh` and are not counted toward the per-PR ceiling — otherwise every code-changing PR would lose 4 files of substantive headroom. Re-verified at this pre-flight.
 
-**Read-shim contract** (`Settings_Reader::get()`):
+**Read-shim contract** (`Settings_Reader::get(string $legacy_key, $default = null)`):
 
 ```
-get($key, $default = null):
-  $sentinel = some unguessable marker (e.g. \0\0NOT_SET\0\0)
-  $new      = get_option('freeman_core_variation_swatches_'.$key, $sentinel)
-  if $new !== $sentinel: return $new
-  $legacy   = get_option('etucart_vs_'.$key, $sentinel)
-  if $legacy !== $sentinel: return $legacy
-  return $default ?? $schema_default_for($key)
+get($legacy_key, $default = null):
+  if NOT Feature_Flags::is_enabled('variation_swatches', 'settings_hub'):
+    # Flag OFF (P1 model): read legacy directly, no shim.
+    return get_option($legacy_key, $default)
+
+  $new_key  = str_replace('etucart_vs_', 'freeman_core_variation_swatches_', $legacy_key)
+  $sentinel = '__freeman_settings_reader_unset__'
+  $new_val  = get_option($new_key, $sentinel)
+  if $new_val !== $sentinel:
+    return $new_val
+  return get_option($legacy_key, $default)
 ```
 
-**Migrator contract**:
-- Runs once on plugin upgrade from `Plugin::maybe_upgrade()`.
-- For each legacy → new pair: copy iff new is unset AND legacy is set.
-- Marks `freeman_core_variation_swatches_migrated_settings_v1 = 1` on completion.
-- Idempotent (re-running is a no-op).
+The reader takes the **legacy key** (not a suffix) and computes the new key by string transform. This keeps `Etucart_VS_Settings::OPT_*` constants authoritative — helpers pass them in directly without conversion.
+
+**Migration contract** (inline in `Core/Migrations::migrate_to_1_11_21`):
+- Runs once when `Migrations::maybe_run()` detects stored DB version < `1.11.21`. The existing `DB_VERSION_OPTION` is the locking mechanism; no additional marker option needed.
+- For each of the 14 legacy → new key pairs: copy iff the new key is unset AND the legacy key is set.
+- Idempotent by construction (won't overwrite a new key that already has a value).
 - **Never deletes** legacy keys, regardless of state.
 
-**Option-key mapping**: 17 `etucart_vs_*` keys identified by initial grep. Full table written into 4a's PR description and **sealed against `class-settings.php`'s `register_setting()` calls during 4a's execution** — the initial grep may miss dynamically-named keys. Schema uses Settings_Hub's existing field types (`text`, `checkbox`, `number`, `color`); no new field types needed.
+**Option-key mapping (sealed during 4a pre-flight)**: 14 keys, listed below. The initial master-plan estimate of 17 was off; the actual count from grepping `OPT_*` constants on `Etucart_VS_Settings` is 14. None of the keys are dynamically named; the legacy `class-settings.php` does not call `register_setting()` (settings live under WooCommerce's settings pipeline via the `woocommerce_get_settings_products` filter, not WP's Settings API).
+
+| # | Legacy key (`OPT_*` constant) | New key |
+|---|---|---|
+| 1 | `etucart_vs_shop_enabled` | `freeman_core_variation_swatches_shop_enabled` |
+| 2 | `etucart_vs_shop_max_visible` | `freeman_core_variation_swatches_shop_max_visible` |
+| 3 | `etucart_vs_shop_show_price` | `freeman_core_variation_swatches_shop_show_price` |
+| 4 | `etucart_vs_shop_apply_shop` | `freeman_core_variation_swatches_shop_apply_shop` |
+| 5 | `etucart_vs_shop_apply_category` | `freeman_core_variation_swatches_shop_apply_category` |
+| 6 | `etucart_vs_shop_apply_tag` | `freeman_core_variation_swatches_shop_apply_tag` |
+| 7 | `etucart_vs_shop_apply_search` | `freeman_core_variation_swatches_shop_apply_search` |
+| 8 | `etucart_vs_shop_apply_related` | `freeman_core_variation_swatches_shop_apply_related` |
+| 9 | `etucart_vs_shop_excluded_categories` | `freeman_core_variation_swatches_shop_excluded_categories` |
+| 10 | `etucart_vs_pdp_hide_oos` | `freeman_core_variation_swatches_pdp_hide_oos` |
+| 11 | `etucart_vs_shop_hide_oos` | `freeman_core_variation_swatches_shop_hide_oos` |
+| 12 | `etucart_vs_shop_no_preselect` | `freeman_core_variation_swatches_shop_no_preselect` |
+| 13 | `etucart_vs_shop_hide_attr_labels` | `freeman_core_variation_swatches_shop_hide_attr_labels` |
+| 14 | `etucart_vs_shop_hide_selected` | `freeman_core_variation_swatches_shop_hide_selected` |
+
+Schema uses Settings_Hub's existing field types (`checkbox`, `number`, `text`); no new field types needed. The `excluded_categories` array key uses `text` with comma-split parsing in the helper (matches the legacy WC field).
 
 **Legacy compatibility**:
 - All 4 legacy filters (`etucart_vs_color_swatch_markup`, `etucart_vs_sizes_markup`, `etucart_vs_buy_box_enabled`, `etucart_vs_shop_picker_enabled`) preserved verbatim.
@@ -164,7 +184,7 @@ get($key, $default = null):
 
 **Rollback**: `wp option update freeman_core_variation_swatches_settings_hub_enabled 0`
 
-**Tests**: 9 new unit tests + 1 snapshot test. New PHPUnit total ≈ 197 (current 187 + 10). Will be confirmed by `vendor/bin/phpunit` and copied into CLAUDE.md "Current infrastructure state" at release.
+**Tests**: ~9 new unit tests across the two test files (Settings_Reader + Migration) + 1 snapshot test. PHPUnit total at release will be confirmed by `vendor/bin/phpunit`'s reported count and copied into CLAUDE.md "Current infrastructure state" — copy the **reported total**, not the method count, since `@dataProvider` cases expand to one reported test per dataset.
 
 ---
 

@@ -64,18 +64,18 @@ class Etucart_VS_Settings {
 		// Most flags default to 'yes' (the feature's core toggle is OPT_ENABLED).
 		// A few fields want to default OFF (e.g. OPT_SHOW_PRICE, which is opt-in).
 		// Callers pass 'no' for those.
-		return 'yes' === get_option( $option_key, $default );
+		return 'yes' === \Freeman\Core\Modules\VariationSwatches\Settings_Reader::get( $option_key, $default );
 	}
 
 	public static function max_visible(): int {
-		$v = absint( get_option( self::OPT_MAX_VISIBLE, 5 ) );
+		$v = absint( \Freeman\Core\Modules\VariationSwatches\Settings_Reader::get( self::OPT_MAX_VISIBLE, 5 ) );
 		if ( $v < 1 )  $v = 1;
 		if ( $v > 50 ) $v = 50;
 		return $v;
 	}
 
 	public static function excluded_category_ids(): array {
-		$raw = get_option( self::OPT_EXCLUDED_CATEGORIES, [] );
+		$raw = \Freeman\Core\Modules\VariationSwatches\Settings_Reader::get( self::OPT_EXCLUDED_CATEGORIES, [] );
 		if ( ! is_array( $raw ) ) {
 			return [];
 		}

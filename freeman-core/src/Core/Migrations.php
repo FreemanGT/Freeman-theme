@@ -90,6 +90,15 @@ final class Migrations {
 		if ( version_compare( $previous_version, '1.9.0', '<' ) ) {
 			$this->migrate_to_1_9_0();
 		}
+
+		// 1.11.21 — Wave 2.2 / sub-PR 4a: copy the 14 etucart_vs_*
+		// VariationSwatches settings into their freeman_core_variation_swatches_*
+		// counterparts so the new Settings_Hub admin page (gated behind the
+		// settings_hub feature flag) has values to render. Never deletes the
+		// legacy keys; never overwrites an already-set new key.
+		if ( version_compare( $previous_version, '1.11.21', '<' ) ) {
+			$this->migrate_variation_swatches_settings_to_hub();
+		}
 	}
 
 	/**
@@ -130,5 +139,49 @@ final class Migrations {
 		//     instead of the legacy one. Server.php still registers the
 		//     legacy query var as a one-release alias for safety.
 		flush_rewrite_rules( false );
+	}
+
+	/**
+	 * 1.11.21 Wave 2.2 / 4a — copy etucart_vs_* settings into the
+	 * freeman_core_variation_swatches_* namespace.
+	 *
+	 * Idempotent: a new key that already has a value is never overwritten,
+	 * so re-running this method is a no-op (and the version-gate in
+	 * run_one_shot_migrations() prevents re-runs anyway via DB_VERSION_OPTION).
+	 *
+	 * Never deletes legacy keys — they remain as the writable surface for
+	 * the legacy WC Settings → Products tab during the transition (per the
+	 * §4.5 zero-downtime migration decision).
+	 */
+	private function migrate_variation_swatches_settings_to_hub() {
+		$pairs = array(
+			'etucart_vs_shop_enabled'             => 'freeman_core_variation_swatches_shop_enabled',
+			'etucart_vs_shop_max_visible'         => 'freeman_core_variation_swatches_shop_max_visible',
+			'etucart_vs_shop_show_price'          => 'freeman_core_variation_swatches_shop_show_price',
+			'etucart_vs_shop_apply_shop'          => 'freeman_core_variation_swatches_shop_apply_shop',
+			'etucart_vs_shop_apply_category'      => 'freeman_core_variation_swatches_shop_apply_category',
+			'etucart_vs_shop_apply_tag'           => 'freeman_core_variation_swatches_shop_apply_tag',
+			'etucart_vs_shop_apply_search'        => 'freeman_core_variation_swatches_shop_apply_search',
+			'etucart_vs_shop_apply_related'       => 'freeman_core_variation_swatches_shop_apply_related',
+			'etucart_vs_shop_excluded_categories' => 'freeman_core_variation_swatches_shop_excluded_categories',
+			'etucart_vs_pdp_hide_oos'             => 'freeman_core_variation_swatches_pdp_hide_oos',
+			'etucart_vs_shop_hide_oos'            => 'freeman_core_variation_swatches_shop_hide_oos',
+			'etucart_vs_shop_no_preselect'        => 'freeman_core_variation_swatches_shop_no_preselect',
+			'etucart_vs_shop_hide_attr_labels'    => 'freeman_core_variation_swatches_shop_hide_attr_labels',
+			'etucart_vs_shop_hide_selected'       => 'freeman_core_variation_swatches_shop_hide_selected',
+		);
+
+		$sentinel = '__FR_NOT_SET__'; // Non-`freeman_*` so it stays out of baseline-options-declared.txt; in-memory only.
+		foreach ( $pairs as $legacy_key => $new_key ) {
+			$existing_new = get_option( $new_key, $sentinel );
+			if ( $sentinel !== $existing_new ) {
+				continue;
+			}
+			$legacy_val = get_option( $legacy_key, $sentinel );
+			if ( $sentinel === $legacy_val ) {
+				continue;
+			}
+			update_option( $new_key, $legacy_val );
+		}
 	}
 }

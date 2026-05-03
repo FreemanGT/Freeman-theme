@@ -4,6 +4,7 @@ etucart_color
 etucart_shop_add_to_cart
 etucart_swatch_color
 etucart_vs
+etucart_vs_
 etucart_vs_checkout_url
 etucart_vs_migrated_1_6_6
 etucart_vs_pdp_hide_oos

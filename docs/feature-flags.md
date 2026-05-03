@@ -75,6 +75,7 @@ Listeners receive `( bool $enabled, string $module, string $feature )`.
 | Flag | Default | Gates |
 |---|---|---|
 | `freeman_core_tools_settings_import_enabled` | `false` | Settings → Tools → Import form (Wave 0.3). Export, backup listing, and restore are ungated so rollback works even after disabling import. |
+| `freeman_core_variation_swatches_settings_hub_enabled` | `false` | Wave 2.2 / 4a (1.11.21). Flag ON: surfaces the 14 `etucart_vs_*` VariationSwatches options under Freeman → Variation Swatches and switches reads through `Settings_Reader` (new key wins, legacy fallback). Flag OFF: admin page does not appear, read-shim returns legacy directly (P1 model — avoids stale-new-key shadowing fresh edits made via the legacy WC settings tab, which keeps writing legacy keys regardless of flag state). The 1.11.21 one-shot migration in `Core\Migrations` populates the new keys from legacy on plugin upgrade. |
 
 ## Settings export/import notes (Wave 0.3)
 

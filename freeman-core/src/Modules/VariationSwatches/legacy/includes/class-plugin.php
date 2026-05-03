@@ -87,7 +87,7 @@ final class Etucart_VS_Plugin {
 
 		// Flip only if the option was explicitly saved as 'yes'. Never-saved
 		// installs fall through and pick up the new default on first read.
-		$existing = get_option( Etucart_VS_Settings::OPT_PDP_HIDE_OOS, null );
+		$existing = \Freeman\Core\Modules\VariationSwatches\Settings_Reader::get( Etucart_VS_Settings::OPT_PDP_HIDE_OOS, null );
 		if ( 'yes' === $existing ) {
 			update_option( Etucart_VS_Settings::OPT_PDP_HIDE_OOS, 'no' );
 		}

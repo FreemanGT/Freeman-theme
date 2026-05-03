@@ -17,6 +17,7 @@
 
 namespace Freeman\Core\Modules\VariationSwatches;
 
+use Freeman\Core\Core\Feature_Flags;
 use Freeman\Core\Core\Module_Base;
 
 defined( 'ABSPATH' ) || exit;
@@ -63,13 +64,112 @@ final class Module extends Module_Base {
 	}
 
 	/**
-	 * No user-configurable fields — settings live under WC → Settings → Products
-	 * (preserved from the legacy plugin so admins recognise them).
+	 * Settings schema.
+	 *
+	 * The 14 etucart_vs_* options live under WooCommerce → Settings → Products
+	 * (preserved as the writable surface in the 1.11.21 transitional period).
+	 * When the settings_hub feature flag is OFF (default), this returns an
+	 * empty array so the Freeman → Variation Swatches admin page does not
+	 * appear in the Settings_Hub menu — admins continue to use the legacy WC
+	 * tab. When ON, the same 14 options surface under Freeman → Variation
+	 * Swatches; the read-shim (Settings_Reader) prefers the new namespaced
+	 * keys, falling back to the legacy keys.
+	 *
+	 * Wave 2.2 / sub-PR 4a (1.11.21).
 	 *
 	 * @return array
 	 */
 	public function settings_schema() {
-		return array();
+		if ( ! Feature_Flags::is_enabled( 'variation_swatches', 'settings_hub' ) ) {
+			return array();
+		}
+
+		return array(
+			'shop_enabled'             => array(
+				'label'          => __( 'Enable shop-grid variation picker', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Show the compact variation picker on shop / archive pages', 'freeman-core' ),
+				'default'        => 'yes',
+			),
+			'shop_max_visible'         => array(
+				'label'       => __( 'Max visible swatches per attribute', 'freeman-core' ),
+				'type'        => 'number',
+				'description' => __( 'Hard-clamped between 1 and 50.', 'freeman-core' ),
+				'default'     => 5,
+			),
+			'shop_show_price'          => array(
+				'label'          => __( 'Show price in archive picker', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Display variation price under each swatch on archives', 'freeman-core' ),
+				'default'        => 'no',
+			),
+			'shop_apply_shop'          => array(
+				'label'          => __( 'Apply on the main shop archive', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Render the picker on /shop', 'freeman-core' ),
+				'default'        => 'yes',
+			),
+			'shop_apply_category'      => array(
+				'label'          => __( 'Apply on category archives', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Render the picker on product category pages', 'freeman-core' ),
+				'default'        => 'yes',
+			),
+			'shop_apply_tag'           => array(
+				'label'          => __( 'Apply on tag archives', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Render the picker on product tag pages', 'freeman-core' ),
+				'default'        => 'yes',
+			),
+			'shop_apply_search'        => array(
+				'label'          => __( 'Apply on search results', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Render the picker on product search results', 'freeman-core' ),
+				'default'        => 'yes',
+			),
+			'shop_apply_related'       => array(
+				'label'          => __( 'Apply on related products', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Render the picker in related-products carousels', 'freeman-core' ),
+				'default'        => 'yes',
+			),
+			'shop_excluded_categories' => array(
+				'label'       => __( 'Excluded category IDs', 'freeman-core' ),
+				'type'        => 'text',
+				'description' => __( 'Comma-separated WooCommerce category term IDs where the picker should not render.', 'freeman-core' ),
+				'default'     => '',
+			),
+			'pdp_hide_oos'             => array(
+				'label'          => __( 'PDP: hide out-of-stock variations', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Skip rendering swatches for variations that are out of stock on single-product pages', 'freeman-core' ),
+				'default'        => 'no',
+			),
+			'shop_hide_oos'            => array(
+				'label'          => __( 'Shop: hide out-of-stock swatches', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Skip rendering swatches for variations that are out of stock in the archive picker', 'freeman-core' ),
+				'default'        => 'yes',
+			),
+			'shop_no_preselect'        => array(
+				'label'          => __( 'Shop: skip pre-selecting any variation', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Render the picker with no variation pre-selected (forces an explicit choice)', 'freeman-core' ),
+				'default'        => 'yes',
+			),
+			'shop_hide_attr_labels'    => array(
+				'label'          => __( 'Shop: hide attribute labels', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Hide the attribute label row (e.g. "Size:") above the swatches', 'freeman-core' ),
+				'default'        => 'yes',
+			),
+			'shop_hide_selected'       => array(
+				'label'          => __( 'Shop: hide "selected option" text', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Hide the "selected option" text row under the swatches', 'freeman-core' ),
+				'default'        => 'yes',
+			),
+		);
 	}
 
 	/**

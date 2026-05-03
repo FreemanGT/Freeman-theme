@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-03 (Wave 2.2 master plan approved)
+**Last updated**: 2026-05-03 (Wave 2.2 / 4a shipped — Settings_Hub migration backbone)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -148,7 +148,7 @@ Sub-PR ship order: **4a → 4f → 4b → 4c → 4d → 4e** (rationale in maste
 
 Sub-PR statuses (to be updated as each ships):
 
-- **4a — Settings migration to Settings_Hub** — _not started_ — flag `freeman_core_variation_swatches_settings_hub_enabled`
+- **4a — Settings migration to Settings_Hub** — ✅ shipped 1.11.21 (2026-05-03) — flag `freeman_core_variation_swatches_settings_hub_enabled`
 - **4f — Variation-image-on-card swap** — _not started_ — flag `freeman_core_variation_swatches_card_image_swap_enabled`
 - **4b — Image swatches** — _not started, sealed against 4a's schema_ — flag `freeman_core_variation_swatches_image_swatches_enabled`
 - **4c — Tooltip on hover** — _not started, sealed against 4a's schema_ — flag `freeman_core_variation_swatches_tooltip_enabled`

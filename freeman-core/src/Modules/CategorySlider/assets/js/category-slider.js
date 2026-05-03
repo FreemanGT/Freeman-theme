@@ -352,6 +352,72 @@
 		window.addEventListener('mouseup', onUp);
 	}
 
+	// Pagination dots (Wave 3.2a). Returns a handle whose updateActive(ratio)
+	// is called from updateProgress() so the active dot tracks scroll position
+	// regardless of source (drag, arrow, autoplay, native overflow scroll).
+	function attachDots(root, track, isRtl) {
+		var dots = root.querySelectorAll('[data-cs-dot]');
+		if (!dots.length) return null;
+		var arrowSign = isRtl ? -1 : 1;
+		dots.forEach(function (dot) {
+			dot.addEventListener('click', function () {
+				var idx = parseInt(dot.getAttribute('data-cs-dot'), 10) || 0;
+				track.scrollTo({ left: arrowSign * idx * track.clientWidth, behavior: 'smooth' });
+			});
+		});
+		return {
+			updateActive: function (ratio) {
+				if (dots.length < 2) return;
+				var idx = Math.round(ratio * (dots.length - 1));
+				dots.forEach(function (dot, i) {
+					var active = (i === idx);
+					dot.classList.toggle('cs-dot-active', active);
+					dot.setAttribute('aria-selected', active ? 'true' : 'false');
+				});
+			}
+		};
+	}
+
+	// Autoplay engine (Wave 3.2a). Advances the track by ~one viewport-width
+	// every `delay` ms; pauses on hover or focus; resumes when the user
+	// leaves; halts on tab-hidden so a backgrounded slider doesn't churn.
+	// Respects `prefers-reduced-motion: reduce` by not starting at all.
+	// `loop=true` smooth-scrolls back to 0 when the end is reached;
+	// `loop=false` simply stops at the end.
+	function attachAutoplay(root, track, isRtl, clampMode, opts) {
+		if (!opts.enabled) return;
+		var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+		if (rm && rm.matches) return;
+		var delay = clamp(parseInt(opts.delay, 10) || 5000, 1000, 15000);
+		var loop = !!opts.loop;
+		var arrowSign = isRtl ? -1 : 1;
+		var paused = false;
+		var timer = 0;
+
+		function step() {
+			var max = computeMaxScroll(track, clampMode);
+			if (max <= 0) return;
+			var pos = Math.abs(track.scrollLeft);
+			if (pos >= max - 1) {
+				if (loop) track.scrollTo({ left: 0, behavior: 'smooth' });
+				return;
+			}
+			track.scrollBy({ left: arrowSign * track.clientWidth * 0.85, behavior: 'smooth' });
+		}
+		function start() { if (!timer) timer = setInterval(function () { if (!paused) step(); }, delay); }
+		function stop()  { if (timer) { clearInterval(timer); timer = 0; } }
+
+		root.addEventListener('mouseenter', function () { paused = true; });
+		root.addEventListener('mouseleave', function () { paused = false; });
+		root.addEventListener('focusin',    function () { paused = true; });
+		root.addEventListener('focusout',   function () { paused = false; });
+		document.addEventListener('visibilitychange', function () {
+			if (document.hidden) stop(); else start();
+		});
+
+		start();
+	}
+
 	function initOne(root) {
 		if (!root || root[INIT_FLAG]) return;
 		root[INIT_FLAG] = true;
@@ -391,6 +457,15 @@
 		attachProgressDrag(progress, track, isRtl, clampMode);
 		var per = parseInt(getComputedStyle(root).getPropertyValue('--cs-per'), 10) || 5;
 
+		// Wave 3.2a: dots pagination + autoplay. Both are no-ops when their
+		// respective data attrs are absent (flag-off or feature unused).
+		var dotsHandle = attachDots(root, track, isRtl);
+		attachAutoplay(root, track, isRtl, clampMode, {
+			enabled: root.getAttribute('data-cs-autoplay') === '1',
+			delay:   root.getAttribute('data-cs-autoplay-delay'),
+			loop:    root.getAttribute('data-cs-loop') === '1'
+		});
+
 		function updateProgress() {
 			var max = computeMaxScroll(track, clampMode);
 			// Math.abs handles both LTR (scrollLeft 0..max) and RTL normalized
@@ -421,6 +496,8 @@
 				var current = clamp(Math.round(ratio * (totalCards - per)) + per, per, totalCards);
 				footCurrent.textContent = String(current).padStart(2, '0');
 			}
+
+			if (dotsHandle) dotsHandle.updateActive(ratio);
 
 			arrows.forEach(function (btn) {
 				var dir = parseInt(btn.getAttribute('data-cs-dir'), 10) || 1;

@@ -422,6 +422,12 @@
 	.cs-head { grid-template-columns: 1fr; gap: 8px; }
 	.cs-arrows { display: none; }
 	.cs-headline { font-size: 28px; }
+	/* Narrow the edge-fade softener (24px on desktop) to a barely-there
+	   4px on mobile so cards don't lose visible content to the mask. */
+	.cs-track {
+		mask-image: linear-gradient(to right, transparent 0, #000 4px, #000 calc(100% - 4px), transparent 100%);
+		-webkit-mask-image: linear-gradient(to right, transparent 0, #000 4px, #000 calc(100% - 4px), transparent 100%);
+	}
 }
 
 /* Reduced motion — disable image scale + ring inset transitions */

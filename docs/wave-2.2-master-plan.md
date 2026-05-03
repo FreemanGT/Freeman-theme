@@ -202,7 +202,27 @@ Schema uses Settings_Hub's existing field types (`checkbox`, `number`, `text`); 
 
 **Why one-liner now**: 4b's full file list and schema-shape decisions depend on 4a's actual `settings_schema()` and how term-meta admin UI is implemented. Writing 4b in detail before 4a ships would be guessing at a schema that doesn't exist; we'd just rewrite 4b after 4a lands.
 
-**Scope (sealed)**: Render swatches as variation-image thumbnails when admin configures an attribute term to use an image. Adds term-meta admin UI for the image upload. Approximate file count: 5 (Module.php schema additions, legacy/class-frontend.php render branch, etucart-swatches.js click target, etucart-swatches.css image-shape rule, snapshot test).
+**Scope (sealed at 4b pre-flight, 2026-05-03)**: Per-term image upload (Iconic/WPC pattern). Each attribute term gets a `freeman_core_variation_swatches_term_image_id` term-meta entry (attachment ID, namespaced under `freeman_core_*` rather than extending the legacy `etucart_*` namespace — the migration direction established by 4a is legacy → new). Image wins over color when both are set; color is the fallback. Round shape, hardcoded to match existing color circles. Two helpers parallel to `term_color()`: `term_image_id()` and `term_image_url()`. One additive filter: `freeman_core/variation_swatches/term_image_url`. Image source is admin upload via `wp.media()`; no variation-image lookup (that's 4f's territory).
+
+**Pre-flight correction (2026-05-03)**: the original "Approximate file count: 5" was based on a misread of the scope — Option B (variation-image lookup) shape, not Option A (per-term upload, the literal Iconic/WPC pattern that the plan's own "term-meta admin UI for the image upload" phrasing describes). Sealed actual count is **12 substantive files** (under the 12-file ceiling, no waiver needed). Original 5-file forecast left in the bullet list below for the audit trail; reality enumerated in the "Shipped delta" block when the PR lands.
+
+**Files (sealed, 12 substantive, all under VariationSwatches + docs)**:
+- `legacy/includes/class-plugin.php` — 4 new static helpers: `image_meta_key()`, `term_image_id()`, `term_image_url()`, `attribute_has_images()` (cached per-request, parallel to `attribute_is_color()`).
+- `legacy/includes/class-admin.php` — extend `enqueue_color_picker()` (renamed `enqueue_term_assets()`) to also enqueue `wp_enqueue_media()` + a small inline script. Extend `render_add_field()` / `render_edit_field()` with media-uploader UI. Extend `save_field()` with attachment-ID save path. Extend `render_column()` to show image preview.
+- `legacy/includes/class-archive.php` — option-payload `image_url` field (flag-gated); fold flag state into `prepared_transient_key()` for implicit cache-bust on flag flip (same precedent as 4f).
+- `legacy/templates/shop-variation-pick.php` — render branch when option has `image_url` set (background-image span; RTL-friendly, scales cleanly).
+- `legacy/templates/variation-buy-box.php` — same render branch for buy-box.
+- `assets/css/etucart-shop-swatches.css` — `.etucart-shop-pick__opt-img` rule, round, sized to match `__opt-dot`.
+- `assets/css/etucart-swatches.css` — same rule for buy-box `.etucart-swatch__img`.
+- `tests/VariationSwatchesImageSwatchesSnapshotTest.php` *(new)* — 10 tests: term_image_id / term_image_url / attribute_has_images / option-payload shape (flag-OFF, flag-ON-with-image, flag-ON-without-image) / filter mutation.
+- `docs/wave-2.2-master-plan.md` — this estimate correction (the doc-fix you're reading).
+- `docs/roadmap.md` — mark 4b shipped + bump "Last updated".
+- `docs/feature-flags.md` — add `image_swatches_enabled` row.
+- `CLAUDE.md` — version sync 1.11.23 → 1.11.24 + PHPUnit count update.
+
+(Mechanical version-bump artifacts produced by `release.sh` — `freeman-core.php`, `Plugin.php`, both `CHANGELOG.md` files — not counted toward the ceiling per master-plan precedent. `tests/baseline-hooks.txt` may auto-regenerate to pick up the new `term_image_url` filter call.)
+
+**Original prediction (preserved for audit trail)**: ~~Approximate file count: 5 (Module.php schema additions, legacy/class-frontend.php render branch, etucart-swatches.js click target, etucart-swatches.css image-shape rule, snapshot test).~~ — wrong on multiple axes: Module.php is not touched (4b is term-meta + render only, no Settings_Hub schema changes); class-frontend.php is not touched (the render branch lives in templates, not class-frontend); JS click target needs no change (the JS is attribute-value-driven, agnostic to color-vs-image rendering); CSS is two files not one (separate enqueue contexts for shop picker and buy-box); admin UI for upload was implied in the body text but not counted in the file estimate.
 
 ---
 

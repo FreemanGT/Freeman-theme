@@ -31,6 +31,7 @@ defined( 'ABSPATH' ) || exit;
 use Elementor\Controls_Manager;
 use Elementor\Group_Control_Typography;
 use Elementor\Widget_Base;
+use Freeman\Core\Core\Feature_Flags;
 
 /**
  * Widget.
@@ -524,6 +525,34 @@ final class Widget extends Widget_Base {
 			)
 		);
 
+		// Advanced controls — registered only when the feature flag is on.
+		// Saved widget dicts retain whatever values they had if the flag is
+		// flipped off; the render path also gates on the flag, so the
+		// rendered output reverts byte-identical to the legacy path until
+		// the flag is on. show_progress stays in place as a back-compat
+		// alias — the indicator control supersedes it when set.
+		// Advanced controls additionally inherit display_mode=slider so
+		// they're hidden in grid mode (autoplay/indicator have no meaning
+		// without slider chrome); the render path also gates on $is_slider.
+		if ( Feature_Flags::is_enabled( 'sliders', 'advanced_controls' ) ) {
+			$this->add_control(
+				'indicator',
+				array(
+					'label'   => __( 'Indicator', 'freeman-core' ),
+					'type'    => Controls_Manager::CHOOSE,
+					'default' => 'progress',
+					'toggle'  => false,
+					'options' => array(
+						'progress' => array( 'title' => __( 'Progress bar', 'freeman-core' ), 'icon' => 'eicon-slider-push' ),
+						'dots'     => array( 'title' => __( 'Pagination dots', 'freeman-core' ), 'icon' => 'eicon-ellipsis-h' ),
+						'none'     => array( 'title' => __( 'Hidden', 'freeman-core' ),         'icon' => 'eicon-ban' ),
+					),
+					'description' => __( 'Replaces the legacy "Show progress bar" toggle. When unset on pre-existing widgets, the legacy value is honored.', 'freeman-core' ),
+					'condition'   => array( 'display_mode' => 'slider' ),
+				)
+			);
+		}
+
 		$this->add_control(
 			'show_progress',
 			array(
@@ -534,6 +563,50 @@ final class Widget extends Widget_Base {
 				'condition'    => array( 'display_mode' => 'slider' ),
 			)
 		);
+
+		if ( Feature_Flags::is_enabled( 'sliders', 'advanced_controls' ) ) {
+			$this->add_control(
+				'autoplay',
+				array(
+					'label'        => __( 'Autoplay', 'freeman-core' ),
+					'type'         => Controls_Manager::SWITCHER,
+					'default'      => '',
+					'return_value' => 'yes',
+					'separator'    => 'before',
+					'condition'    => array( 'display_mode' => 'slider' ),
+				)
+			);
+
+			$this->add_control(
+				'autoplay_delay',
+				array(
+					'label'      => __( 'Autoplay delay (ms)', 'freeman-core' ),
+					'type'       => Controls_Manager::SLIDER,
+					'size_units' => array( 'ms' ),
+					'range'      => array( 'ms' => array( 'min' => 1000, 'max' => 15000, 'step' => 500 ) ),
+					'default'    => array( 'unit' => 'ms', 'size' => 5000 ),
+					'condition'  => array(
+						'display_mode' => 'slider',
+						'autoplay'     => 'yes',
+					),
+				)
+			);
+
+			$this->add_control(
+				'loop',
+				array(
+					'label'        => __( 'Loop', 'freeman-core' ),
+					'type'         => Controls_Manager::SWITCHER,
+					'default'      => '',
+					'return_value' => 'yes',
+					'description'  => __( 'When the autoplay reaches the end, smoothly wrap back to the start. Drag-past-end-wraps is intentionally out of scope.', 'freeman-core' ),
+					'condition'    => array(
+						'display_mode' => 'slider',
+						'autoplay'     => 'yes',
+					),
+				)
+			);
+		}
 
 		$this->end_controls_section();
 	}
@@ -850,6 +923,33 @@ final class Widget extends Widget_Base {
 		$mouse_drag    = $is_slider && ( $s['mouse_drag'] ?? 'yes' ) === 'yes';
 		$dir           = $this->resolve_direction( $s['direction'] ?? 'auto' );
 
+		// Advanced controls (autoplay / loop / indicator) — gated on the
+		// flag at both registration AND render, AND on $is_slider so grid
+		// mode emits no advanced data attrs and falls through to the
+		// legacy show_progress-driven indicator state. Flag-off render
+		// paths ignore any saved advanced settings and fall through to
+		// the legacy show_progress-driven indicator state, so flipping
+		// the flag back to false produces byte-identical output.
+		$advanced_enabled = $is_slider && Feature_Flags::is_enabled( 'sliders', 'advanced_controls' );
+		if ( $advanced_enabled ) {
+			$raw_indicator = $s['indicator'] ?? null;
+			if ( in_array( $raw_indicator, array( 'progress', 'dots', 'none' ), true ) ) {
+				$indicator = $raw_indicator;
+			} else {
+				// Back-compat shim: pre-existing widgets don't have
+				// `indicator` saved — honor whatever `show_progress` said.
+				$indicator = $show_progress ? 'progress' : 'none';
+			}
+			$autoplay       = ( $s['autoplay'] ?? '' ) === 'yes';
+			$autoplay_delay = max( 1000, min( 15000, $this->slider_int( $s['autoplay_delay'] ?? null, 5000 ) ) );
+			$loop           = $autoplay && ( $s['loop'] ?? '' ) === 'yes';
+		} else {
+			$indicator      = $show_progress ? 'progress' : 'none';
+			$autoplay       = false;
+			$autoplay_delay = 0;
+			$loop           = false;
+		}
+
 		// `per_view_mobile` is a float (1.0–3.0) so the next card can peek;
 		// the others are integer cards-per-view.
 		$style_vars = sprintf(
@@ -909,6 +1009,16 @@ final class Widget extends Widget_Base {
 				data-cs-mouse-drag="<?php echo $mouse_drag ? '1' : '0'; ?>"
 				data-cs-clamp-children="1"
 			<?php endif; ?>
+			<?php if ( $advanced_enabled ) : ?>
+				data-cs-indicator="<?php echo esc_attr( $indicator ); ?>"
+				<?php if ( $autoplay ) : ?>
+					data-cs-autoplay="1"
+					data-cs-autoplay-delay="<?php echo (int) $autoplay_delay; ?>"
+				<?php endif; ?>
+				<?php if ( $loop ) : ?>
+					data-cs-loop="1"
+				<?php endif; ?>
+			<?php endif; ?>
 			style="<?php echo esc_attr( $style_vars ); ?>"
 		>
 			<div class="cs-head">
@@ -958,7 +1068,7 @@ final class Widget extends Widget_Base {
 				?>
 			</ul>
 
-			<?php if ( $show_progress ) : ?>
+			<?php if ( 'progress' === $indicator ) : ?>
 				<div class="cs-foot">
 					<div class="cs-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
 						<div class="cs-progress-bar" data-cs-progress-bar></div>
@@ -966,6 +1076,15 @@ final class Widget extends Widget_Base {
 					<div class="cs-foot-label" data-cs-foot-label>
 						<span data-cs-foot-current><?php echo esc_html( str_pad( (string) min( $total, $per_view ), 2, '0', STR_PAD_LEFT ) ); ?></span>
 						<span class="cs-foot-sep"> / <?php echo esc_html( str_pad( (string) $total, 2, '0', STR_PAD_LEFT ) ); ?></span>
+					</div>
+				</div>
+			<?php elseif ( 'dots' === $indicator ) : ?>
+				<?php $page_count = max( 1, (int) ceil( $total / max( 1, $per_view ) ) ); ?>
+				<div class="cs-foot cs-foot-dots">
+					<div class="cs-dots" data-cs-dots role="tablist" aria-label="<?php esc_attr_e( 'Slide navigation', 'freeman-core' ); ?>">
+						<?php for ( $i = 0; $i < $page_count; $i++ ) : ?>
+							<button type="button" class="cs-dot<?php echo 0 === $i ? ' cs-dot-active' : ''; ?>" data-cs-dot="<?php echo (int) $i; ?>" role="tab" aria-selected="<?php echo 0 === $i ? 'true' : 'false'; ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %d page index, 1-based */ __( 'Page %d', 'freeman-core' ), $i + 1 ) ); ?>"></button>
+						<?php endfor; ?>
 					</div>
 				</div>
 			<?php endif; ?>

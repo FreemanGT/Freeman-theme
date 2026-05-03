@@ -123,4 +123,72 @@ final class VariationSwatchesSettingsReaderTest extends TestCase {
 			Settings_Reader::get( 'etucart_vs_shop_excluded_categories', array() )
 		);
 	}
+
+	/**
+	 * Drift-detector: every `'checkbox'`-typed entry in the schema must have
+	 * its legacy key in Settings_Reader::CHECKBOX_KEYS. Catches the omission
+	 * case (someone adds setting #15 with type `checkbox` and forgets to
+	 * extend the const list) at CI time instead of silently re-shipping the
+	 * 1.11.21 storage-shape bug.
+	 */
+	public function test_every_checkbox_in_settings_schema_is_in_checkbox_keys_list(): void {
+		update_option( self::FLAG_OPT, 1 ); // Module::settings_schema() returns [] when flag is OFF.
+
+		$schema = ( new \Freeman\Core\Modules\VariationSwatches\Module() )->settings_schema();
+
+		$ref           = new ReflectionClass( Settings_Reader::class );
+		$checkbox_keys = $ref->getConstant( 'CHECKBOX_KEYS' );
+		$this->assertIsArray( $checkbox_keys, 'CHECKBOX_KEYS must be an array constant.' );
+
+		$missing = array();
+		foreach ( $schema as $suffix => $def ) {
+			if ( ( $def['type'] ?? '' ) !== 'checkbox' ) {
+				continue;
+			}
+			$legacy_key = 'etucart_vs_' . $suffix;
+			if ( ! in_array( $legacy_key, $checkbox_keys, true ) ) {
+				$missing[] = $legacy_key;
+			}
+		}
+
+		$this->assertSame(
+			array(),
+			$missing,
+			"Schema has checkbox-typed entries whose legacy keys are missing from Settings_Reader::CHECKBOX_KEYS — flag-ON sites would read these as raw 1/0 integers instead of 'yes'/'no' strings, breaking Etucart_VS_Settings::bool(). Add the missing keys to the const list. Missing: " . implode( ', ', $missing )
+		);
+	}
+
+	/**
+	 * Reverse drift-detector: every key in CHECKBOX_KEYS must correspond to a
+	 * `'checkbox'`-typed entry in the schema. Catches stale entries left
+	 * behind when a setting is removed.
+	 */
+	public function test_every_checkbox_keys_entry_corresponds_to_a_schema_checkbox(): void {
+		update_option( self::FLAG_OPT, 1 );
+
+		$schema = ( new \Freeman\Core\Modules\VariationSwatches\Module() )->settings_schema();
+
+		$ref           = new ReflectionClass( Settings_Reader::class );
+		$checkbox_keys = $ref->getConstant( 'CHECKBOX_KEYS' );
+
+		$schema_checkbox_legacy_keys = array();
+		foreach ( $schema as $suffix => $def ) {
+			if ( ( $def['type'] ?? '' ) === 'checkbox' ) {
+				$schema_checkbox_legacy_keys[] = 'etucart_vs_' . $suffix;
+			}
+		}
+
+		$stale = array();
+		foreach ( $checkbox_keys as $legacy_key ) {
+			if ( ! in_array( $legacy_key, $schema_checkbox_legacy_keys, true ) ) {
+				$stale[] = $legacy_key;
+			}
+		}
+
+		$this->assertSame(
+			array(),
+			$stale,
+			'CHECKBOX_KEYS contains entries that no longer match a checkbox-typed schema field. Remove them. Stale: ' . implode( ', ', $stale )
+		);
+	}
 }

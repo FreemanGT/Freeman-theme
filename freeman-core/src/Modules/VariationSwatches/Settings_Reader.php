@@ -38,6 +38,25 @@ final class Settings_Reader {
 
 	const NEW_PREFIX = 'freeman_core_variation_swatches_';
 
+	/**
+	 * Legacy keys whose new-namespace counterparts store the value as an
+	 * integer / boolean (Settings_Hub's `checkbox` field type sanitizer
+	 * normalizes truthy → 1, falsy → 0) but whose legacy reader contract
+	 * (`Etucart_VS_Settings::bool()`) compares against the strings 'yes'/'no'.
+	 *
+	 * **Maintenance contract**: when adding a new `'checkbox'`-typed entry to
+	 * {@see \Freeman\Core\Modules\VariationSwatches\Module::settings_schema()},
+	 * append its legacy key here. The
+	 * `test_every_checkbox_in_settings_schema_is_in_checkbox_keys_list()` test
+	 * in `tests/VariationSwatchesSettingsReaderTest.php` fails the build if
+	 * the lists drift out of sync, so an omission is caught in CI rather than
+	 * silently re-shipping the 1.11.21 bug.
+	 *
+	 * Same shape concern applies to the `'text'`-typed
+	 * `etucart_vs_shop_excluded_categories` (string-stored, array-consumed) —
+	 * normalized inline in `normalize_new_value_for_legacy_reader()`. Keep
+	 * that mapping in sync if a second array-shaped field is added.
+	 */
 	private const CHECKBOX_KEYS = array(
 		'etucart_vs_shop_enabled',
 		'etucart_vs_shop_show_price',

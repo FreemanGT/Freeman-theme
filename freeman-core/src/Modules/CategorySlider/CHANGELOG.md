@@ -1,5 +1,8 @@
 # Category Slider — Changelog
 
+## 1.1.1
+- **ProductSlider native-scroll over-shoot — clamped at last card.** The drag/momentum/progress/autoplay paths already used `computeMaxScroll(track, 'children')` for rect-based bounds (PR #18), but native browser scroll — touch swipe on phones/tablets, trackpad two-finger pan on desktop — is bounded by the browser at `track.scrollWidth`, which can be inflated past the cards' actual extent on ProductSlider when WooCommerce's default float-grid percentage rules (`.woocommerce ul.products.columns-N li.product`) load after our flex-basis stylesheet. Added a `scroll` event listener on the track that snaps any over-scroll back to the rect-derived bound. Scoped to ProductSlider only via the existing `data-cs-clamp-children="1"` opt-in — CategorySlider's behavior is unchanged.
+
 ## 1.1.0 — Wave 3.2a (autoplay / loop / indicator)
 - New Elementor controls (gated on `freeman_core_sliders_advanced_controls_enabled`, default off): **Autoplay**, **Autoplay delay** (clamped 1000–15000 ms), **Loop** (autoplay-wrap-to-start; drag-past-end-wraps deliberately out of scope), and **Indicator** (`progress` / `dots` / `none`). The legacy **Show progress bar** switcher stays in place as a back-compat alias — when `Indicator` is unset on a pre-existing widget, render falls through to the legacy value, so flipping the flag on doesn't move any saved widget away from its current behavior.
 - Pagination dots renderer (`.cs-dots` / `.cs-dot` / `.cs-dot-active`) is mutually exclusive with the progress bar — both occupy the same `.cs-foot` region. Per-page count = `ceil(total / per_view)`. Click jumps the track to that page; the active dot tracks scroll position from any source (drag, arrow, autoplay, native overflow).

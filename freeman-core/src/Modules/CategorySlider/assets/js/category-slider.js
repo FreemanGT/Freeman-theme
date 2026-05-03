@@ -439,6 +439,22 @@
 
 		attachDragScroll(track, { enabled: dragEnabled, isRtl: isRtl, clampMode: clampMode });
 
+		// Native-scroll clamp. The drag/momentum/progress/autoplay paths all
+		// already enforce computeMaxScroll(track, 'children'), but native
+		// browser scroll (touch swipe, trackpad two-finger pan) is bounded
+		// by the browser at track.scrollWidth — which on ProductSlider can
+		// be inflated past the cards' actual extent (WC's float-grid
+		// percentage rules vs our flex-basis math; see #18). Snap any
+		// over-scroll back to the rect-derived bound. No-op for
+		// CategorySlider (clampMode='native' falls through).
+		if (clampMode === 'children') {
+			track.addEventListener('scroll', function () {
+				var max = computeMaxScroll(track, 'children');
+				if (track.scrollLeft >  max) track.scrollLeft =  max;
+				if (track.scrollLeft < -max) track.scrollLeft = -max;
+			}, { passive: true });
+		}
+
 		var arrows = root.querySelectorAll('[data-cs-dir]');
 		arrows.forEach(function (btn) {
 			btn.addEventListener('click', function () {

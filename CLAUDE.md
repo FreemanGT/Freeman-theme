@@ -73,7 +73,7 @@ The guidelines above apply universally. The rules below are specific to this rep
 ## Repo state
 
 - Path: `/Users/freemansmain/Ai Projects/Freeman Theme/`
-- Packages: `freeman-core` (v1.11.29), `freeman-digital` (v1.7.3), `freeman-theme` (v1.11.22)
+- Packages: `freeman-core` (v1.11.31), `freeman-digital` (v1.7.3), `freeman-theme` (v1.11.22)
 - Audit: `/docs/audit-2026-04-28.md`
 - Decisions: `/docs/decisions-2026-04-28.md` — read this before any roadmap work
 - Roadmap: `/docs/roadmap.md`
@@ -81,9 +81,9 @@ The guidelines above apply universally. The rules below are specific to this rep
 
 ## Current infrastructure state
 
-*Last verified: 2026-05-03.*
+*Last verified: 2026-05-04.*
 
-- **PHPUnit**: configured for freeman-core (root `phpunit.xml.dist`, `tests/bootstrap.php`, **287 tests / 846 assertions**, all green; Wave 3.2a (1.11.29) added 8 reported tests, +8 reported total). The standing reporting unit going forward is `<reported tests> / <assertions>`. When updating this number, run `vendor/bin/phpunit` and copy the reported total verbatim. Runs in CI on PHP 8.0–8.3 lanes (PHP 7.4 dropped 2026-05-03 / 1.11.22 — shipped freeman-core already used PHP 8.0+ idioms baked in by Wave 2.3a–c, so the 7.4 PHPUnit lane was de-facto failing; aligning CI to reality rather than retrofitting polyfills, since no client site runs PHP 7.4). Locally: `composer install` once, then `PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test` (system `php` is 8.5, outside PHPUnit 10's supported range). freeman-digital has its own separate test config; freeman-theme has none.
+- **PHPUnit**: configured for freeman-core (root `phpunit.xml.dist`, `tests/bootstrap.php`, **297 tests / 883 assertions**, all green; Wave 3.2a (1.11.29) added 8 reported tests, +8 reported total; Wave 3.2b (1.11.30) added 10 reported tests, +37 reported assertions). The standing reporting unit going forward is `<reported tests> / <assertions>`. When updating this number, run `vendor/bin/phpunit` and copy the reported total verbatim. Runs in CI on PHP 8.0–8.3 lanes (PHP 7.4 dropped 2026-05-03 / 1.11.22 — shipped freeman-core already used PHP 8.0+ idioms baked in by Wave 2.3a–c, so the 7.4 PHPUnit lane was de-facto failing; aligning CI to reality rather than retrofitting polyfills, since no client site runs PHP 7.4). Locally: `composer install` once, then `PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test` (system `php` is 8.5, outside PHPUnit 10's supported range). freeman-digital has its own separate test config; freeman-theme has none.
 - **Snapshot harness**: shipped in Wave 0.5. See `/tests/snapshots/` (`SnapshotTestCase` trait, `Scrubber`, three example tests with committed goldens) and `/tests/snapshots/README.md`.
 - **Staging**: not yet provisioned. Manual local testing on a separate WP install for now.
 - **WP-CLI**: not currently installed locally. Wave 0.4 needs it installed (or a substitute) before regression baselines can be captured.
@@ -135,6 +135,7 @@ When asked to implement a roadmap item, follow §4 (Goal-Driven Execution) with 
      - file contains `WP_CLI::add_command` → `tests/baseline-cli.txt`
      - file declares a `freeman_` or `etucart_` option key → `tests/baseline-options-declared.txt` and/or `tests/baseline-options-legacy.txt`
      Regenerate via `bash tools/capture-baselines.sh` and commit verbatim; never hand-edit. The committed diff must consist only of line-number / position changes on existing entries — anything else means a real surface change snuck in and the §6 inventory is stale.
+   - **Version bumps and test-count changes touch CLAUDE.md.** The "Current infrastructure state" section names the current `freeman-core` version (Repo state line) and `<reported tests> / <assertions>` (PHPUnit line). Any wave that bumps the version or adds tests moves these values; CLAUDE.md must appear in §5 alongside the version-bump file pair so the staleness doesn't get treated as a follow-up chore. Pre-flight §1 already calls this out for tests; §5 must echo it so the file actually gets sealed in. Bump the *Last verified* date in the same edit — the date is the truthfulness stamp on the values, not adjacent content.
 3. *Wait for human approval of the plan before proceeding.*
 4. **Execution**: code changes, one logical commit per file group.
 5. **Verification**: snapshot diff, test results, manual QA checklist filled in.

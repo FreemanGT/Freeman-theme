@@ -95,6 +95,146 @@ final class Color_Sampler {
 		}
 	}
 
+	/**
+	 * Wave 2.2 / 4e — render-path color resolution with auto-color fallback.
+	 *
+	 * Resolution order:
+	 *   1. Manual term-meta hex (set by admin in the term-edit screen) wins.
+	 *   2. Else, when the auto-color flag is on: gather sampled hexes from
+	 *      every variation of `$product_id` whose attribute term matches
+	 *      `$term_id`, drop empty sentinels (failed samples = no signal),
+	 *      dedupe + sort by string. 0 hexes → fall through. 1 hex → use it.
+	 *      ≥2 hexes (disagreement) → emit one Logger info line per term per
+	 *      request and return the disagreement-fallback filter result
+	 *      (default `#CCCCCC`).
+	 *   3. Else (flag off, or sampler returned no signal): byte-identical to
+	 *      `Etucart_VS_Plugin::term_color()` — empty string.
+	 *
+	 * Disagreement filter: `freeman_core/variation_swatches/auto_color_disagreement_fallback`
+	 *   ($default_gray, $disagreement_set, $term_id, $product_id) → string hex.
+	 *   $disagreement_set is the deduplicated, sorted set of non-empty hexes
+	 *   (the canonical shape; identical to what the logger emits).
+	 *
+	 * Admin call sites must NOT use this — the term-edit screen and term-list
+	 * column display "what is stored" so the admin can see when manual color
+	 * is unset. Render call sites (shop swatches, PDP buy-box) use this.
+	 *
+	 * @param int $term_id    Attribute term id being rendered.
+	 * @param int $product_id Product whose render triggered this resolution.
+	 * @return string Hex (`#RRGGBB`) or empty string if nothing resolves.
+	 */
+	public static function resolve_term_color( $term_id, $product_id ) {
+		$term_id    = (int) $term_id;
+		$product_id = (int) $product_id;
+
+		// (1) Manual term-meta wins — preserves existing behavior under
+		// flag-OFF and short-circuits the sampler when the admin set a hex.
+		$manual = \Etucart_VS_Plugin::term_color( $term_id );
+		if ( '' !== $manual ) {
+			return $manual;
+		}
+
+		// Flag-OFF → byte-identical to term_color() (which we already called).
+		if ( ! \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'auto_color' ) ) {
+			return '';
+		}
+
+		if ( $term_id <= 0 || $product_id <= 0 ) {
+			return '';
+		}
+
+		$term = function_exists( 'get_term' ) ? get_term( $term_id ) : null;
+		if ( ! is_object( $term ) || ( function_exists( 'is_wp_error' ) && is_wp_error( $term ) ) ) {
+			return '';
+		}
+		$taxonomy = isset( $term->taxonomy ) ? (string) $term->taxonomy : '';
+		$slug     = isset( $term->slug ) ? (string) $term->slug : '';
+		if ( '' === $taxonomy || '' === $slug ) {
+			return '';
+		}
+
+		$product = function_exists( 'wc_get_product' ) ? wc_get_product( $product_id ) : null;
+		if ( ! is_object( $product ) || ! method_exists( $product, 'get_available_variations' ) ) {
+			return '';
+		}
+
+		$attribute_key = 'attribute_' . $taxonomy;
+		$hex_set       = array();
+		foreach ( (array) $product->get_available_variations() as $v ) {
+			$attrs = isset( $v['attributes'] ) ? (array) $v['attributes'] : array();
+			if ( ! isset( $attrs[ $attribute_key ] ) || (string) $attrs[ $attribute_key ] !== $slug ) {
+				continue;
+			}
+			$variation_id = (int) ( $v['variation_id'] ?? 0 );
+			if ( $variation_id <= 0 ) {
+				continue;
+			}
+			$hex = self::sample_if_missing( $variation_id );
+			if ( '' === $hex ) {
+				continue; // Empty sentinel = no signal, not disagreement.
+			}
+			$hex = \Etucart_VS_Plugin::sanitize_hex_color( $hex );
+			if ( '' === $hex ) {
+				continue;
+			}
+			$hex_set[ $hex ] = true;
+		}
+
+		$set = array_keys( $hex_set );
+		sort( $set, SORT_STRING );
+
+		if ( 0 === count( $set ) ) {
+			return ''; // No signal → legacy default.
+		}
+		if ( 1 === count( $set ) ) {
+			return $set[0];
+		}
+
+		// Disagreement (≥2 distinct non-empty hexes).
+		self::log_disagreement_once( $term_id, $product_id, $set );
+
+		$default = '#CCCCCC';
+		$value   = apply_filters(
+			'freeman_core/variation_swatches/auto_color_disagreement_fallback',
+			$default,
+			$set,
+			$term_id,
+			$product_id
+		);
+		$value = \Etucart_VS_Plugin::sanitize_hex_color( is_string( $value ) ? $value : '' );
+		return '' !== $value ? $value : $default;
+	}
+
+	/**
+	 * Per-request rate limiter for the disagreement Logger line. The first
+	 * resolution of a given term in a request emits a single info line; later
+	 * resolutions of the same term are silenced for the rest of the request.
+	 *
+	 * @param int      $term_id    Term id.
+	 * @param int      $product_id Product id.
+	 * @param string[] $set        Canonical (deduped, sorted) hex set.
+	 */
+	private static function log_disagreement_once( $term_id, $product_id, array $set ) {
+		// Per-request store — globals are request-scoped under PHP-FPM, so this
+		// gives the right "log once per term per request" semantics in
+		// production. Tests reset $GLOBALS['fr_auto_color_logged'] in setUp.
+		if ( ! isset( $GLOBALS['fr_auto_color_logged'] ) || ! is_array( $GLOBALS['fr_auto_color_logged'] ) ) {
+			$GLOBALS['fr_auto_color_logged'] = array();
+		}
+		if ( isset( $GLOBALS['fr_auto_color_logged'][ $term_id ] ) ) {
+			return;
+		}
+		$GLOBALS['fr_auto_color_logged'][ $term_id ] = true;
+		\Freeman\Core\Core\Logger::log(
+			sprintf(
+				'auto-color: disagreement on term %d (product %d) — hex set [%s], using fallback',
+				(int) $term_id,
+				(int) $product_id,
+				implode( ',', $set )
+			)
+		);
+	}
+
 	/* ------------------------------------------------------------------ *
 	 * Internals
 	 * ------------------------------------------------------------------ */

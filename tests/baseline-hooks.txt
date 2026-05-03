@@ -23,6 +23,7 @@ freeman-core/src/Modules/RestockNotify/Frontend.php:360:		if ( ! apply_filters( 
 freeman-core/src/Modules/RestockNotify/Frontend.php:92:		$should = (bool) apply_filters( 'rsn_should_enqueue', $should );
 freeman-core/src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:75:        $should = (bool) apply_filters( 'rsn_should_enqueue', $should );
 freeman-core/src/Modules/VariableStockFix/Module.php:294:		if ( ! apply_filters( 'freeman_core/variable_stock_fix/should_check', true, $product ) ) {
+freeman-core/src/Modules/VariationSwatches/Color_Sampler.php:197:		$value   = apply_filters(
 freeman-core/src/Modules/VariationSwatches/Sampler_Scheduler.php:192:		$batch_size = (int) apply_filters( self::BATCH_SIZE_FILTER, self::DEFAULT_BATCH_SIZE );
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-ajax.php:44:			$checkout = (string) apply_filters( 'etucart_vs_checkout_url', $checkout );
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:513:			$image_payload = (array) apply_filters(

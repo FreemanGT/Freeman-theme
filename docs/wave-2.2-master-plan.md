@@ -109,8 +109,11 @@ This master plan + the 2026-05-03 written approval discharges hard rule #3 (no `
 | 4b | `legacy/includes/class-frontend.php` *(first touched in 4b)* | Add image-thumbnail render branch when an attribute term has an image. Sealed against 4a's actual term-meta key shape. |
 | 4c | `legacy/includes/class-frontend.php` *(already touched in 4b — extending)* | Add tooltip markup wrapper around swatch. Sealed against 4a's actual schema. |
 | 4d | none | 4d is sampling pipeline + caching only. No legacy/ touches. |
-| 4e | `legacy/includes/class-frontend.php` *(already touched in 4b/4c — extending)* | Add color-resolution branch: manual term-meta wins, else read sampled post-meta, else neutral gray fallback. |
+| 4e | `legacy/includes/class-archive.php` *(already touched in 4f — extending)* | Render-path callsite swap at `prepare_product_data()` line 347: `Etucart_VS_Plugin::term_color()` → `Color_Sampler::resolve_term_color()`. Single-line change; flag-OFF byte-identical. |
+| 4e | `legacy/templates/variation-buy-box.php` *(first touched in 4e — pre-flight correction, see below)* | PDP render-path callsite swap at line 87: same shape as the archive.php swap. Single-line change; flag-OFF byte-identical. |
 | 4f | `legacy/includes/class-archive.php` *(first touched in 4f)* | Extend `prepare_product_data()` JSON payload with per-variation `image_src` / `image_srcset` / `image_sizes`. Verify during execution whether already partially present. |
+
+**Pre-flight correction (2026-05-03, during 4e's sub-PR pre-flight)**: the original 4e row above predicted `legacy/includes/class-frontend.php` as the intercept. Pre-flight grep showed `class-frontend.php` has zero color-resolution code — it only handles asset enqueue. The actual term-color helper is `Etucart_VS_Plugin::term_color($term_id)` in `class-plugin.php`, called from four sites: two render paths (`class-archive.php:347`, `templates/variation-buy-box.php:87`) and two admin paths (`class-admin.php:130`, `class-admin.php:359`). Admin paths must NOT auto-resolve — the admin must see "what is stored" so they can recognize when manual color is unset. So 4e's intercept is `Color_Sampler::resolve_term_color($term_id, $product_id)`, called at the two render sites only. `class-frontend.php` drops off 4e's row entirely; `variation-buy-box.php` enters as a first-touch (4a precedent: causally-tied master-plan correction bundled with the code PR, not a separate decision).
 
 **Counter-list (legacy/ files NOT touched anywhere in Wave 2.2)**: `legacy/includes/class-ajax.php`, `legacy/includes/class-admin.php`, every legacy CSS file, every legacy JS file, every legacy template, and `legacy/etucart-init.php`. (The original table speculatively listed `class-ajax.php` and `class-admin.php` under 4a; pre-flight grep confirmed neither file has any settings reads — they drop off the touched-list entirely.)
 
@@ -329,7 +332,7 @@ Three layers of cold-cache prevention, fired in order from most-common to safety
 **Flag**: `freeman_core_variation_swatches_auto_color_enabled` (**same flag as 4d**)
 **Depends on**: 4d (cached sampled-color values must exist before 4e reads them; fresh installs see lazy-sampling on first render).
 
-**Files (3)**:
+**Files (3)** *(predicted — see "Shipped 1.11.28 — delta from prediction" below for actual)*:
 - `freeman-core/src/Modules/VariationSwatches/legacy/includes/class-frontend.php` — color-resolution branch (manual term-meta wins → else sampled meta → else neutral gray); flag-gated.
 - `tests/Snapshot/VariationSwatches_Auto_Color_Test.php` *(new)* — flag-OFF byte-identical; flag-ON sampled color renders.
 - `docs/roadmap.md` — mark 4e shipped + Wave 2.2 parent shipped.
@@ -346,6 +349,15 @@ Three layers of cold-cache prevention, fired in order from most-common to safety
 **Rollback**: same flag as 4d — single `wp option update` reverts both layers.
 
 **Tests**: 1 snapshot test (flag-OFF + flag-ON variants).
+
+**Shipped 1.11.28 — delta from prediction**:
+- ✏️ **File-list correction (master-plan §5.5 + §3.5)**: predicted 1 substantive file (`class-frontend.php`); actual 3 substantive files (`Color_Sampler.php` adds the wrapper, `class-archive.php:347` and `templates/variation-buy-box.php:87` swap callsites). `class-frontend.php` was predicted because the master plan assumed render-path color resolution lived there; pre-flight grep showed `class-frontend.php` has zero color-resolution code (asset enqueue only). The actual helper `Etucart_VS_Plugin::term_color()` is in `class-plugin.php`, called from four sites — two render, two admin. Admin sites must show "what is stored" without auto-fallback, so the cleanest intercept is a new wrapper called only at render sites. Same shape as the 4a §3.5 correction — causally tied to the code PR, called out in the PR body, not a separate decision.
+- ➕ **`Color_Sampler::resolve_term_color($term_id, $product_id)`** — new public static. Resolution order: manual term-meta wins (regardless of flag) → flag-OFF returns `''` (byte-identical to legacy `term_color()`) → flag-ON gathers the canonical (deduped, sorted) set of non-empty sampled hexes from variations of `$product_id` whose attribute term matches `$term_id` → 0 hexes falls through to legacy default → 1 hex returns it → ≥2 hexes apply the disagreement filter (default `#CCCCCC`).
+- ➕ **Disagreement filter `freeman_core/variation_swatches/auto_color_disagreement_fallback`** — args `($default_gray, $disagreement_set, $term_id, $product_id)`. `$disagreement_set` is the deduplicated, sorted set of non-empty hexes (canonical shape — identical to what the logger emits). Filter return is sanitized via `Etucart_VS_Plugin::sanitize_hex_color()`; an invalid return falls back to `$default_gray`. Purely additive (rule #1 additive exception); no flag gating.
+- ➕ **Disagreement Logger info line** — fires once per term per request via `$GLOBALS['fr_auto_color_logged']` rate-limit. Payload includes term id, product id, and the canonical hex set.
+- 🧪 **8 new test methods** in `tests/VariationSwatchesAutoColorRenderTest.php` (matches sealed plan; phpunit-reported total 271 → 279). Covers: flag-OFF byte-identity, manual hex wins, single sampled hex, agreement, disagreement → gray + logger fires once, filter override + invalid return falls back, empty-sentinel ignored, no-sampled-meta falls through.
+- 📊 **Final file count: 12** (sealed estimate: 12). Substantive: 4 (`Color_Sampler.php`, `class-archive.php`, `variation-buy-box.php`, new test). Mechanical: 5 (`freeman-core.php`, `Plugin.php`, two CHANGELOGs, `baseline-hooks.txt`). Doc: 3 (this master-plan correction, `roadmap.md` shipped marker, `CLAUDE.md` infra-state). Under the Wave-2.2 14-file ceiling. Zero new waivers.
+- 🔁 **Wave 2.2 parent shipped-marker** lands with this PR — last sub-PR per the §6/§7 ship order (`4a → 4f → 4b → 4c → 4d → 4e`).
 
 ---
 

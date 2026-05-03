@@ -169,30 +169,41 @@ final class Color_Sampler {
 	/**
 	 * Pick the sampler implementation. The actual sampling algorithm
 	 * (modal-with-edge-filter + corner-based background detection) lives in
-	 * the GD path. Imagick's value is its broader format support (CMYK
-	 * JPEGs, ICC profiles, certain TIFFs) — when present, we use Imagick to
-	 * decode the file to PNG bytes, then hand off to GD for sampling.
-	 * That keeps a single algorithm in one place.
+	 * the GD path; both PHP image libs route through it.
+	 *
+	 * Strategy: GD-first, Imagick-fallback. Try GD on the raw file bytes
+	 * directly — for the PNG/JPEG-sRGB image set freeman-core typically
+	 * works with, GD's native decoder is faithful and predictable. Fall
+	 * through to Imagick only when GD can't decode at all (the rare cases
+	 * Imagick exists for: CMYK JPEGs, certain TIFF variants, files with
+	 * embedded ICC color profiles). When that fallback fires, Imagick
+	 * decodes the file and re-encodes as PNG bytes, then hands off to GD
+	 * for the sampling pass.
+	 *
+	 * Earlier shape (Imagick-first) caused false-positive color shifts on
+	 * test fixtures: Imagick's PNG round-trip applies a colorspace
+	 * transformation that nudges every pixel by a small but visible amount,
+	 * which broke the sampler-test assertions on CI lanes where Imagick is
+	 * present. GD-first sidesteps that round-trip when GD already works.
 	 *
 	 * Returns `[r, g, b]` ints (0-255) or null on failure (broken image,
-	 * unsupported format, both libs unavailable).
+	 * format both libs choke on, both libs unavailable).
 	 *
 	 * @param string $path Filesystem path.
 	 * @return array{0:int,1:int,2:int}|null
 	 */
 	private static function pick_sampler( $path ) {
-		if ( extension_loaded( 'imagick' ) ) {
-			$bytes = self::imagick_to_png_bytes( $path );
-			if ( null !== $bytes && extension_loaded( 'gd' ) ) {
-				$result = self::sample_gd_bytes( $bytes );
-				if ( null !== $result ) {
-					return $result;
-				}
-			}
-			// Fall through to direct GD if Imagick choked or GD-on-bytes failed.
-		}
 		if ( extension_loaded( 'gd' ) ) {
-			return self::sample_gd( $path );
+			$result = self::sample_gd( $path );
+			if ( null !== $result ) {
+				return $result;
+			}
+		}
+		if ( extension_loaded( 'imagick' ) && extension_loaded( 'gd' ) ) {
+			$bytes = self::imagick_to_png_bytes( $path );
+			if ( null !== $bytes ) {
+				return self::sample_gd_bytes( $bytes );
+			}
 		}
 		return null;
 	}

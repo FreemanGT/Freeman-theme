@@ -182,6 +182,90 @@ final class Etucart_VS_Plugin {
 	}
 
 	/**
+	 * Get the term-meta key where the swatch image's attachment ID is stored.
+	 *
+	 * Wave 2.2 / 4b (1.11.24). Note this key is namespaced under
+	 * `freeman_core_variation_swatches_*` rather than the legacy `etucart_*`
+	 * convention used by color_meta_key(). The migration direction established
+	 * by 4a is legacy → new (Migrations::migrate_variation_swatches_settings_to_hub
+	 * copies etucart_vs_* values into freeman_core_variation_swatches_* keys), so
+	 * adding a new term-meta key under the legacy namespace would run against
+	 * that grain and create migration debt for any future term-meta sweep.
+	 */
+	public static function image_meta_key(): string {
+		return 'freeman_core_variation_swatches_term_image_id';
+	}
+
+	/**
+	 * Get the swatch image attachment ID for a term, or 0 if not set.
+	 */
+	public static function term_image_id( int $term_id ): int {
+		$value = get_term_meta( $term_id, self::image_meta_key(), true );
+		return is_numeric( $value ) ? (int) $value : 0;
+	}
+
+	/**
+	 * Get the swatch image URL for a term at the given size, or empty string
+	 * if no image is set or the attachment is missing.
+	 *
+	 * Filterable via `freeman_core/variation_swatches/term_image_url` so sites
+	 * can swap CDN domains, append cache-busting params, etc. Listeners receive
+	 * `( string $url, int $term_id, string $size )`.
+	 */
+	public static function term_image_url( int $term_id, string $size = 'thumbnail' ): string {
+		$attachment_id = self::term_image_id( $term_id );
+		$url           = '';
+		if ( $attachment_id > 0 ) {
+			$src = function_exists( 'wp_get_attachment_image_src' )
+				? wp_get_attachment_image_src( $attachment_id, $size )
+				: false;
+			if ( is_array( $src ) && ! empty( $src[0] ) ) {
+				$url = (string) $src[0];
+			}
+		}
+
+		/**
+		 * Filter the resolved swatch image URL.
+		 *
+		 * @since 1.11.24
+		 *
+		 * @param string $url      The resolved URL (empty when no image is set).
+		 * @param int    $term_id  Attribute term ID.
+		 * @param string $size     WordPress image size key (e.g. 'thumbnail').
+		 */
+		return (string) apply_filters( 'freeman_core/variation_swatches/term_image_url', $url, $term_id, $size );
+	}
+
+	/**
+	 * Decide whether an attribute has any term with a swatch image set.
+	 *
+	 * An attribute mixed with image and color terms still renders as image
+	 * swatches — the per-term precedence (image > color) handles the per-option
+	 * fallback. Cached per-request like attribute_is_color().
+	 */
+	public static function attribute_has_images( string $taxonomy ): bool {
+		static $cache = [];
+		if ( isset( $cache[ $taxonomy ] ) ) {
+			return $cache[ $taxonomy ];
+		}
+
+		$terms = get_terms( [
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => false,
+			'number'     => 1,
+			'meta_query' => [
+				[
+					'key'     => self::image_meta_key(),
+					'compare' => 'EXISTS',
+				],
+			],
+		] );
+
+		$cache[ $taxonomy ] = ! is_wp_error( $terms ) && ! empty( $terms );
+		return $cache[ $taxonomy ];
+	}
+
+	/**
 	 * Decide whether an attribute should render as color swatches.
 	 *
 	 * An attribute renders as color swatches when at least one of its terms

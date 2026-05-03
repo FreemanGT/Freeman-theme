@@ -317,30 +317,44 @@ class Etucart_VS_Archive {
 		}
 
 		// --- Build attribute option lists (label, is_color, options[]) ----
+		// Wave 2.2 / 4b (1.11.24) — when the image-swatches flag is on, every
+		// option entry also carries an `img` field (URL or empty). Flag-OFF:
+		// no img field emitted; payload byte-identical to pre-1.11.24.
+		$image_swatches_on = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'image_swatches' );
+
 		$attrs_out = [];
 		foreach ( $attributes as $attribute_name => $options ) {
 			$sanitized  = sanitize_title( $attribute_name );
 			$input_name = 'attribute_' . $sanitized;
 			$taxonomy   = 0 === strpos( $attribute_name, 'pa_' ) ? $attribute_name : '';
 			$is_color   = $taxonomy && Etucart_VS_Plugin::attribute_is_color( $taxonomy );
+			$has_images = $image_swatches_on && $taxonomy && Etucart_VS_Plugin::attribute_has_images( $taxonomy );
 
 			$option_items = [];
 			foreach ( $options as $option ) {
 				$value = (string) $option;
 				$name  = $value;
 				$hex   = '';
+				$img   = '';
 				if ( $taxonomy ) {
 					$term = get_term_by( 'slug', $value, $taxonomy );
 					if ( $term && ! is_wp_error( $term ) ) {
 						$name = $term->name;
 						$hex  = Etucart_VS_Plugin::term_color( (int) $term->term_id );
+						if ( $image_swatches_on ) {
+							$img = Etucart_VS_Plugin::term_image_url( (int) $term->term_id, 'thumbnail' );
+						}
 					}
 				}
-				$option_items[] = [
+				$item = [
 					'v'   => $value,
 					'n'   => $name,
 					'hex' => $hex,
 				];
+				if ( $image_swatches_on ) {
+					$item['img'] = $img;
+				}
+				$option_items[] = $item;
 			}
 
 			// Whether to honour the product's default attributes for the archive
@@ -367,13 +381,17 @@ class Etucart_VS_Archive {
 				}
 			}
 
-			$attrs_out[] = [
+			$entry_attr = [
 				'name'     => $input_name,
 				'label'    => Etucart_VS_Plugin::resolve_attribute_label( $attribute_name, $product ),
 				'is_color' => $is_color,
 				'selected' => $selected,
 				'options'  => $option_items,
 			];
+			if ( $image_swatches_on ) {
+				$entry_attr['has_images'] = $has_images;
+			}
+			$attrs_out[] = $entry_attr;
 		}
 
 		// --- Build the compact variations list -----------------------------
@@ -525,7 +543,11 @@ class Etucart_VS_Archive {
 		// the cache key so flipping the flag implicitly invalidates stale
 		// payloads (which were built without per-variation image fields).
 		$swap_flag     = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'card_image_swap' ) ? '1' : '0';
-		$signature     = implode( '|', [ $pid, $wc_ver, $display, $curr, $curr_pos, $dec_sep, $thou_sep, $decimals, $swap_flag ] );
+		// Wave 2.2 / 4b (1.11.24) — same trick for the image-swatches flag so
+		// flipping it invalidates payloads that were built without per-option
+		// image_url fields.
+		$image_flag    = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'image_swatches' ) ? '1' : '0';
+		$signature     = implode( '|', [ $pid, $wc_ver, $display, $curr, $curr_pos, $dec_sep, $thou_sep, $decimals, $swap_flag, $image_flag ] );
 		return 'freeman_vs_pd_' . md5( $signature );
 	}
 

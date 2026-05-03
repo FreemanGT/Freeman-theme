@@ -346,6 +346,47 @@
 	transform: scale(1.04);
 }
 
+/*
+ * Wave 2.2 / 4b (1.11.24) — buy-box image-swatch chip. Mirrors the dot
+ * dimensions so the buy-box layout stays consistent regardless of whether
+ * an attribute renders as colors or images. Round shape hardcoded to match
+ * color circles. Background-image rather than <img> so RTL/sizing/hover
+ * behave identically.
+ */
+.etucart-buy-box .etucart-swatch--image {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: 38px !important;
+	height: 38px !important;
+	border-radius: 50% !important;
+	cursor: pointer !important;
+	border: 2px solid transparent !important;
+	transition: border-color var(--etucart-transition), transform var(--etucart-transition) !important;
+	background: transparent !important;
+}
+
+.etucart-buy-box .etucart-swatch--image .etucart-swatch__img {
+	width: 34px !important;
+	height: 34px !important;
+	border-radius: 50% !important;
+	border: 1.5px solid var(--etucart-border) !important;
+	display: block !important;
+	box-sizing: border-box !important;
+	background-size: cover !important;
+	background-position: center center !important;
+	background-repeat: no-repeat !important;
+	transition: transform var(--etucart-transition) !important;
+}
+
+.etucart-buy-box .etucart-swatch--image:hover .etucart-swatch__img {
+	transform: scale(1.04);
+}
+
+.etucart-buy-box .etucart-swatch--image.is-selected {
+	border-color: var(--etucart-border-strong) !important;
+}
+
 /* Selected color swatch: strong black ring around the colored dot. */
 .etucart-buy-box .etucart-swatch--color.is-selected {
 	border-color: var(--etucart-border-strong) !important;

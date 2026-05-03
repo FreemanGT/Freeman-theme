@@ -65,23 +65,32 @@ foreach ( $attributes as $attribute_name => $options ) {
 	}
 
 	$is_color = $taxonomy && Etucart_VS_Plugin::attribute_is_color( $taxonomy );
+	// Wave 2.2 / 4b (1.11.24) — image wins over color when both are set.
+	// Flag-OFF: $img stays empty for every option and the render branch is
+	// dead code, so output is byte-identical to pre-1.11.24.
+	$image_swatches_on = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'image_swatches' );
 
 	$option_items = [];
 	foreach ( $options as $option ) {
 		$value = (string) $option;
 		$name  = $value;
 		$hex   = '';
+		$img   = '';
 		if ( $taxonomy ) {
 			$term = get_term_by( 'slug', $value, $taxonomy );
 			if ( $term && ! is_wp_error( $term ) ) {
 				$name = $term->name;
 				$hex  = Etucart_VS_Plugin::term_color( (int) $term->term_id );
+				if ( $image_swatches_on ) {
+					$img = Etucart_VS_Plugin::term_image_url( (int) $term->term_id, 'thumbnail' );
+				}
 			}
 		}
 		$option_items[] = [
 			'value' => $value,
 			'name'  => $name,
 			'hex'   => $hex,
+			'img'   => $img,
 		];
 	}
 
@@ -155,8 +164,24 @@ $pdp_min_html   = wc_price( $pdp_min );
 					<div class="etucart-variation__options">
 						<?php foreach ( $p['option_items'] as $opt ) :
 							$is_selected = ( $p['selected'] !== '' && $p['selected'] === $opt['value'] );
+							// Wave 2.2 / 4b (1.11.24) — image > color > text precedence
+							// per option. The 'img' key is always present in the
+							// payload (empty string when no image / flag off), so
+							// gating on the value is enough.
+							$opt_img = (string) ( $opt['img'] ?? '' );
+							$is_image_opt = '' !== $opt_img;
 							?>
-							<?php if ( $p['is_color'] ) :
+							<?php if ( $is_image_opt ) : ?>
+								<button type="button"
+										class="etucart-swatch etucart-swatch--image<?php echo $is_selected ? ' is-selected' : ''; ?>"
+										data-value="<?php echo esc_attr( $opt['value'] ); ?>"
+										data-name="<?php echo esc_attr( $opt['name'] ); ?>"
+										aria-label="<?php echo esc_attr( $opt['name'] ); ?>">
+									<span class="etucart-swatch__img" aria-hidden="true"
+										style="background-image:url('<?php echo esc_url( $opt_img ); ?>')"></span>
+									<span class="screen-reader-text"><?php echo esc_html( $opt['name'] ); ?></span>
+								</button>
+							<?php elseif ( $p['is_color'] ) :
 								// Re-validate the hex at render time as defence-in-depth,
 								// even though term_color() already sanitises it.
 								$safe_hex      = Etucart_VS_Plugin::sanitize_hex_color( (string) $opt['hex'] );

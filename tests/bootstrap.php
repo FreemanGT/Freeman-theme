@@ -159,8 +159,11 @@ if ( ! function_exists( 'wp_upload_dir' ) ) {
 }
 
 // Option + transient store (so Security::rate_limit, module options etc. are testable).
-$GLOBALS['fr_opts']       = $GLOBALS['fr_opts']       ?? array();
-$GLOBALS['fr_transients'] = $GLOBALS['fr_transients'] ?? array();
+$GLOBALS['fr_opts']        = $GLOBALS['fr_opts']        ?? array();
+$GLOBALS['fr_transients']  = $GLOBALS['fr_transients']  ?? array();
+$GLOBALS['fr_term_meta']   = $GLOBALS['fr_term_meta']   ?? array();
+$GLOBALS['fr_terms']       = $GLOBALS['fr_terms']       ?? array();
+$GLOBALS['fr_attachments'] = $GLOBALS['fr_attachments'] ?? array();
 
 if ( ! function_exists( 'get_option' ) ) {
 	function get_option( $k, $d = false ) { return $GLOBALS['fr_opts'][ $k ] ?? $d; }
@@ -179,6 +182,73 @@ if ( ! function_exists( 'delete_option' ) ) {
 }
 if ( ! function_exists( 'add_option' ) ) {
 	function add_option( $k, $v ) { if ( ! isset( $GLOBALS['fr_opts'][ $k ] ) ) { $GLOBALS['fr_opts'][ $k ] = $v; return true; } return false; }
+}
+
+// Term-meta store + smart get_term_meta / update_term_meta / delete_term_meta
+// (Wave 2.2 / 4b — promoted from inline test stubs after the dumb stub races
+// in CategorySliderHooksTest etc. broke 4b's image-helper tests). The dumb
+// stubs in those test files are guarded by `function_exists` and become
+// no-ops once these load.
+if ( ! function_exists( 'get_term_meta' ) ) {
+	function get_term_meta( $term_id, $key, $single = true ) {
+		$row = $GLOBALS['fr_term_meta'][ $term_id ][ $key ] ?? '';
+		return $single ? $row : ( '' === $row ? array() : array( $row ) );
+	}
+}
+if ( ! function_exists( 'update_term_meta' ) ) {
+	function update_term_meta( $term_id, $key, $value ) {
+		$GLOBALS['fr_term_meta'][ $term_id ][ $key ] = $value;
+		return true;
+	}
+}
+if ( ! function_exists( 'delete_term_meta' ) ) {
+	function delete_term_meta( $term_id, $key ) {
+		unset( $GLOBALS['fr_term_meta'][ $term_id ][ $key ] );
+		return true;
+	}
+}
+
+// get_terms — backward-compat with tests that set $GLOBALS['fr_get_terms_return']
+// (CategorySliderHooksTest etc.); falls back to the 4b path that honors a
+// taxonomy + meta_query EXISTS filter when fr_get_terms_return is unset.
+if ( ! function_exists( 'get_terms' ) ) {
+	function get_terms( $args = array() ) {
+		if ( isset( $GLOBALS['fr_get_terms_return'] ) ) {
+			return $GLOBALS['fr_get_terms_return'];
+		}
+		$tax = is_array( $args ) ? ( $args['taxonomy'] ?? '' ) : '';
+		$want_meta = '';
+		if ( is_array( $args ) && isset( $args['meta_query'][0]['key'] ) ) {
+			$want_meta = (string) $args['meta_query'][0]['key'];
+		}
+		$ids = $GLOBALS['fr_terms'][ $tax ] ?? array();
+		if ( empty( $ids ) ) {
+			return array();
+		}
+		if ( '' === $want_meta ) {
+			return $ids;
+		}
+		$matches = array();
+		foreach ( $ids as $tid ) {
+			if ( ! empty( $GLOBALS['fr_term_meta'][ $tid ][ $want_meta ] ) ) {
+				$matches[] = $tid;
+			}
+		}
+		return $matches;
+	}
+}
+
+// wp_get_attachment_image_src — fixture-driven; returns false when no URL
+// is registered for the (id, size) pair. Compatible with the dumb-stub
+// CategorySliderHooksTest version (always-false) when fr_attachments is unset.
+if ( ! function_exists( 'wp_get_attachment_image_src' ) ) {
+	function wp_get_attachment_image_src( $attachment_id, $size = 'thumbnail' ) {
+		$url = $GLOBALS['fr_attachments'][ $attachment_id ][ $size ] ?? '';
+		if ( '' === $url ) {
+			return false;
+		}
+		return array( $url, 100, 100, false );
+	}
 }
 if ( ! function_exists( 'get_transient' ) ) {
 	function get_transient( $k ) { $row = $GLOBALS['fr_transients'][ $k ] ?? null; if ( ! $row ) return false; if ( $row['exp'] > 0 && $row['exp'] < time() ) { unset( $GLOBALS['fr_transients'][ $k ] ); return false; } return $row['v']; }

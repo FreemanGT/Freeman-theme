@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-03 (Wave 2.2 / 4f shipped — variation-image-on-card swap)
+**Last updated**: 2026-05-03 (Wave 2.2 / 4b shipped — image swatches)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -150,7 +150,7 @@ Sub-PR statuses (to be updated as each ships):
 
 - **4a — Settings migration to Settings_Hub** — ✅ shipped 1.11.21 (2026-05-03) — flag `freeman_core_variation_swatches_settings_hub_enabled`
 - **4f — Variation-image-on-card swap** — ✅ shipped 1.11.23 (2026-05-03) — flag `freeman_core_variation_swatches_card_image_swap_enabled`
-- **4b — Image swatches** — _not started, sealed against 4a's schema_ — flag `freeman_core_variation_swatches_image_swatches_enabled`
+- **4b — Image swatches** — ✅ shipped 1.11.24 (2026-05-03) — flag `freeman_core_variation_swatches_image_swatches_enabled`
 - **4c — Tooltip on hover** — _not started, sealed against 4a's schema_ — flag `freeman_core_variation_swatches_tooltip_enabled`
 - **4d — Auto-color sampler (pipeline + caching)** — _not started_ — flag `freeman_core_variation_swatches_auto_color_enabled` _(shared with 4e)_
 - **4e — Auto-color fallback wiring (render path)** — _not started_ — flag `freeman_core_variation_swatches_auto_color_enabled` _(shared with 4d)_

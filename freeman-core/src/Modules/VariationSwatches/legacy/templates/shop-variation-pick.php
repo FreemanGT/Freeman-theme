@@ -105,10 +105,22 @@ $cart_url  = esc_url(  $prepared['cart_url'] ?? '' );
 						$hex_raw     = (string) ( $opt['hex'] ?? '' );
 						$safe_hex    = Etucart_VS_Plugin::sanitize_hex_color( $hex_raw );
 						$is_light    = $safe_hex && Etucart_VS_Plugin::is_light_hex( $safe_hex );
+						// Wave 2.2 / 4b (1.11.24) — image wins over color when both
+						// are set. The 'img' key is only present in the payload when
+						// the image_swatches flag is on, so flag-OFF this branch is
+						// dead code and renders identically to pre-1.11.24.
+						$img_url    = (string) ( $opt['img'] ?? '' );
+						$is_image   = '' !== $img_url;
 						$is_selected = ( '' !== $selected && $value === $selected );
 						$is_overflow = ( $i >= $hide_after );
 						$classes     = [ 'etucart-shop-pick__opt' ];
-						$classes[]   = $is_color ? 'etucart-shop-pick__opt--color' : 'etucart-shop-pick__opt--button';
+						if ( $is_image ) {
+							$classes[] = 'etucart-shop-pick__opt--image';
+						} elseif ( $is_color ) {
+							$classes[] = 'etucart-shop-pick__opt--color';
+						} else {
+							$classes[] = 'etucart-shop-pick__opt--button';
+						}
 						if ( $is_selected ) $classes[] = 'is-selected';
 						if ( $is_overflow ) $classes[] = 'is-overflow';
 						if ( $is_light   )  $classes[] = 'is-light';
@@ -121,7 +133,11 @@ $cart_url  = esc_url(  $prepared['cart_url'] ?? '' );
 								aria-label="<?php echo esc_attr( $display ); ?>"
 								aria-pressed="<?php echo $is_selected ? 'true' : 'false'; ?>"
 								<?php if ( $is_overflow ) : ?>hidden<?php endif; ?>>
-							<?php if ( $is_color ) : ?>
+							<?php if ( $is_image ) : ?>
+								<span class="etucart-shop-pick__opt-img" aria-hidden="true"
+									style="background-image:url('<?php echo esc_url( $img_url ); ?>')"></span>
+								<span class="screen-reader-text"><?php echo esc_html( $display ); ?></span>
+							<?php elseif ( $is_color ) : ?>
 								<span class="etucart-shop-pick__dot" aria-hidden="true"
 									<?php if ( $safe_hex ) : ?> style="background-color:<?php echo esc_attr( $safe_hex ); ?>"<?php endif; ?>></span>
 								<span class="screen-reader-text"><?php echo esc_html( $display ); ?></span>

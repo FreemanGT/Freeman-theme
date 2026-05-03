@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.24] — 2026-05-03
+
+- Wave 2.2 / 4b — Image swatches: per-term image upload (Iconic/WPC pattern) gated on freeman_core_variation_swatches_image_swatches_enabled, freeman_core_variation_swatches_term_image_id term-meta key under the canonical namespace (not extending legacy etucart_*), image wins over color precedence, term_image_url filter, smart test stubs promoted to bootstrap.php
+
 ## [1.11.23] — 2026-05-03
 
 - Wave 2.2 / 4f — Variation-image-on-card swap on shop / archive listings: per-variation image payload (gated on freeman_core_variation_swatches_card_image_swap_enabled), refreshCardImage() in etucart-shop-swatches.js, two new additive filters (card_image_selector and card_image_payload), flag-state folded into transient signature for implicit cache-bust on flag flip

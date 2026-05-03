@@ -29,6 +29,8 @@ If a future review revisits §4.1 and decides 4d–4f were a mistake, they can b
 
 After the matrix-drop PR ships, no further admin-merges should be needed for routine Wave 2.2 work.
 
+**Update 2026-05-03 (post-4f)**: matrix-drop landed as PR #23 (1.11.22). Wave 2.2 / 4f then shipped as PR #24 (1.11.23) with all 7 CI lanes green — first vanilla merge in Wave 2.2. Prediction confirmed.
+
 ---
 
 ## 2. Pre-flight checks
@@ -303,6 +305,17 @@ Both hooks are no-ops when no listener is attached, so they need no flag gating 
 **Tests**: PHP snapshot test on JSON payload only. JS is **not** unit-tested — manual QA on shop / category / tag / search / related-products in Hebrew (RTL) and English.
 
 **Rollback**: `wp option update freeman_core_variation_swatches_card_image_swap_enabled 0`.
+
+**Shipped 1.11.23 — delta from prediction**:
+- ✅ Both new filters landed as planned.
+- ✅ JS `refreshCardImage()` landed in `etucart-shop-swatches.js` with stash/restore mirroring `refreshPrice()`. Card ancestor located via `closest(picker, 'li.product, .product, [data-product-id]')`.
+- ✅ PHP payload extension landed in `prepare_product_data()` — confirmed during pre-flight that the per-variation image fields were NOT already present (master plan asked to verify).
+- ✏️ **CSS skipped** — the "optional fade transition" was deliberately not landed; image swap is currently instant. Can be added in 4b/4c or a follow-up if visual polish is wanted.
+- ➕ **Helper extracted for testability** — the inline variation-entry build was extracted into `Etucart_VS_Archive::build_variation_entry()` (public static, `@internal`) so the new image-payload branch is unit-testable without standing up the full `\WC_Product_Variable` stub stack. Behavior unchanged.
+- ➕ **Implicit cache-bust via transient signature** — instead of an explicit cache-clear handler on flag flip, the flag state is folded into `prepared_transient_key()`'s signature. Different flag state → different key → fresh build. Saves a `Module.php` touch + `add_action` handler and reduces blast surface.
+- 📊 **Final file count: 11** (master plan predicted ~4). Substantive: 7 (`class-archive.php`, `etucart-shop-swatches.js`, snapshot test, `baseline-hooks.txt`, `roadmap.md`, `feature-flags.md`, `CLAUDE.md`). Mechanical: 4 (version-bump artifacts). Under 12-file ceiling.
+- 🧪 **7 new tests** in `tests/VariationSwatchesCardImagePayloadSnapshotTest.php` covering flag-OFF byte-identity, flag-ON image emission, no-image-data path, filter mutation, filter-not-fired-on-flag-off, attrs normalization. Suite total 208 → 215.
+- 🟢 **First vanilla merge** in Wave 2.2 (post-matrix-drop). All 7 CI lanes green; no admin override.
 
 ---
 

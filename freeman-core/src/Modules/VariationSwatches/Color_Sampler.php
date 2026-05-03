@@ -167,20 +167,29 @@ final class Color_Sampler {
 	}
 
 	/**
-	 * Pick the sampler implementation. Imagick when available, GD as the
-	 * universal fallback. Returns `[r, g, b]` ints (0-255) or null on
-	 * failure (broken image, unsupported format, both libs unavailable).
+	 * Pick the sampler implementation. The actual sampling algorithm
+	 * (modal-with-edge-filter + corner-based background detection) lives in
+	 * the GD path. Imagick's value is its broader format support (CMYK
+	 * JPEGs, ICC profiles, certain TIFFs) — when present, we use Imagick to
+	 * decode the file to PNG bytes, then hand off to GD for sampling.
+	 * That keeps a single algorithm in one place.
+	 *
+	 * Returns `[r, g, b]` ints (0-255) or null on failure (broken image,
+	 * unsupported format, both libs unavailable).
 	 *
 	 * @param string $path Filesystem path.
 	 * @return array{0:int,1:int,2:int}|null
 	 */
 	private static function pick_sampler( $path ) {
 		if ( extension_loaded( 'imagick' ) ) {
-			$imagick_result = self::sample_imagick( $path );
-			if ( null !== $imagick_result ) {
-				return $imagick_result;
+			$bytes = self::imagick_to_png_bytes( $path );
+			if ( null !== $bytes && extension_loaded( 'gd' ) ) {
+				$result = self::sample_gd_bytes( $bytes );
+				if ( null !== $result ) {
+					return $result;
+				}
 			}
-			// Fall through to GD if Imagick choked on this specific image.
+			// Fall through to direct GD if Imagick choked or GD-on-bytes failed.
 		}
 		if ( extension_loaded( 'gd' ) ) {
 			return self::sample_gd( $path );
@@ -189,12 +198,33 @@ final class Color_Sampler {
 	}
 
 	/**
+	 * Decode an image file via Imagick and re-encode as PNG bytes. Lets the
+	 * GD path handle formats GD can't natively decode (CMYK JPEG, etc.).
+	 * Returns null on any failure so the caller falls through to direct GD.
+	 */
+	private static function imagick_to_png_bytes( $path ) {
+		try {
+			$img = new \Imagick( $path );
+			$img->setImageFormat( 'png' );
+			$bytes = $img->getImageBlob();
+			$img->clear();
+			return $bytes;
+		} catch ( \Throwable $e ) {
+			return null;
+		}
+	}
+
+	/**
 	 * Modal-with-edge-filter sampling via GD. Drops pixels on the bounding-
 	 * box edges (typical product-photo background) and takes the mode of
 	 * the remainder after bucket quantization.
 	 */
 	private static function sample_gd( $path ) {
-		$im = @imagecreatefromstring( (string) @file_get_contents( $path ) );
+		return self::sample_gd_bytes( @file_get_contents( $path ) );
+	}
+
+	private static function sample_gd_bytes( $bytes ) {
+		$im = @imagecreatefromstring( (string) $bytes );
 		if ( ! $im ) {
 			return null;
 		}
@@ -308,60 +338,6 @@ final class Color_Sampler {
 			}
 		}
 		return $buckets;
-	}
-
-	/**
-	 * Imagick variant. Uses Imagick's getQuantumDepth + faster pixel
-	 * iteration. Falls back to null on any failure so the GD path can
-	 * retry.
-	 */
-	private static function sample_imagick( $path ) {
-		try {
-			$img = new \Imagick( $path );
-			$w   = (int) $img->getImageWidth();
-			$h   = (int) $img->getImageHeight();
-			if ( $w < 3 || $h < 3 ) {
-				$img->clear();
-				return null;
-			}
-
-			// Crop to interior (drop 1px edge ring).
-			$img->cropImage( $w - 2, $h - 2, 1, 1 );
-			$img->setImagePage( 0, 0, 0, 0 );
-
-			// Re-quantize to QUANTIZE_BITS-per-channel granularity by
-			// reducing the colorspace and using quantizeImage.
-			$bucket_count = ( 1 << ( 3 * self::QUANTIZE_BITS ) );
-			$img->quantizeImage(
-				min( $bucket_count, 4096 ),
-				\Imagick::COLORSPACE_RGB,
-				0,
-				false,
-				false
-			);
-
-			// Get the histogram, find max-occurrence color.
-			$hist = $img->getImageHistogram();
-			$top  = null;
-			$best = -1;
-			foreach ( $hist as $px ) {
-				$count = (int) $px->getColorCount();
-				if ( $count > $best ) {
-					$c    = $px->getColor();
-					$best = $count;
-					$top  = array(
-						(int) ( $c['r'] ?? 0 ),
-						(int) ( $c['g'] ?? 0 ),
-						(int) ( $c['b'] ?? 0 ),
-					);
-				}
-				$px->clear();
-			}
-			$img->clear();
-			return $top;
-		} catch ( \Throwable $e ) {
-			return null;
-		}
 	}
 
 	private static function bucket_key( $r, $g, $b ) {

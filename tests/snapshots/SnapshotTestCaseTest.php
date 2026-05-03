@@ -17,7 +17,7 @@ final class SnapshotTestCaseTest extends TestCase {
 		parent::setUp();
 		$this->golden_dir = __DIR__ . '/__golden__';
 		if ( ! is_dir( $this->golden_dir ) ) {
-			mkdir( $this->golden_dir, 0o755, true );
+			mkdir( $this->golden_dir, 0755, true );
 		}
 		// Remove any leftover from a previous run.
 		$path = $this->golden_dir . '/' . $this->tmp_name;

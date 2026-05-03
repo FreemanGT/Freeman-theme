@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.20] — 2026-05-03
+
+- Fix PHP 7.4/8.0 lint failure in SnapshotTestCaseTest: replace PHP 8.1+ octal literal 0o755 with legacy 0755
+
 ## [1.11.19] — 2026-04-30
 
 - Tweak: narrow ProductSlider/CategorySlider edge-fade mask from 24px to 4px on mobile (<=640px) so cards do not lose visible content to the softener

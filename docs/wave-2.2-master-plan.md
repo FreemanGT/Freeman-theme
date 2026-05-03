@@ -232,7 +232,25 @@ Schema uses Settings_Hub's existing field types (`checkbox`, `number`, `text`); 
 **Flag**: `freeman_core_variation_swatches_tooltip_enabled` (default `false`)
 **Depends on**: 4a (admin override for tooltip text per term lives under the new admin page).
 
-**Scope (sealed)**: Hover tooltip on swatches showing attribute term name (admin-overridable per term via term meta). Approximate file count: 4 (legacy/class-frontend.php tooltip wrapper, etucart-swatches.css, optional touch-handling JS, snapshot test).
+**Scope (sealed at 4c pre-flight, 2026-05-03)**: Hover tooltip on swatches showing attribute term name. Per-term admin override via term meta (`freeman_core_variation_swatches_term_tooltip_text`, namespaced under the canonical convention rather than legacy `etucart_*`). Pure CSS rendering — `data-tooltip` attribute + `:hover::after { content: attr(data-tooltip) }`, mirroring the existing pattern at `etucart-shop-swatches.css:198-199` (`.etucart-shop-pick__attr-selected:empty::before` + `content: attr(data-default-text)`). Tooltips applied to color and image swatches in both shop picker and PDP buy-box; **text-button swatches skipped** (the label is inline so a tooltip is redundant). **No touch-handling JS** — master plan listed it as optional; touch devices have no `:hover` so tap-to-show would be feature creep deferred to a future PR if a client asks.
+
+**Pre-flight correction (2026-05-03)**: the original "Approximate file count: 4" was Option-B-shape thinking. Sealed actual count is **12 substantive files** (under the 12-file ceiling, no waiver). Original 4-file forecast preserved at the bottom of the section for the audit trail; same correction shape as 4a's and 4b's.
+
+**Files (sealed, 12 substantive)**:
+- `legacy/includes/class-plugin.php` — 2 new static helpers: `tooltip_meta_key()`, `term_tooltip_text(int $term_id, string $default = '') → string` (returns override if set, else default, else empty).
+- `legacy/includes/class-admin.php` — extend term-edit form fields with the tooltip text input + save handler. Reuses the existing `'edit-tags.php' / 'term.php'` screen-hook gate.
+- `legacy/includes/class-archive.php` — shop-picker option-payload `tt` field (always present when flag ON; empty string when no override); fold flag state into `prepared_transient_key()` for implicit cache-bust.
+- `legacy/templates/shop-variation-pick.php` — `data-tooltip="..."` attribute on color and image swatch buttons (skip text buttons).
+- `legacy/templates/variation-buy-box.php` — option_items inline-build extended with `tt` field + `data-tooltip` attribute on color/image buttons.
+- `assets/css/etucart-shop-swatches.css` — `[data-tooltip]:hover::after` tooltip rule for shop picker.
+- `assets/css/etucart-swatches.css` — same rule for buy-box.
+- `tests/VariationSwatchesTooltipTest.php` *(new)* — helper tests + payload-shape tests + filter-not-emitted-flag-OFF.
+- `docs/wave-2.2-master-plan.md` — this estimate correction.
+- `docs/roadmap.md` — mark 4c shipped + bump "Last updated".
+- `docs/feature-flags.md` — add `tooltip_enabled` row.
+- `CLAUDE.md` — version sync 1.11.24 → 1.11.25 + PHPUnit count update.
+
+**Original prediction (preserved for audit trail)**: ~~Approximate file count: 4 (legacy/class-frontend.php tooltip wrapper, etucart-swatches.css, optional touch-handling JS, snapshot test).~~ — wrong on multiple axes: class-frontend.php is not touched (tooltip render lives in templates, not class-frontend.php); CSS is two files not one (separate enqueue contexts); admin UI for the override was implied in the body text but not counted; class-plugin.php helpers + class-archive.php payload extension + docs sync were missing entirely.
 
 ---
 

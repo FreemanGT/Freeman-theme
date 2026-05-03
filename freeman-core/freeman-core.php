@@ -3,7 +3,7 @@
  * Plugin Name:       Freeman Core
  * Plugin URI:        https://freemandigital.com/freeman-core
  * Description:       Unified WooCommerce functionality for the Freeman Theme. Hosts eight independently togglable modules: Variation Swatches, Restock Notify, Variable Stock Fix, Product Feed, Infinite Scroll, Cheapest Default Variation, Category Slider, Product Slider. Owns all data and business logic so features survive a theme switch.
- * Version:           1.11.21
+ * Version:           1.11.22
  * Author:            Freeman Digital
  * Author URI:        https://freemandigital.com
  * License:           GPL-2.0-or-later
@@ -11,7 +11,7 @@
  * Text Domain:       freeman-core
  * Domain Path:       /languages
  * Requires at least: 6.0
- * Requires PHP:      7.4
+ * Requires PHP:      8.0
  * Requires Plugins:  woocommerce
  * WC requires at least: 7.0
  * WC tested up to:   9.5
@@ -21,7 +21,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'FREEMAN_CORE_VERSION',  '1.11.21' );
+define( 'FREEMAN_CORE_VERSION',  '1.11.22' );
 define( 'FREEMAN_CORE_FILE',     __FILE__ );
 define( 'FREEMAN_CORE_PATH',     plugin_dir_path( __FILE__ ) );
 define( 'FREEMAN_CORE_URL',      plugin_dir_url( __FILE__ ) );

@@ -23,7 +23,11 @@ Wave 2.2 is Roadmap item #4: migrate VariationSwatches off `etucart_vs_*` option
 
 If a future review revisits §4.1 and decides 4d–4f were a mistake, they can be removed without disturbing 4a–4c (the migration backbone). 4d/4e share a flag and revert as one unit; 4f is independent.
 
-**Repository state context (2026-05-03)**: Main is at 1.11.20. PR #19 (1.11.19, slider edge-fade tweak) was admin-merged with red CI on the PHP 7.4 / 8.0 lint lanes — not because the change was unsafe, but because a pre-existing latent issue in `tests/snapshots/SnapshotTestCaseTest.php:20` (`0o755` PHP 8.1+ octal literal, introduced by Wave 0.5) was blocking the lint step on those lanes. PR #20 (1.11.20) fixed that ~5 minutes later. The PHP 7.4 PHPUnit lane still fails on a separate pre-existing issue (`str_starts_with`/`str_contains` calls scattered through shipped code) — that gets its own infra PR to drop PHP 7.4 from the supported matrix and is **not a Wave 2.2 dependency**.
+**Admin-merge log (durable record)**:
+- **PR #19 / 1.11.19 (slider edge-fade tweak)** — admin-merged 2026-05-03 with red CI on the PHP 7.4 / 8.0 *lint* lanes. Cause was a pre-existing latent issue in `tests/snapshots/SnapshotTestCaseTest.php:20` (`0o755` PHP 8.1+ octal literal, introduced by Wave 0.5), not the change itself. PR #20 (1.11.20) fixed that ~5 minutes later.
+- **PR #22 / 1.11.21 (Wave 2.2 / 4a — Settings_Hub migration backbone)** — admin-merged 2026-05-03 with red CI on the PHP 7.4 *PHPUnit* lane only. Cause was a separate pre-existing issue: shipped freeman-core code uses `str_starts_with` / `str_contains` (PHP 8.0+ functions) which fail to call on PHP 7.4. The 7.4 PHPUnit lane has been de-facto failing since Wave 2.3a–c baked those idioms in. Tracked separately as the matrix-drop chore PR (queued ahead of 4f per Yiftach's direction "don't want admin-merge-with-red-7.4 becoming routine").
+
+After the matrix-drop PR ships, no further admin-merges should be needed for routine Wave 2.2 work.
 
 ---
 

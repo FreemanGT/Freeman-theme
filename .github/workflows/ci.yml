@@ -16,7 +16,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [ '7.4', '8.0', '8.1', '8.2', '8.3' ]
+        # PHP 7.4 dropped 2026-05-03 (release 1.11.22). Shipped freeman-core
+        # already used PHP 8.0+ idioms (str_starts_with, str_contains) baked
+        # in by Wave 2.3a–c, so the 7.4 PHPUnit lane was de-facto failing.
+        # WordPress recommends PHP 8.1+ in 2026; freeman-core is internal-only
+        # and runs on Freeman Digital's client sites — none on PHP 7.4.
+        # See PR description on the matrix-drop PR for the full rationale.
+        php: [ '8.0', '8.1', '8.2', '8.3' ]
         deps: [ 'normal' ]
         include:
           - php: '8.3'

@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-04 (Wave 3.3 shipped — strategy selector + per-product meta override on CheapestDefaultVariation)
+**Last updated**: 2026-05-04 (Wave 3.1 scope amendment per /docs/wave-3.1-master-plan.md)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -177,11 +177,11 @@ Each sub-PR keeps `legacy/` files untouched; modern classes shadow via `class_al
 
 Each item is its own PR with its own feature flag. Order within wave doesn't matter.
 
-**3.1 — InfiniteScroll trigger modes (Roadmap #5) — expanded scope (committed 2026-04-29)**
-- Setting: `auto` / `button` / `hybrid` (auto first 2 pages, button after)
-- Selector override (currently hardcoded to `.products`)
-- History API integration toggle (push state on each page load)
-- Flag: `freeman_core_infinite_scroll_trigger_modes_enabled`
+**3.1 — InfiniteScroll trigger modes (Roadmap #5) — expanded scope (committed 2026-04-29; rescoped 2026-05-04 per `/docs/wave-3.1-master-plan.md`)**
+- Trigger-mode setting: `auto` / `button` / `hybrid`. Concrete semantics in master plan §4-D1; "hybrid" = page-count threshold (UX pattern), distinct from the existing JS triple-stack trigger redundancy (engineering pattern).
+- History API setting: `pushState` / `replaceState` / `disabled`. **Not net-new** — pushState already ships at `infinite-scroll.js:411-414`; this exposes existing behavior as configurable. Default `pushState` preserves current behavior byte-identically.
+- Selector override via the new `selector` filter: replaces (or augments per master plan §4-D6) the 11-selector hardcoded priority list at `infinite-scroll.js:28-40`.
+- Flag: `freeman_core_infinite_scroll_trigger_modes_enabled` (shared by 3.1a + 3.1b — precedent: 3.2a/b). Default off.
 - **Folds in 3 hooks deferred from Wave 1.1**:
   - `freeman_core/infinite_scroll/selector` (filter) — replaces the hardcoded `.products` selector. Lands together with the JS-side read so the hook actually controls behavior.
   - `freeman_core/infinite_scroll/before_render` (action) — fires before the PHP-side render that this wave introduces (the module is JS-only today).

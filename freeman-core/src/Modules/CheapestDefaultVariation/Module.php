@@ -12,6 +12,8 @@
 
 namespace Freeman\Core\Modules\CheapestDefaultVariation;
 
+use Freeman\Core\Core\Feature_Flags;
+use Freeman\Core\Core\Logger;
 use Freeman\Core\Core\Module_Base;
 
 defined( 'ABSPATH' ) || exit;
@@ -75,6 +77,16 @@ final class Module extends Module_Base {
 				'checkbox_label' => __( 'Skip this auto-selection on shop / archive / loop contexts', 'freeman-core' ),
 				'description'    => __( 'When on, archive and shop-loop swatches/pickers render with no pre-selected variation — the customer has to actively pick one. The single-product page (PDP) still auto-selects the cheapest.', 'freeman-core' ),
 				'default'        => 1,
+			),
+			'strategy'                => array(
+				'label'       => __( 'Default selection strategy', 'freeman-core' ),
+				'type'        => 'select',
+				'options'     => array(
+					'cheapest'       => __( 'Cheapest in-stock variation', 'freeman-core' ),
+					'first_in_stock' => __( 'First in-stock variation (in WooCommerce order)', 'freeman-core' ),
+				),
+				'default'     => 'cheapest',
+				'description' => __( 'Which variation gets pre-selected. "Cheapest" scans display_price; "First in-stock" returns the first variation WooCommerce returns that is in stock and purchasable. Only takes effect when the strategy selector feature flag is on.', 'freeman-core' ),
 			),
 		);
 	}
@@ -148,25 +160,18 @@ final class Module extends Module_Base {
 			return $default_attributes;
 		}
 
-		$cheapest       = null;
-		$cheapest_price = null;
-
-		// `display_price` is the price WC would actually charge — sale price
-		// when on sale, regular price otherwise — so a single comparison
-		// over this field correctly picks the cheapest *effective* price
-		// without a separate sale-vs-regular branch.
-		foreach ( $variations as $variation ) {
-			if ( empty( $variation['is_in_stock'] ) || empty( $variation['is_purchasable'] ) ) {
-				continue;
-			}
-			$price = isset( $variation['display_price'] ) ? $variation['display_price'] : null;
-			if ( null === $price || '' === $price ) {
-				continue;
-			}
-			if ( null === $cheapest_price || (float) $price < (float) $cheapest_price ) {
-				$cheapest_price = (float) $price;
-				$cheapest       = $variation;
-			}
+		// Flag gate: with the strategy selector OFF (default), run the legacy
+		// cheapest-only path. WC core's add-to-cart-variation.js reads the
+		// resolved default off the DOM after PHP runs and the data shape is
+		// unchanged across strategies, so no front-end JS coordination is
+		// needed when the dispatcher routes to first_in_stock.
+		if ( ! Feature_Flags::is_enabled( 'cheapest_variation', 'strategy' ) ) {
+			$cheapest = $this->pick_cheapest( $variations );
+		} else {
+			$strategy = $this->dispatch_strategy( $product );
+			$cheapest = ( 'first_in_stock' === $strategy )
+				? $this->pick_first_in_stock( $variations )
+				: $this->pick_cheapest( $variations );
 		}
 
 		/**
@@ -194,5 +199,113 @@ final class Module extends Module_Base {
 
 		$this->cache[ $product_id ] = $default_attributes;
 		return $default_attributes;
+	}
+
+	/**
+	 * Resolve the strategy name for a product.
+	 *
+	 * Order: setting (baseline) → per-product meta (override) → filter (final word).
+	 * Filter values outside the supported enum log a Logger warning and fall
+	 * back to the pre-filter resolved value (not blindly to 'cheapest', so an
+	 * explicit merchant meta choice is not silently dropped).
+	 *
+	 * @param \WC_Product $product Variable product.
+	 * @return string 'cheapest' | 'first_in_stock'.
+	 */
+	private function dispatch_strategy( $product ) {
+		$strategy = (string) $this->get_option( 'strategy', 'cheapest' );
+
+		$meta = get_post_meta( $product->get_id(), '_freeman_cheapest_variation_strategy', true );
+		if ( is_string( $meta ) && '' !== $meta ) {
+			$strategy = $meta;
+		}
+
+		$resolved_pre_filter = $strategy;
+
+		/**
+		 * Filters the strategy name used to pre-select a default variation.
+		 *
+		 * Resolved value is the per-product meta override if set, otherwise the
+		 * module's `strategy` setting. Listeners can override unconditionally.
+		 *
+		 * Returning a value outside the supported enum logs a warning via Logger
+		 * and falls back to the pre-filter resolved value.
+		 *
+		 * @since 1.11.32
+		 *
+		 * @param string      $strategy Resolved strategy: 'cheapest' | 'first_in_stock'.
+		 * @param \WC_Product $product  The variable product being considered.
+		 */
+		$strategy = (string) apply_filters( 'freeman_core/cheapest_variation/strategy', $strategy, $product );
+
+		if ( ! in_array( $strategy, array( 'cheapest', 'first_in_stock' ), true ) ) {
+			Logger::log(
+				sprintf(
+					'Invalid cheapest-variation strategy "%s" — falling back to "%s"',
+					$strategy,
+					$resolved_pre_filter
+				),
+				'warning'
+			);
+			$strategy = $resolved_pre_filter;
+		}
+
+		return $strategy;
+	}
+
+	/**
+	 * Pick the cheapest in-stock + purchasable variation.
+	 *
+	 * `display_price` is the price WC would actually charge — sale price
+	 * when on sale, regular price otherwise — so a single comparison over
+	 * this field correctly picks the cheapest *effective* price without a
+	 * separate sale-vs-regular branch.
+	 *
+	 * @param array[] $variations Eligible variation arrays from `get_available_variations()`.
+	 * @return array|null
+	 */
+	private function pick_cheapest( $variations ) {
+		$cheapest       = null;
+		$cheapest_price = null;
+		foreach ( $variations as $variation ) {
+			if ( empty( $variation['is_in_stock'] ) || empty( $variation['is_purchasable'] ) ) {
+				continue;
+			}
+			$price = isset( $variation['display_price'] ) ? $variation['display_price'] : null;
+			if ( null === $price || '' === $price ) {
+				continue;
+			}
+			if ( null === $cheapest_price || (float) $price < (float) $cheapest_price ) {
+				$cheapest_price = (float) $price;
+				$cheapest       = $variation;
+			}
+		}
+		return $cheapest;
+	}
+
+	/**
+	 * Pick the first in-stock + purchasable variation.
+	 *
+	 * "First" = first variation returned by WC's `get_available_variations()`
+	 * that passes the in-stock + purchasable + has-numeric-display_price gates.
+	 * WC's internal order is not contractually stable across versions or sites
+	 * — see test_first_in_stock_pins_wc_order_assumption for the assumption
+	 * this method depends on.
+	 *
+	 * @param array[] $variations Eligible variation arrays from `get_available_variations()`.
+	 * @return array|null
+	 */
+	private function pick_first_in_stock( $variations ) {
+		foreach ( $variations as $variation ) {
+			if ( empty( $variation['is_in_stock'] ) || empty( $variation['is_purchasable'] ) ) {
+				continue;
+			}
+			$price = isset( $variation['display_price'] ) ? $variation['display_price'] : null;
+			if ( null === $price || '' === $price ) {
+				continue;
+			}
+			return $variation;
+		}
+		return null;
 	}
 }

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.32] — 2026-05-04
+
+- Wave 3.3 - CheapestDefaultVariation strategy selector (cheapest / first_in_stock) with per-product _freeman_cheapest_variation_strategy meta override and freeman_core/cheapest_variation/strategy filter. Behind freeman_core_cheapest_variation_strategy_enabled (default off).
+
 ## [1.11.31] — 2026-05-04
 
 - ProductSlider native-scroll over-shoot -- clamp touch swipe + trackpad pan at last card via scroll-event snap-back (scoped to ProductSlider via data-cs-clamp-children opt-in; supersedes #18 which only covered JS-driven scroll)

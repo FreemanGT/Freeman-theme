@@ -100,7 +100,11 @@
         iosPollMs: 1500,
         endMessage: CFG.endMessage || 'You have reached the end.',
         errorMessage: CFG.errorMessage || 'Could not load more.',
-        loadMoreLabel: CFG.loadMoreLabel || 'Load more'
+        loadMoreLabel: CFG.loadMoreLabel || 'Load more',
+        triggerModesEnabled: !!CFG.triggerModesEnabled,
+        triggerMode: CFG.triggerMode || 'auto',
+        historyMode: CFG.historyMode || 'pushState',
+        hybridThreshold: (CFG.hybridThreshold | 0) || 2
     };
 
     var IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -265,6 +269,13 @@
     }
 
     function attachObserver() {
+        // Wave 3.1a: trigger-mode 'button' suppresses all auto-trigger paths
+        // (IO + scroll fallback + iOS poll) at the attach point so they
+        // don't do wasted work and skeleton-flash on every fire. The
+        // user-visible 'Load more' button itself ships in 3.1b; in 3.1a
+        // 'button' mode just halts auto-loading until 3.1b lands. Flag-OFF
+        // and flag-ON-with-mode='auto' both skip this gate by design.
+        if (OPTS.triggerModesEnabled && OPTS.triggerMode === 'button') return;
         attachScrollFallback();
         if (IS_IOS) attachIosPoll();
         if (!('IntersectionObserver' in window)) return;
@@ -408,10 +419,7 @@
                 }
                 if (unique.length === 0) { stop('all duplicates'); showEndMessage(); return; }
 
-                try {
-                    var u = new URL(urlBeingFetched);
-                    window.history.pushState({ freemanPage: u.pathname }, '', u.pathname + u.search);
-                } catch (e) { /* noop */ }
+                applyHistoryMode(urlBeingFetched);
 
                 for (var k = 0; k < unique.length; k++) {
                     unique[k].classList.add('bookomers-new-product');
@@ -425,6 +433,14 @@
                 announceLoaded(unique.length);
 
                 state.pagesLoaded++;
+
+                // Wave 3.1a: hybrid mode auto-loads up to threshold pages,
+                // then stops. The user-facing 'Load more' button takes over
+                // in 3.1b; in 3.1a alone the trigger just goes quiet at the
+                // threshold. stop() disconnects the observer + clears poll.
+                if (OPTS.triggerModesEnabled && OPTS.triggerMode === 'hybrid' && state.pagesLoaded >= OPTS.hybridThreshold) {
+                    stop('hybrid threshold reached');
+                }
 
                 var nextMatch = firstMatchIn(docScope, NEXT_LINK_SELECTORS);
                 if (!nextMatch) { stop('no next link'); showEndMessage(); return; }
@@ -442,6 +458,32 @@
                 showErrorMessage();
             })
             .then(function () { state.isLoading = false; });
+    }
+
+    function applyHistoryMode(url) {
+        // Wave 3.1a: wrapper around the History API call site that used to
+        // be inline. Flag-OFF preserves today's pushState behavior verbatim;
+        // flag-ON branches on historyMode setting (pushState | replaceState
+        // | disabled). Default is pushState — flag-ON-with-defaults is
+        // byte-identical to flag-OFF.
+        if (!OPTS.triggerModesEnabled) {
+            try {
+                var u0 = new URL(url);
+                window.history.pushState({ freemanPage: u0.pathname }, '', u0.pathname + u0.search);
+            } catch (e) { /* noop */ }
+            return;
+        }
+        var mode = OPTS.historyMode || 'pushState';
+        if (mode === 'disabled') return;
+        try {
+            var u = new URL(url);
+            var pathSearch = u.pathname + u.search;
+            if (mode === 'replaceState') {
+                window.history.replaceState({ freemanPage: u.pathname }, '', pathSearch);
+            } else {
+                window.history.pushState({ freemanPage: u.pathname }, '', pathSearch);
+            }
+        } catch (e) { /* noop */ }
     }
 
     function abortInFlight() {

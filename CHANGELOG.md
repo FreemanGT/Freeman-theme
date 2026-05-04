@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.33] — 2026-05-04
+
+- Wave 3.1a - InfiniteScroll trigger_mode / history_mode / hybrid_threshold settings + JS dispatcher (gates at attachObserver entry + post-loadNext threshold check) + applyHistoryMode wrapper around the existing pushState call. No new hooks (those land in 3.1b). Behind freeman_core_infinite_scroll_trigger_modes_enabled (default off). Flag-OFF and flag-ON-with-defaults both byte-identical to pre-3.1a behavior.
+
 ## [1.11.32] — 2026-05-04
 
 - Wave 3.3 - CheapestDefaultVariation strategy selector (cheapest / first_in_stock) with per-product _freeman_cheapest_variation_strategy meta override and freeman_core/cheapest_variation/strategy filter. Behind freeman_core_cheapest_variation_strategy_enabled (default off).

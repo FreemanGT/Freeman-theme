@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.34] — 2026-05-05
+
+- ProductFeed: emit per-product google_shopping XML block with 5 new filters (additive)
+
 ## [1.11.32] — 2026-05-04
 
 - Wave 3.3 - CheapestDefaultVariation strategy selector (cheapest / first_in_stock) with per-product _freeman_cheapest_variation_strategy meta override and freeman_core/cheapest_variation/strategy filter. Behind freeman_core_cheapest_variation_strategy_enabled (default off).

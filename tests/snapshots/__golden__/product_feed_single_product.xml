@@ -25,6 +25,13 @@
     </images>
     <attributes>
     </attributes>
+    <google_shopping>
+      <google_product_category></google_product_category>
+      <gtin></gtin>
+      <mpn>TEST-SKU-1</mpn>
+      <brand></brand>
+      <identifier_exists>no</identifier_exists>
+    </google_shopping>
     <in_stock>yes</in_stock>
     <stock_qty>10</stock_qty>
     <stock_status>instock</stock_status>

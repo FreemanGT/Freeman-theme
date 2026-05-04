@@ -28,6 +28,28 @@ and written to the feed file. Returning an empty string skips the product
 silently. Use to inject custom fields, prepend metadata, or rewrite the
 canonical fields that `Generator::product_xml()` emits by default.
 
+### Google Shopping fields (filters, since 1.1.0 of this module)
+
+Each filter wraps the resolved value just before it is escaped and emitted
+into the per-product `<google_shopping>` block. Returning an empty string
+emits the element as empty (`<gtin></gtin>`) — the elements are never
+skipped. All filters receive `($value, \WC_Product $p)`.
+
+```php
+apply_filters( 'freeman_core/product_feed/google_product_category', string $value, \WC_Product $p );
+apply_filters( 'freeman_core/product_feed/gtin',                    string $value, \WC_Product $p );
+apply_filters( 'freeman_core/product_feed/mpn',                     string $value, \WC_Product $p );
+apply_filters( 'freeman_core/product_feed/brand',                   string $value, \WC_Product $p );
+apply_filters( 'freeman_core/product_feed/identifier_exists',       string $value, \WC_Product $p );
+```
+
+Resolution chains (filter runs after the chain resolves):
+- `google_product_category` — product meta `_freeman_google_product_category` → walk primary `product_cat` + ancestors checking term meta `freeman_google_product_category` → empty.
+- `gtin` — product meta `_freeman_gtin` → product meta `_global_unique_id` (Woo 8.3+ native) → empty.
+- `mpn` — product meta `_freeman_mpn` → SKU → empty.
+- `brand` — product meta `_freeman_brand` → `product_brand` taxonomy term name → first value of `pa_brand` attribute → empty.
+- `identifier_exists` — product meta `_freeman_identifier_exists` → derived: `yes` if both `gtin` and `brand` are non-empty, else `no`.
+
 ## Shipped actions (1.11.1+)
 
 ### `freeman_core/product_feed/before_serve` (action, since 1.11.1)

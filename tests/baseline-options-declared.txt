@@ -1,3 +1,4 @@
+freeman_brand
 freeman_category_slider
 freeman_cheapest_variation_strategy
 freeman_core
@@ -53,9 +54,13 @@ freeman_core_variation_swatches_term_image_id
 freeman_core_variation_swatches_term_tooltip_text
 freeman_core_vs_sampled_color
 freeman_digital_
+freeman_google_product_category
+freeman_gtin
+freeman_identifier_exists
 freeman_legacy_delete
 freeman_legacy_import
 freeman_mark_onboarded
+freeman_mpn
 freeman_product_slider
 freeman_productfeed
 freeman_productfeed_async

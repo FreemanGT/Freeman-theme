@@ -16,6 +16,11 @@ freeman-core/src/Modules/CheapestDefaultVariation/Module.php:239:		$strategy = (
 freeman-core/src/Modules/ProductFeed/Generator.php:163:			do_action( 'freeman_core/product_feed/after_generate', $this->feed_file(), $elapsed );
 freeman-core/src/Modules/ProductFeed/Generator.php:224:			$args = (array) apply_filters(
 freeman-core/src/Modules/ProductFeed/Generator.php:262:				$xml = (string) apply_filters( 'freeman_core/product_feed/item', $this->product_xml( $product ), $product );
+freeman-core/src/Modules/ProductFeed/Generator.php:488:			'google_product_category' => (string) apply_filters( 'freeman_core/product_feed/google_product_category', $gpc, $p ),
+freeman-core/src/Modules/ProductFeed/Generator.php:489:			'gtin'                    => (string) apply_filters( 'freeman_core/product_feed/gtin', $gtin, $p ),
+freeman-core/src/Modules/ProductFeed/Generator.php:490:			'mpn'                     => (string) apply_filters( 'freeman_core/product_feed/mpn', $mpn, $p ),
+freeman-core/src/Modules/ProductFeed/Generator.php:491:			'brand'                   => (string) apply_filters( 'freeman_core/product_feed/brand', $brand, $p ),
+freeman-core/src/Modules/ProductFeed/Generator.php:492:			'identifier_exists'       => (string) apply_filters( 'freeman_core/product_feed/identifier_exists', $ie, $p ),
 freeman-core/src/Modules/ProductFeed/Server.php:94:		do_action( 'freeman_core/product_feed/before_serve' );
 freeman-core/src/Modules/ProductSlider/Widget.php:879:		$args = (array) apply_filters( 'freeman_core/product_slider/query_args', $args, $s );
 freeman-core/src/Modules/RestockNotify/Email.php:209:		$a = (array) apply_filters( 'freeman_core/restock_notify/email_args', $a, $subscriber, $kind );

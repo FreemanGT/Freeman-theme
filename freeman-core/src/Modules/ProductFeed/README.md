@@ -9,6 +9,7 @@ Generates a gzipped XML feed of every published product — with variations, sto
 - **Debounced instant updates** — stock or price change → `wp_schedule_single_event(time()+30, …)` so a burst of changes triggers exactly one regeneration.
 - **Hourly safety net** — `wp_schedule_event('hourly', …)` catches anything the instant-update hooks missed.
 - **Status panel** in Freeman → Product Feed shows last-generated timestamp, gzipped size, next-hourly-run, and a "Generate now" button.
+- **Google Shopping fields** — each parent product's XML carries a `<google_shopping>` block with `google_product_category`, `gtin`, `mpn`, `brand`, `identifier_exists`. Each value goes through a per-field filter (see [`HOOKS.md`](HOOKS.md)). Variation XML is unchanged.
 
 ## Performance
 

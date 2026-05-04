@@ -407,7 +407,90 @@ final class Generator {
 			$out .= "      </attribute>\n";
 		}
 		$out .= "    </attributes>\n";
+
+		$gs   = $this->resolve_google_shopping_fields( $p );
+		$out .= "    <google_shopping>\n";
+		$out .= '      <google_product_category>' . self::x( $gs['google_product_category'] ) . "</google_product_category>\n";
+		$out .= '      <gtin>' . self::x( $gs['gtin'] ) . "</gtin>\n";
+		$out .= '      <mpn>' . self::x( $gs['mpn'] ) . "</mpn>\n";
+		$out .= '      <brand>' . self::x( $gs['brand'] ) . "</brand>\n";
+		$out .= '      <identifier_exists>' . self::x( $gs['identifier_exists'] ) . "</identifier_exists>\n";
+		$out .= "    </google_shopping>\n";
+
 		return $out;
+	}
+
+	/**
+	 * Resolve the Google Shopping fields for a product, applying per-field
+	 * filters so site code can override any value.
+	 *
+	 * @param \WC_Product $p Product.
+	 * @return array{google_product_category:string,gtin:string,mpn:string,brand:string,identifier_exists:string}
+	 */
+	private function resolve_google_shopping_fields( \WC_Product $p ) {
+		$pid = $p->get_id();
+
+		// google_product_category: product meta → walk primary category +
+		// ancestors checking term meta → empty.
+		$gpc = (string) get_post_meta( $pid, '_freeman_google_product_category', true );
+		if ( '' === $gpc ) {
+			$cats = get_the_terms( $pid, 'product_cat' );
+			if ( is_array( $cats ) && ! empty( $cats ) ) {
+				$primary = $cats[0];
+				$chain   = array_merge( array( $primary->term_id ), get_ancestors( $primary->term_id, 'product_cat' ) );
+				foreach ( $chain as $tid ) {
+					$tm = (string) get_term_meta( $tid, 'freeman_google_product_category', true );
+					if ( '' !== $tm ) {
+						$gpc = $tm;
+						break;
+					}
+				}
+			}
+		}
+
+		// gtin: meta → Woo 8.3+ native _global_unique_id → empty.
+		$gtin = (string) get_post_meta( $pid, '_freeman_gtin', true );
+		if ( '' === $gtin ) {
+			$gtin = (string) get_post_meta( $pid, '_global_unique_id', true );
+		}
+
+		// mpn: meta → SKU → empty.
+		$mpn = (string) get_post_meta( $pid, '_freeman_mpn', true );
+		if ( '' === $mpn ) {
+			$mpn = (string) $p->get_sku();
+		}
+
+		// brand: meta → product_brand taxonomy → pa_brand attribute first value
+		// → empty.
+		$brand = (string) get_post_meta( $pid, '_freeman_brand', true );
+		if ( '' === $brand && taxonomy_exists( 'product_brand' ) ) {
+			$brands = get_the_terms( $pid, 'product_brand' );
+			if ( is_array( $brands ) && ! empty( $brands ) ) {
+				$brand = (string) $brands[0]->name;
+			}
+		}
+		if ( '' === $brand ) {
+			$pa_brand = wc_get_product_terms( $pid, 'pa_brand', array( 'fields' => 'names' ) );
+			if ( ! empty( $pa_brand ) ) {
+				$brand = (string) $pa_brand[0];
+			}
+		}
+
+		// identifier_exists: meta → derive from gtin + brand → "no".
+		$ie_meta = get_post_meta( $pid, '_freeman_identifier_exists', true );
+		if ( '' !== $ie_meta && null !== $ie_meta ) {
+			$ie = (string) $ie_meta;
+		} else {
+			$ie = ( '' !== $gtin && '' !== $brand ) ? 'yes' : 'no';
+		}
+
+		return array(
+			'google_product_category' => (string) apply_filters( 'freeman_core/product_feed/google_product_category', $gpc, $p ),
+			'gtin'                    => (string) apply_filters( 'freeman_core/product_feed/gtin', $gtin, $p ),
+			'mpn'                     => (string) apply_filters( 'freeman_core/product_feed/mpn', $mpn, $p ),
+			'brand'                   => (string) apply_filters( 'freeman_core/product_feed/brand', $brand, $p ),
+			'identifier_exists'       => (string) apply_filters( 'freeman_core/product_feed/identifier_exists', $ie, $p ),
+		);
 	}
 
 	/**

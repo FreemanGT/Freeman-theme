@@ -559,7 +559,11 @@ class Etucart_VS_Archive {
 		$image_flag    = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'image_swatches' ) ? '1' : '0';
 		// Wave 2.2 / 4c (1.11.25) — same trick for the tooltip flag.
 		$tooltip_flag  = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'tooltip' ) ? '1' : '0';
-		$signature     = implode( '|', [ $pid, $wc_ver, $display, $curr, $curr_pos, $dec_sep, $thou_sep, $decimals, $swap_flag, $image_flag, $tooltip_flag ] );
+		// Wave 2.2 / 4e (1.11.28) — same trick for auto-color. This flag
+		// changes each option item's cached `hex` value, so stale flag-OFF
+		// archive payloads must be bypassed immediately when enabled.
+		$auto_color_flag = \Freeman\Core\Core\Feature_Flags::is_enabled( 'variation_swatches', 'auto_color' ) ? '1' : '0';
+		$signature       = implode( '|', [ $pid, $wc_ver, $display, $curr, $curr_pos, $dec_sep, $thou_sep, $decimals, $swap_flag, $image_flag, $tooltip_flag, $auto_color_flag ] );
 		return 'freeman_vs_pd_' . md5( $signature );
 	}
 

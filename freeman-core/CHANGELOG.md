@@ -1,5 +1,11 @@
 # Freeman Core — Changelog
 
+## [1.11.33] — 2026-05-09
+
+### Fixed
+
+- Fix VariationSwatches auto-color archive cache invalidation
+
 ## [1.11.32] — 2026-05-04
 
 - Wave 3.3 - CheapestDefaultVariation strategy selector (cheapest / first_in_stock) with per-product _freeman_cheapest_variation_strategy meta override and freeman_core/cheapest_variation/strategy filter. Behind freeman_core_cheapest_variation_strategy_enabled (default off).

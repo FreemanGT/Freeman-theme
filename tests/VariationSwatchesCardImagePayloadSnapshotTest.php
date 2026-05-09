@@ -69,6 +69,13 @@ final class VariationSwatchesCardImagePayloadSnapshotTest extends TestCase {
 		return \Etucart_VS_Archive::build_variation_entry( $v, new \WC_Product(), $with_image );
 	}
 
+	private function prepared_transient_key(): string {
+		$method = new \ReflectionMethod( \Etucart_VS_Archive::class, 'prepared_transient_key' );
+		$method->setAccessible( true );
+
+		return (string) $method->invoke( new \Etucart_VS_Archive(), 42 );
+	}
+
 	public function test_flag_off_entry_has_only_five_keys(): void {
 		$entry = $this->build( $this->variation_with_image(), false );
 
@@ -148,6 +155,19 @@ final class VariationSwatchesCardImagePayloadSnapshotTest extends TestCase {
 		$this->build( $this->variation_with_image(), false );
 
 		$this->assertFalse( $fired, 'Filter must not fire on the flag-OFF path.' );
+	}
+
+	public function test_auto_color_flag_changes_archive_payload_transient_key(): void {
+		$off_key = $this->prepared_transient_key();
+
+		update_option( 'freeman_core_variation_swatches_auto_color_enabled', 1 );
+		$on_key = $this->prepared_transient_key();
+
+		$this->assertNotSame(
+			$off_key,
+			$on_key,
+			'Auto-color changes cached option hex values, so flag flips must bypass stale archive picker payloads.'
+		);
 	}
 
 	public function test_attrs_map_normalizes_to_strings(): void {

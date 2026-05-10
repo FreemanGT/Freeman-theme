@@ -158,4 +158,31 @@ final class Subscribers {
 		);
 		return (int) $updated;
 	}
+
+	/**
+	 * Return every row from the subscribers table. Used by the Wave 4.1b
+	 * CSV export.
+	 *
+	 * Queries `$wpdb` directly per the Hard Rule #3 precedent established
+	 * by `find_by_email` / `erase_pii_by_email` — no legacy method offers
+	 * an unfiltered full-table read, and the legacy class is off-limits.
+	 *
+	 * **Scale assumption:** returns the full table as an array. Intended
+	 * for admin export at expected merchant scale (`rsn_subscribers` is
+	 * one row per (email, product, variation, waiting/notified) tuple —
+	 * a few thousand on busy stores, low tens of thousands at the outer
+	 * end). A streaming `each(callable)` variant is deferred until a
+	 * merchant actually hits the wall; swapping then is a follow-up
+	 * wave, not a 4.1b concern.
+	 *
+	 * @since 1.11.38
+	 *
+	 * @return object[] All rows from `{prefix}rsn_subscribers`.
+	 */
+	public static function all() {
+		global $wpdb;
+		$table = $wpdb->prefix . 'rsn_subscribers';
+		$rows  = $wpdb->get_results( "SELECT * FROM {$table}" );
+		return is_array( $rows ) ? $rows : array();
+	}
 }

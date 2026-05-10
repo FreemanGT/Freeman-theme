@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.38] — 2026-05-11
+
+- Wave 4.1b — RestockNotify CSV export admin button. Adds an Export Subscribers submenu under the legacy restock-notify parent menu and an admin-post.php handler that streams the rsn_subscribers table as a UTF-8 BOM CSV with all 9 columns and a date-stamped filename. Gated behind freeman_core_restock_notify_csv_export_enabled (default off). Defense-in-depth: flag-OFF means neither the submenu nor the admin_post listener attaches. Closes Wave 4.1.
+
 ## [1.11.37] — 2026-05-11
 
 - Wave 4.1a — RestockNotify WP_Privacy exporter + eraser. Registers wp_privacy_personal_data_exporters and wp_privacy_personal_data_erasers under the freeman-core-restock-notify key so a privacy admin can export or erase a customer's restock-notify subscriptions through WP Tools. Eraser nulls customer_name/customer_email (empty string; columns are NOT NULL) and flips status to unsubscribed; the row stays as audit trail. Unconditional — privacy hooks are a platform contract, not flag-gated. Wave 4.1b will add the CSV admin button behind a flag.

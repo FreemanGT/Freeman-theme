@@ -16,6 +16,7 @@
 
 namespace Freeman\Core\Modules\RestockNotify;
 
+use Freeman\Core\Core\Feature_Flags;
 use Freeman\Core\Core\Module_Base;
 
 defined( 'ABSPATH' ) || exit;
@@ -243,6 +244,16 @@ final class Module extends Module_Base {
 		if ( is_admin() ) {
 			require_once $dir . 'class-rsn-admin.php';
 			new \RSN_Admin();
+
+			// Wave 4.1b — CSV export of subscribers. Gated behind the
+			// `restock_notify/csv_export` flag (default off). Defense in
+			// depth: flag-OFF means neither the submenu nor the
+			// admin_post_* listener attaches, so a direct POST to
+			// admin-post.php with our action wouldn't be handled either.
+			if ( Feature_Flags::is_enabled( 'restock_notify', 'csv_export' ) ) {
+				( new \Freeman\Core\Modules\RestockNotify\Admin_Tools() )->register();
+				( new \Freeman\Core\Modules\RestockNotify\CSV_Exporter() )->register();
+			}
 		}
 	}
 

@@ -366,6 +366,58 @@ if ( ! function_exists( 'wp_add_inline_style' ) ) {
 	}
 }
 
+// Wave 4.2 — capable Elementor stubs for testing Widget::register_controls().
+//
+// Strictly additive over the minimal Widget_Base stub that existing slider
+// tests inline at file head (verified pre-Stage-3 grep): preserves
+// $fr_test_settings, __construct( $data, $args ), get_settings_for_display(),
+// and adds $fr_test_controls / $fr_test_sections + the capture machinery
+// the new tests need. Existing tests' inline `class_exists`-guarded eval()s
+// become no-ops once these are declared first — none of them reach for the
+// new surface.
+//
+// Group_Control_Typography stub matches the existing inline shape (single
+// static get_type returning "typography"). Controls_Manager constants are
+// a superset of the inline declarations across slider tests.
+if ( ! class_exists( '\\Elementor\\Widget_Base' ) ) {
+	eval( '
+		namespace Elementor;
+		class Widget_Base {
+			public $fr_test_settings = array();
+			public $fr_test_controls = array();
+			public $fr_test_sections = array();
+			public function __construct( $data = array(), $args = null ) {}
+			public function get_settings_for_display() { return $this->fr_test_settings; }
+			public function add_control( $name, $args = array() ) { $this->fr_test_controls[ $name ] = $args; }
+			public function add_responsive_control( $name, $args = array() ) { $this->fr_test_controls[ $name ] = $args; }
+			public function add_group_control( $group, $args = array() ) {}
+			public function start_controls_section( $id, $args = array() ) { $this->fr_test_sections[] = $id; }
+			public function end_controls_section() {}
+		}
+	' );
+}
+if ( ! class_exists( '\\Elementor\\Controls_Manager' ) ) {
+	eval( '
+		namespace Elementor;
+		class Controls_Manager {
+			const TAB_CONTENT = "content";
+			const TAB_STYLE   = "style";
+			const TEXT        = "text";
+			const NUMBER      = "number";
+			const SELECT      = "select";
+			const SWITCHER    = "switcher";
+			const COLOR       = "color";
+			const SLIDER      = "slider";
+			const SELECT2     = "select2";
+			const CHOOSE      = "choose";
+			const HEADING     = "heading";
+		}
+	' );
+}
+if ( ! class_exists( '\\Elementor\\Group_Control_Typography' ) ) {
+	eval( 'namespace Elementor; class Group_Control_Typography { public static function get_type() { return "typography"; } }' );
+}
+
 // Page-type predicates — read from $GLOBALS['fr_page_type'] so tests can
 // drive frontend code paths (e.g. Frontend::should_enqueue_here heuristic).
 // Each defaults false. Set $GLOBALS['fr_page_type'] = 'product' (etc.) once

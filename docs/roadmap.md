@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-11 (Wave 4.1b shipped — RestockNotify CSV export admin button. Closes Wave 4.1)
+**Last updated**: 2026-05-11 (Wave 4.2 shipped — CategorySlider design tokens as Elementor controls)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -220,10 +220,11 @@ Each item is its own PR with its own feature flag. Order within wave doesn't mat
 - **4.1a** ✅ shipped 1.11.37 (#44, 2026-05-11) — WP_Privacy exporter + eraser registered under `freeman-core-restock-notify`. Exporter returns one item per matching subscription with all 9 column fields. Eraser nulls `customer_name`/`customer_email` (empty string — columns are NOT NULL) and flips `status` to `'unsubscribed'`; row preserved as audit trail. Unconditional — privacy hooks are a platform contract, not flag-gated (OS-5 decision call, 2026-05-11). Two new `Subscribers` methods (`find_by_email`, `erase_pii_by_email`) query `$wpdb` directly because no legacy `\RSN_Database` method offers exact-email lookup or PII null semantics, and Hard Rule #3 blocks adding to the legacy class.
 - **4.1b** ✅ shipped 1.11.38 (#TBD, 2026-05-11) — `Export Subscribers` submenu under the legacy `restock-notify` parent (OS-1); admin-post.php form + `manage_woocommerce` capability check (cap first, nonce second per WP convention); CSV streams the full `rsn_subscribers` table with UTF-8 BOM, comma delimiter, all 9 columns matching 4.1a Privacy exporter labels byte-for-byte, filename `restock-notify-subscribers-YYYY-MM-DD.csv`. Empty `notified_at` renders as empty cell; empty table emits headers-only CSV. Flag-gated behind `freeman_core_restock_notify_csv_export_enabled` (default off); defense-in-depth — flag-OFF means neither the submenu nor the `admin_post_*` listener attaches. `Subscribers::all()` reads the full table into memory; intended for expected merchant scale (≤ low tens of thousands), streaming variant deferred.
 
-**4.2 — Slider design tokens as Elementor controls (Roadmap #11)**
-- Expose `--cs-bg`, `--cs-ink`, `--cs-mute`, `--cs-line`, arrow size/radius/duration as widget controls
-- Existing CSS variables stay as fallbacks
-- No flag (additive — controls default to current values)
+**4.2 — Slider design tokens as Elementor controls (Roadmap #11) — ✅ shipped 1.11.39 (#TBD, 2026-05-11); CategorySlider only**
+- 4 color controls (`cs_bg_color` / `cs_ink_color` / `cs_mute_color` / `cs_line_color`) emit `--cs-bg|ink|mute|line` overrides on `{{WRAPPER}} .cs`; empty default → Elementor omits selector → `.cs` block's existing `oklch()` declarations remain (byte-identical pre-4.2 render).
+- 3 arrow controls (`cs_arrow_size` px, `cs_arrow_radius` px/%, `cs_arrow_duration` ms) emit new `--cs-arrow-*` vars. CSS consumes them via `var(--cs-arrow-X, <hardcoded fallback>)` so unset → 40px / 50% / .18s (prior values byte-identical).
+- No flag — purely additive. `--cs-accent` was already exposed before 4.2; this wave covers the 4 remaining color tokens + the 3 arrow values.
+- ProductSlider scope deferred — roadmap line names `--cs-*` only. Future wave can mirror the pattern for `--ps-*` tokens if needed.
 
 **4.3 — InfiniteScroll skeleton/fade tokens (Roadmap #12) — ✅ shipped 1.11.36 (#TBD, 2026-05-11)**
 - 5 settings: `shimmer_base_color`, `shimmer_highlight_color`, `shimmer_duration_ms`, `fade_duration_ms`, `fade_transform_px`

@@ -8,8 +8,8 @@ freeman-core/src/Core/Settings_Tools.php:154:		$skip_backup = (bool) apply_filte
 freeman-core/src/Core/Settings_Tools.php:161:		do_action( 'freeman_core/tools/import/before_write', $envelope );
 freeman-core/src/Core/Settings_Tools.php:185:		do_action( 'freeman_core/tools/import/after_write', $envelope, array( 'written' => $written, 'total' => $total ) );
 freeman-core/src/Core/Settings_Tools.php:89:		$envelope['options'] = (array) apply_filters( 'freeman_core/tools/export/options', $envelope['options'], $envelope );
-freeman-core/src/Modules/CategorySlider/Widget.php:601:		$args = (array) apply_filters( 'freeman_core/category_slider/query_args', $args, $s );
-freeman-core/src/Modules/CategorySlider/Widget.php:859:					echo apply_filters(
+freeman-core/src/Modules/CategorySlider/Widget.php:707:		$args = (array) apply_filters( 'freeman_core/category_slider/query_args', $args, $s );
+freeman-core/src/Modules/CategorySlider/Widget.php:965:					echo apply_filters(
 freeman-core/src/Modules/CheapestDefaultVariation/Module.php:132:		$should_apply = apply_filters( 'freeman_core/cheapest_variation/should_apply', true, $product, $default_attributes );
 freeman-core/src/Modules/CheapestDefaultVariation/Module.php:191:		$cheapest = apply_filters( 'freeman_core/cheapest_variation/chosen', $cheapest, $product, $variations );
 freeman-core/src/Modules/CheapestDefaultVariation/Module.php:239:		$strategy = (string) apply_filters( 'freeman_core/cheapest_variation/strategy', $strategy, $product );

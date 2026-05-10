@@ -18,6 +18,12 @@
  * directly from `legacy/` (`RSN_Ajax`, `RSN_Admin`) since 2.3d is skipped
  * — wrapping them speculatively would violate §2 (Simplicity First).
  *
+ * Wave 4.1a adds two methods (`find_by_email`, `erase_pii_by_email`) that
+ * deviate from the thin-wrapper pattern by querying `$wpdb` directly. The
+ * deviation is forced: WP_Privacy needs exact-email lookup and PII null
+ * semantics that no existing `\RSN_Database::*` method provides, and Hard
+ * Rule #3 forbids adding methods to the legacy class.
+ *
  * @package FreemanCore
  */
 
@@ -77,5 +83,79 @@ final class Subscribers {
 	 */
 	public static function unsubscribe( $id ) {
 		return \RSN_Database::unsubscribe( $id );
+	}
+
+	/**
+	 * Find all subscriptions for an exact email address. Used by the
+	 * Wave 4.1a Privacy exporter.
+	 *
+	 * Queries `$wpdb` directly rather than delegating to `\RSN_Database`
+	 * because no legacy method offers exact-email lookup and Hard Rule #3
+	 * blocks extending the legacy class.
+	 *
+	 * Empty-string guard: returns `[]` early when `$email === ''` so that
+	 * a stray empty input cannot match the population of erased rows
+	 * (whose `customer_email` was set to '' by `erase_pii_by_email`).
+	 *
+	 * @since 1.11.37
+	 *
+	 * @param string $email Customer email (exact match).
+	 * @return object[] Row objects from `{prefix}rsn_subscribers`.
+	 */
+	public static function find_by_email( $email ) {
+		$email = (string) $email;
+		if ( '' === $email ) {
+			return array();
+		}
+		global $wpdb;
+		$table = $wpdb->prefix . 'rsn_subscribers';
+		$rows  = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$table} WHERE customer_email = %s",
+				$email
+			)
+		);
+		return is_array( $rows ) ? $rows : array();
+	}
+
+	/**
+	 * Erase PII for all subscriptions matching an exact email address.
+	 * Used by the Wave 4.1a Privacy eraser.
+	 *
+	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
+	 * via a single `UPDATE`. The legacy schema declares these columns as
+	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 *
+	 * The row is preserved (not DELETEd) so the stock monitor's audit
+	 * trail stays intact; the empty `customer_email` prevents future
+	 * email matches.
+	 *
+	 * Empty-string guard: returns `0` early when `$email === ''` so a
+	 * stray empty input cannot "erase" rows that were already erased.
+	 *
+	 * @since 1.11.37
+	 *
+	 * @param string $email Customer email (exact match).
+	 * @return int Rows affected.
+	 */
+	public static function erase_pii_by_email( $email ) {
+		$email = (string) $email;
+		if ( '' === $email ) {
+			return 0;
+		}
+		global $wpdb;
+		$table   = $wpdb->prefix . 'rsn_subscribers';
+		$updated = $wpdb->update(
+			$table,
+			array(
+				'customer_name'  => '',
+				'customer_email' => '',
+				'status'         => 'unsubscribed',
+			),
+			array( 'customer_email' => $email ),
+			array( '%s', '%s', '%s' ),
+			array( '%s' )
+		);
+		return (int) $updated;
 	}
 }

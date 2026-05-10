@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-11 (Wave 4.3 shipped — InfiniteScroll skeleton/fade tokens as 5 settings)
+**Last updated**: 2026-05-11 (Wave 4.1a shipped — RestockNotify WP_Privacy exporter + eraser)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -215,10 +215,10 @@ Each item is its own PR with its own feature flag. Order within wave doesn't mat
 
 ## Wave 4 — P2 polish
 
-**4.1 — RestockNotify CSV export + GDPR (Roadmap #10)**
-- Admin button: download `rsn_subscribers` as CSV
-- Hook into `wp_privacy_personal_data_export_*` and `wp_privacy_personal_data_eraser_*`
-- Flag: `freeman_core_restock_notify_csv_export_enabled`
+**4.1 — RestockNotify CSV export + GDPR (Roadmap #10) — split into 4.1a (Privacy) + 4.1b (CSV admin button) per Wave 3.1 precedent**
+
+- **4.1a** ✅ shipped 1.11.37 (#TBD, 2026-05-11) — WP_Privacy exporter + eraser registered under `freeman-core-restock-notify`. Exporter returns one item per matching subscription with all 9 column fields. Eraser nulls `customer_name`/`customer_email` (empty string — columns are NOT NULL) and flips `status` to `'unsubscribed'`; row preserved as audit trail. Unconditional — privacy hooks are a platform contract, not flag-gated (OS-5 decision call, 2026-05-11). Two new `Subscribers` methods (`find_by_email`, `erase_pii_by_email`) query `$wpdb` directly because no legacy `\RSN_Database` method offers exact-email lookup or PII null semantics, and Hard Rule #3 blocks adding to the legacy class.
+- **4.1b** (pending) — Admin button to download `rsn_subscribers` as CSV; submenu under existing restock-notify parent (OS-1); UTF-8 BOM + comma delimiter + all 9 columns; admin-post.php form + `manage_woocommerce` capability; flag-gated behind `freeman_core_restock_notify_csv_export_enabled` (default off).
 
 **4.2 — Slider design tokens as Elementor controls (Roadmap #11)**
 - Expose `--cs-bg`, `--cs-ink`, `--cs-mute`, `--cs-line`, arrow size/radius/duration as widget controls

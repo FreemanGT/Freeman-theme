@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-10 (Wave 3.1b shipped — PHP wrapper render path + 4 deferred extension hooks)
+**Last updated**: 2026-05-11 (Wave 4.3 shipped — InfiniteScroll skeleton/fade tokens as 5 settings)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -225,10 +225,11 @@ Each item is its own PR with its own feature flag. Order within wave doesn't mat
 - Existing CSS variables stay as fallbacks
 - No flag (additive — controls default to current values)
 
-**4.3 — InfiniteScroll skeleton/fade tokens (Roadmap #12)**
-- Settings: skeleton shimmer color, animation duration, fade-in transform/duration
-- Existing CSS variables stay as fallbacks
-- No flag (additive)
+**4.3 — InfiniteScroll skeleton/fade tokens (Roadmap #12) — ✅ shipped 1.11.36 (#TBD, 2026-05-11)**
+- 5 settings: `shimmer_base_color`, `shimmer_highlight_color`, `shimmer_duration_ms`, `fade_duration_ms`, `fade_transform_px`
+- Emitted at runtime as `--fm-is-*` CSS custom properties on `:root` via `wp_add_inline_style` (uniform-shape Mechanism A from Wave 3.1b precedent)
+- Existing hardcoded CSS values preserved as `var(--fm-is-X, fallback)` so flag-OFF / no-settings-saved is byte-identical to pre-4.3 render
+- No flag (additive). Settings_Hub already validates `color` (hex regex) and `number` (numeric coerce) at write-time; module silently clamps numbers to sensible ranges and falls back to default on empty color.
 
 ---
 

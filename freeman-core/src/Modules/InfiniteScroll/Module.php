@@ -119,6 +119,36 @@ final class Module extends Module_Base {
 				'default'     => '',
 				'description' => __( 'CSS selector(s) for the product grid container. Empty = use built-in selector list. Listeners can further override via the freeman_core/infinite_scroll/selector filter.', 'freeman-core' ),
 			),
+			'shimmer_base_color'      => array(
+				'label'       => __( 'Skeleton shimmer — base color', 'freeman-core' ),
+				'type'        => 'color',
+				'default'     => '#eceff3',
+				'description' => __( 'Base color of the skeleton-card shimmer gradient.', 'freeman-core' ),
+			),
+			'shimmer_highlight_color' => array(
+				'label'       => __( 'Skeleton shimmer — highlight color', 'freeman-core' ),
+				'type'        => 'color',
+				'default'     => '#f6f8fb',
+				'description' => __( 'Highlight color that sweeps across the shimmer gradient.', 'freeman-core' ),
+			),
+			'shimmer_duration_ms'     => array(
+				'label'       => __( 'Skeleton shimmer — duration (ms)', 'freeman-core' ),
+				'type'        => 'number',
+				'default'     => 1400,
+				'description' => __( 'How long one shimmer sweep takes, in milliseconds.', 'freeman-core' ),
+			),
+			'fade_duration_ms'        => array(
+				'label'       => __( 'New product fade-in — duration (ms)', 'freeman-core' ),
+				'type'        => 'number',
+				'default'     => 550,
+				'description' => __( 'Duration of the appear-animation on newly-loaded product cards.', 'freeman-core' ),
+			),
+			'fade_transform_px'       => array(
+				'label'       => __( 'New product fade-in — translate distance (px)', 'freeman-core' ),
+				'type'        => 'number',
+				'default'     => 18,
+				'description' => __( 'Vertical offset (px) that newly-loaded product cards rise from during fade-in.', 'freeman-core' ),
+			),
 		);
 	}
 
@@ -150,6 +180,8 @@ final class Module extends Module_Base {
 			array(),
 			FREEMAN_CORE_VERSION
 		);
+
+		wp_add_inline_style( $handle, $this->inline_token_css() );
 
 		wp_enqueue_script(
 			$handle,
@@ -304,5 +336,44 @@ final class Module extends Module_Base {
 			return array_values( $filtered );
 		}
 		return array();
+	}
+
+	/**
+	 * Build the inline CSS that exposes Wave 4.3 skeleton/fade tokens as
+	 * `--fm-is-*` custom properties on `:root`. Always emitted from
+	 * `enqueue()` (uniform-shape Mechanism A from Wave 3.1b precedent).
+	 *
+	 * Settings_Hub already validates the underlying options at write-time
+	 * (`color` rejects bad hex → `''`; `number` coerces to numeric). Here
+	 * we treat empty strings as "use default" and silently clamp numbers
+	 * to sensible ranges. No Logger emission — write-time validation has
+	 * already filtered, so a per-pageload warning would just spam.
+	 *
+	 * @return string
+	 */
+	public function inline_token_css() {
+		$base      = $this->get_option( 'shimmer_base_color', '#eceff3' );
+		$highlight = $this->get_option( 'shimmer_highlight_color', '#f6f8fb' );
+		$shimmer   = $this->get_option( 'shimmer_duration_ms', 1400 );
+		$fade      = $this->get_option( 'fade_duration_ms', 550 );
+		$transform = $this->get_option( 'fade_transform_px', 18 );
+
+		if ( ! is_string( $base ) || '' === trim( (string) $base ) ) {
+			$base = '#eceff3';
+		}
+		if ( ! is_string( $highlight ) || '' === trim( (string) $highlight ) ) {
+			$highlight = '#f6f8fb';
+		}
+		$shimmer   = max( 0, min( 60000, (int) $shimmer ) );
+		$fade      = max( 0, min( 60000, (int) $fade ) );
+		$transform = max( 0, min( 200, (int) $transform ) );
+
+		return ':root{'
+			. '--fm-is-shimmer-base:' . $base . ';'
+			. '--fm-is-shimmer-highlight:' . $highlight . ';'
+			. '--fm-is-shimmer-duration:' . $shimmer . 'ms;'
+			. '--fm-is-fade-duration:' . $fade . 'ms;'
+			. '--fm-is-fade-transform:translateY(' . $transform . 'px);'
+			. '}';
 	}
 }

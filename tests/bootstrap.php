@@ -356,6 +356,16 @@ if ( ! function_exists( 'wp_localize_script' ) ) {
 	}
 }
 
+// Smart wp_add_inline_style: captures inline CSS attached to a handle into
+// $GLOBALS['fr_styles_inline'][ $handle ][] so tests can verify the call
+// took without WP_Styles internals. Mirrors the wp_localize_script pattern.
+if ( ! function_exists( 'wp_add_inline_style' ) ) {
+	function wp_add_inline_style( $handle, $css ) {
+		$GLOBALS['fr_styles_inline'][ $handle ][] = (string) $css;
+		return true;
+	}
+}
+
 // Page-type predicates — read from $GLOBALS['fr_page_type'] so tests can
 // drive frontend code paths (e.g. Frontend::should_enqueue_here heuristic).
 // Each defaults false. Set $GLOBALS['fr_page_type'] = 'product' (etc.) once

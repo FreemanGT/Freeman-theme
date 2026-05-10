@@ -22,12 +22,12 @@
 .bookomers-skel-line {
     background: linear-gradient(
         90deg,
-        #eceff3 0%,
-        #f6f8fb 50%,
-        #eceff3 100%
+        var(--fm-is-shimmer-base, #eceff3) 0%,
+        var(--fm-is-shimmer-highlight, #f6f8fb) 50%,
+        var(--fm-is-shimmer-base, #eceff3) 100%
     );
     background-size: 200% 100%;
-    animation: bookomers-shimmer 1.4s linear infinite;
+    animation: bookomers-shimmer var(--fm-is-shimmer-duration, 1.4s) linear infinite;
     border-radius: var(--fm-radius-md, 6px);
     display: block;
 }
@@ -54,12 +54,12 @@
 
 .bookomers-new-product {
     opacity: 0;
-    animation: bookomers-fade-in .55s cubic-bezier(.2,.7,.3,1) forwards;
+    animation: bookomers-fade-in var(--fm-is-fade-duration, .55s) cubic-bezier(.2,.7,.3,1) forwards;
     will-change: opacity, transform;
 }
 
 @keyframes bookomers-fade-in {
-    from { opacity: 0; transform: translateY(18px); }
+    from { opacity: 0; transform: var(--fm-is-fade-transform, translateY(18px)); }
     to   { opacity: 1; transform: translateY(0); }
 }
 

@@ -25,19 +25,33 @@
         '.elementor-location-single'
     ];
 
-    var CONTAINER_SELECTORS = [
-        '.elementor-widget-woocommerce-products ul.products',
-        '.elementor-widget-wc-archive-products ul.products',
-        '.elementor-widget-woocommerce-archive-products ul.products',
-        '.elementor-widget-woocommerce-product-archive ul.products',
-        '.elementor-products-grid ul.products',
-        '.elementor-products-grid',
-        'ul.wc-block-product-template',
-        '.wc-block-grid__products',
-        '.wp-block-woocommerce-product-template',
-        'ul.products',
-        '.products'
-    ];
+    // Wave 3.1b: container selectors come from the localized
+    // CFG.containerSelector when present (resolved server-side via the
+    // setting + freeman_core/infinite_scroll/selector filter). When
+    // absent or empty, fall back to the hardcoded 11-entry list.
+    var CONTAINER_SELECTORS = (function () {
+        var FALLBACK = [
+            '.elementor-widget-woocommerce-products ul.products',
+            '.elementor-widget-wc-archive-products ul.products',
+            '.elementor-widget-woocommerce-archive-products ul.products',
+            '.elementor-widget-woocommerce-product-archive ul.products',
+            '.elementor-products-grid ul.products',
+            '.elementor-products-grid',
+            'ul.wc-block-product-template',
+            '.wc-block-grid__products',
+            '.wp-block-woocommerce-product-template',
+            'ul.products',
+            '.products'
+        ];
+        var override = CFG.containerSelector;
+        if (typeof override === 'string' && override.trim() !== '') {
+            return [override];
+        }
+        if (Array.isArray(override) && override.length > 0) {
+            return override.slice();
+        }
+        return FALLBACK;
+    })();
 
     var ITEM_SELECTORS = [
         'li.product',

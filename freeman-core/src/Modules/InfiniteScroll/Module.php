@@ -23,6 +23,17 @@ defined( 'ABSPATH' ) || exit;
 final class Module extends Module_Base {
 
 	/**
+	 * Cached predicate state for the wrapper-render bracket. Set inside
+	 * render_grid_wrapper_open(); reused (not re-evaluated) in
+	 * render_grid_wrapper_close() so a listener can't return true on the
+	 * opening bracket and false on the closing bracket and produce an
+	 * orphan <div>.
+	 *
+	 * @var bool
+	 */
+	private $wrapper_active = false;
+
+	/**
 	 * Module id.
 	 *
 	 * @return string
@@ -79,11 +90,11 @@ final class Module extends Module_Base {
 				'type'        => 'select',
 				'choices'     => array(
 					'auto'   => __( 'Auto — load on scroll / observer (current behavior)', 'freeman-core' ),
-					'button' => __( 'Button — render a "Load more" button (Wave 3.1b)', 'freeman-core' ),
-					'hybrid' => __( 'Hybrid — auto for first N pages, then button (Wave 3.1b)', 'freeman-core' ),
+					'button' => __( 'Button — halt auto-loading (button UI deferred — see roadmap)', 'freeman-core' ),
+					'hybrid' => __( 'Hybrid — auto for first N pages, then halt (button UI deferred — see roadmap)', 'freeman-core' ),
 				),
 				'default'     => 'auto',
-				'description' => __( 'Which mechanism advances pages. Only takes effect when the Trigger Modes feature flag is on. Button and Hybrid render the button server-side, which ships in Wave 3.1b — Auto is fully functional in 3.1a.', 'freeman-core' ),
+				'description' => __( 'Which mechanism advances pages. Only takes effect when the Trigger Modes feature flag is on. Auto is fully functional. Button halts auto-loading after the first page (functionally max_pages=1). Hybrid auto-loads up to the threshold then halts. The user-facing "Load more" button UI is deferred to a future wave.', 'freeman-core' ),
 			),
 			'history_mode'      => array(
 				'label'       => __( 'URL update on page advance', 'freeman-core' ),
@@ -102,6 +113,12 @@ final class Module extends Module_Base {
 				'default'     => 2,
 				'description' => __( 'In Hybrid mode, the number of pages to auto-load before switching to the Load-more button. Ignored unless trigger mode is set to Hybrid.', 'freeman-core' ),
 			),
+			'container_selector' => array(
+				'label'       => __( 'Container selector override', 'freeman-core' ),
+				'type'        => 'text',
+				'default'     => '',
+				'description' => __( 'CSS selector(s) for the product grid container. Empty = use built-in selector list. Listeners can further override via the freeman_core/infinite_scroll/selector filter.', 'freeman-core' ),
+			),
 		);
 	}
 
@@ -110,6 +127,10 @@ final class Module extends Module_Base {
 	 */
 	public function boot() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue' ) );
+		if ( Feature_Flags::is_enabled( 'infinite_scroll', 'trigger_modes' ) ) {
+			add_action( 'woocommerce_before_shop_loop', array( $this, 'render_grid_wrapper_open' ), 5 );
+			add_action( 'woocommerce_after_shop_loop', array( $this, 'render_grid_wrapper_close' ), 999 );
+		}
 	}
 
 	/**
@@ -163,6 +184,7 @@ final class Module extends Module_Base {
 	 * @return array<string,mixed>
 	 */
 	public function localized_payload() {
+		$flag_on = Feature_Flags::is_enabled( 'infinite_scroll', 'trigger_modes' );
 		return array(
 			'skeletonCount'       => (int) $this->get_option( 'skeleton_count', 6 ),
 			'maxPages'            => (int) $this->get_option( 'max_pages', 50 ),
@@ -171,10 +193,116 @@ final class Module extends Module_Base {
 			'loadMoreLabel'       => __( 'Load more', 'freeman-core' ),
 			/* translators: %d = number of products just loaded. Used for screen-reader aria-live announcement. */
 			'announceTemplate'    => __( 'Loaded %d more products.', 'freeman-core' ),
-			'triggerModesEnabled' => Feature_Flags::is_enabled( 'infinite_scroll', 'trigger_modes' ),
+			'triggerModesEnabled' => $flag_on,
 			'triggerMode'         => (string) $this->get_option( 'trigger_mode', 'auto' ),
 			'historyMode'         => (string) $this->get_option( 'history_mode', 'pushState' ),
 			'hybridThreshold'     => (int) $this->get_option( 'hybrid_threshold', 2 ),
+			// Wave 3.1b: containerSelector follows Mechanism A (always
+			// emitted) but the resolve only runs under flag-ON — flag-OFF
+			// returns an empty array without invoking the
+			// freeman_core/infinite_scroll/selector filter (CONTRACT 2:
+			// flag is master switch). JS-side IIFE treats empty array as
+			// "use FALLBACK", so flag-OFF behavior stays byte-identical.
+			'containerSelector'   => $flag_on ? $this->resolve_container_selector() : array(),
 		);
+	}
+
+	/**
+	 * Wrapper-render predicate.
+	 *
+	 * Wave 3.1b. Flag is master switch — under flag-OFF returns false
+	 * without firing the filter (listeners cannot force-enable when the
+	 * flag is off). Under flag-ON, returns true on standard WC archive
+	 * contexts (shop, product taxonomy, search-as-product-archive); the
+	 * filter then runs as the final word, so listeners can force-enable
+	 * on custom contexts or force-disable on a specific archive.
+	 *
+	 * Block-based standalone Product Collection / Query Loop contexts
+	 * do not fire `woocommerce_before_shop_loop`, so this predicate is
+	 * never consulted there — the wrapper hooks simply don't engage on
+	 * those contexts. JS-side IS still works on block grids via the
+	 * existing CONTAINER_SELECTORS coverage.
+	 *
+	 * @return bool
+	 */
+	public function should_render_wrapper() {
+		if ( ! Feature_Flags::is_enabled( 'infinite_scroll', 'trigger_modes' ) ) {
+			return false;
+		}
+		$resolved = is_shop()
+			|| is_product_taxonomy()
+			|| ( is_search() && ( 'product' === get_query_var( 'post_type' ) || is_post_type_archive( 'product' ) ) );
+		$resolved = apply_filters( 'freeman_core/infinite_scroll/should_render_wrapper', $resolved );
+		return (bool) $resolved;
+	}
+
+	/**
+	 * Render the opening wrapper around the WC product loop.
+	 *
+	 * Attached to `woocommerce_before_shop_loop` priority 5 inside boot()
+	 * (only when the trigger-modes flag is on). Caches the predicate to
+	 * $this->wrapper_active so the closing bracket reuses the same
+	 * decision and can't produce an orphan <div>.
+	 *
+	 * @return void
+	 */
+	public function render_grid_wrapper_open() {
+		$this->wrapper_active = $this->should_render_wrapper();
+		if ( ! $this->wrapper_active ) {
+			return;
+		}
+		do_action( 'freeman_core/infinite_scroll/before_render' );
+		echo '<div class="freeman-is-wrapper">';
+	}
+
+	/**
+	 * Render the closing wrapper around the WC product loop.
+	 *
+	 * Attached to `woocommerce_after_shop_loop` priority 999 inside boot()
+	 * (only when the trigger-modes flag is on). Reuses the cached
+	 * $this->wrapper_active set by render_grid_wrapper_open().
+	 *
+	 * @return void
+	 */
+	public function render_grid_wrapper_close() {
+		if ( ! $this->wrapper_active ) {
+			return;
+		}
+		echo '</div>';
+		do_action( 'freeman_core/infinite_scroll/after_render' );
+		$this->wrapper_active = false;
+	}
+
+	/**
+	 * Resolve the JS-side container selector list.
+	 *
+	 * Reads the `container_selector` setting, applies the
+	 * `freeman_core/infinite_scroll/selector` filter (final word per the
+	 * freeman-core setting+filter convention), and normalizes to an array
+	 * of non-empty strings. Empty result tells the JS-side IIFE to fall
+	 * back to its hardcoded 11-entry FALLBACK list (footgun guard against
+	 * a merchant typo blanking IS site-wide).
+	 *
+	 * Called from localized_payload() under flag-ON only.
+	 *
+	 * @return array<int,string>
+	 */
+	public function resolve_container_selector() {
+		$setting  = $this->get_option( 'container_selector', '' );
+		$resolved = apply_filters( 'freeman_core/infinite_scroll/selector', $setting );
+		if ( is_string( $resolved ) ) {
+			$resolved = trim( $resolved );
+			return '' === $resolved ? array() : array( $resolved );
+		}
+		if ( is_array( $resolved ) ) {
+			$filtered = array_filter(
+				$resolved,
+				static function ( $s ) {
+					return is_string( $s ) && '' !== trim( $s );
+				}
+			);
+			return array_values( $filtered );
+		}
+		return array();
 	}
 }

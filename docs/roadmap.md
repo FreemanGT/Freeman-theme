@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-04 (Wave 3.1a shipped — trigger-mode + history-mode + hybrid-threshold settings)
+**Last updated**: 2026-05-10 (Wave 3.1b shipped — PHP wrapper render path + 4 deferred extension hooks)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -177,13 +177,14 @@ Each sub-PR keeps `legacy/` files untouched; modern classes shadow via `class_al
 
 Each item is its own PR with its own feature flag. Order within wave doesn't matter.
 
-**3.1 — InfiniteScroll trigger modes (Roadmap #5) — expanded scope (committed 2026-04-29; rescoped 2026-05-04 per `/docs/wave-3.1-master-plan.md`)**
+**3.1 — InfiniteScroll trigger modes (Roadmap #5) — expanded scope (committed 2026-04-29; rescoped 2026-05-04 per `/docs/wave-3.1-master-plan.md`) — ✅ shipped (3.1a: 1.11.33 #38, 2026-05-04; 3.1b: 1.11.35 #TBD, 2026-05-10)**
 - Trigger-mode setting: `auto` / `button` / `hybrid`. Concrete semantics in master plan §4-D1; "hybrid" = page-count threshold (UX pattern), distinct from the existing JS triple-stack trigger redundancy (engineering pattern).
 - History API setting: `pushState` / `replaceState` / `disabled`. **Not net-new** — pushState already ships at `infinite-scroll.js:411-414`; this exposes existing behavior as configurable. Default `pushState` preserves current behavior byte-identically.
 - Selector override via the new `selector` filter: replaces (or augments per master plan §4-D6) the 11-selector hardcoded priority list at `infinite-scroll.js:28-40`.
 - Flag: `freeman_core_infinite_scroll_trigger_modes_enabled` (shared by 3.1a + 3.1b — precedent: 3.2a/b). Default off.
 - **3.1a** ✅ shipped 1.11.33 (#38, 2026-05-04) — JS-only + settings: trigger_mode / history_mode / hybrid_threshold settings, JS dispatcher gates at `attachObserver` entry + post-`loadNext` threshold check, `applyHistoryMode` wrapper around the existing pushState call. No new hooks (those land in 3.1b). Flag introduced. Behind `freeman_core_infinite_scroll_trigger_modes_enabled` (default off); flag-OFF + flag-ON-default both byte-identical to pre-3.1a.
-- **3.1b** — PHP render path + 3 deferred Wave-1.1 hooks + selector setting. Reuses the 3.1a flag (not redefined). Follows.
+- **3.1b** ✅ shipped 1.11.35 (#TBD, 2026-05-10) — PHP wrapper render path + 4 deferred hooks + container_selector setting/filter + JS-side selector read.
+- **Wave 3.1 known limitation**: Button-mode UI and hybrid post-threshold UI deferred — pick mode='auto' for full functionality. Button mode is functionally equivalent to max_pages=1; hybrid mode auto-loads up to threshold then halts. A future sub-PR or wave can add JS-side button render if a client need surfaces.
 - **Folds in 3 hooks deferred from Wave 1.1**:
   - `freeman_core/infinite_scroll/selector` (filter) — replaces the hardcoded `.products` selector. Lands together with the JS-side read so the hook actually controls behavior.
   - `freeman_core/infinite_scroll/before_render` (action) — fires before the PHP-side render that this wave introduces (the module is JS-only today).

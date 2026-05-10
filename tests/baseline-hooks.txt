@@ -13,6 +13,10 @@ freeman-core/src/Modules/CategorySlider/Widget.php:859:					echo apply_filters(
 freeman-core/src/Modules/CheapestDefaultVariation/Module.php:132:		$should_apply = apply_filters( 'freeman_core/cheapest_variation/should_apply', true, $product, $default_attributes );
 freeman-core/src/Modules/CheapestDefaultVariation/Module.php:191:		$cheapest = apply_filters( 'freeman_core/cheapest_variation/chosen', $cheapest, $product, $variations );
 freeman-core/src/Modules/CheapestDefaultVariation/Module.php:239:		$strategy = (string) apply_filters( 'freeman_core/cheapest_variation/strategy', $strategy, $product );
+freeman-core/src/Modules/InfiniteScroll/Module.php:235:		$resolved = apply_filters( 'freeman_core/infinite_scroll/should_render_wrapper', $resolved );
+freeman-core/src/Modules/InfiniteScroll/Module.php:254:		do_action( 'freeman_core/infinite_scroll/before_render' );
+freeman-core/src/Modules/InfiniteScroll/Module.php:272:		do_action( 'freeman_core/infinite_scroll/after_render' );
+freeman-core/src/Modules/InfiniteScroll/Module.php:292:		$resolved = apply_filters( 'freeman_core/infinite_scroll/selector', $setting );
 freeman-core/src/Modules/ProductFeed/Generator.php:163:			do_action( 'freeman_core/product_feed/after_generate', $this->feed_file(), $elapsed );
 freeman-core/src/Modules/ProductFeed/Generator.php:224:			$args = (array) apply_filters(
 freeman-core/src/Modules/ProductFeed/Generator.php:262:				$xml = (string) apply_filters( 'freeman_core/product_feed/item', $this->product_xml( $product ), $product );

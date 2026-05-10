@@ -501,12 +501,25 @@
 				return;
 			}
 
-			// Mark in-stock chips beyond overflowIdx as overflow.
+			// Mark in-stock chips beyond overflowIdx as overflow, then walk
+			// the rawChips list and hide every chip that sits at-or-after the
+			// boundary chip's DOM position. Hiding only the in-stock entries
+			// (allChips) leaves any OOS / unavailable chip that happens to
+			// appear later in DOM order visible *past* the +N badge — which
+			// is the bug screenshot #2 catches. Sweeping rawChips guarantees
+			// the +N button is always the last visible thing in the row.
+			var boundaryDomIdx = rawChips.indexOf(allChips[overflowIdx]);
 			var hiddenCount = 0;
 			for (var j = overflowIdx; j < allChips.length; j++) {
 				allChips[j].hidden = true;
 				allChips[j].classList.add('is-overflow');
 				hiddenCount++;
+			}
+			if (boundaryDomIdx !== -1) {
+				for (var k = boundaryDomIdx; k < rawChips.length; k++) {
+					rawChips[k].hidden = true;
+					rawChips[k].classList.add('is-overflow');
+				}
 			}
 
 			// Belt-and-braces: if for any reason the loop above produced

@@ -38,8 +38,11 @@ $max_qty        = (int) ( $prepared['max_qty'] ?? -1 ); // -1 = no limit
 	 data-nonce="<?php echo $nonce; ?>"
 	 data-cart-url="<?php echo $cart_url; ?>">
 
-	<?php /* Honeypot — see ajax_add_to_cart() in class-archive.php. */ ?>
-	<input type="text" name="_hp" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+	<?php /* Honeypot — see ajax_add_to_cart() in class-archive.php.
+	 * Hidden via the WCAG `clip: rect(0,0,0,0)` pattern instead of
+	 * `left:-9999px` so its absolute position doesn't inflate ancestor
+	 * scrollWidth (slider track bug). */ ?>
+	<input type="text" name="_hp" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
 
 	<?php if ( $show_price && ! empty( $prepared['price_html'] ) ) : ?>
 		<div class="etucart-shop-pick__price">

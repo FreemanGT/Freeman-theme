@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.41] — 2026-05-11
+
+- Bug-fix bundle (shop archive picker): variation pill gap 6px to 8px and internal padding 12px to 16px; refreshOverflow sweeps rawChips past +N boundary (not just in-stock); render_loop_price_or_skip now skips for simple products too (was variable only, leaving duplicated WC + picker prices on archive); honeypot inputs in shop-simple-pick and shop-variation-pick swapped from left:-9999px hack to WCAG clip:rect pattern so absolute-positioned cards do not inflate slider scrollWidth past last product.
+
 ## [1.11.40] — 2026-05-11
 
 - Wave 4.5: VariationSwatches WPC Bundles + FBT compatibility (default-off flag, JS field-forwarding to WC AJAX, single-line legacy template hook for plugin injection)

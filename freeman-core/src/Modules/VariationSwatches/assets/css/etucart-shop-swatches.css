@@ -27,7 +27,7 @@
 	--eshop-success: #0f8a4a;
 	--eshop-danger: #ca2b1d;
 	--eshop-radius-pill: 999px;
-	--eshop-gap: 6px;
+	--eshop-gap: 8px;
 	--eshop-transition: 140ms ease;
 	--eshop-font: "Ploni", "Ploni ML v2 AAA", "Ploni ML", "Assistant",
 		"Rubik", "Heebo", "Noto Sans Hebrew", -apple-system,
@@ -365,7 +365,7 @@
 	min-width: 36px !important;
 	max-width: 100% !important;
 	height: 32px !important;
-	padding: 0 12px !important;
+	padding: 0 16px !important;
 	border-radius: var(--eshop-radius-pill) !important;
 	border: 1.5px solid var(--eshop-border) !important;
 	background: var(--eshop-bg) !important;

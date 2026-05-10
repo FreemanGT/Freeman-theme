@@ -46,8 +46,13 @@ $cart_url  = esc_url(  $prepared['cart_url'] ?? '' );
 	 data-variations="<?php echo $variations_attr; // already escaped above ?>"
 	 data-cart-url="<?php echo $cart_url; ?>">
 
-	<?php /* Honeypot — see ajax_add_to_cart() in class-archive.php. */ ?>
-	<input type="text" name="_hp" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+	<?php /* Honeypot — see ajax_add_to_cart() in class-archive.php.
+	 * Hidden via the WCAG `clip: rect(0,0,0,0)` pattern instead of
+	 * `left:-9999px` — every shop card is its own positioned ancestor, so
+	 * a -9999px offset on N cards inflates the slider track's scrollWidth
+	 * by N × 9999, letting the user drag the rail far past the last
+	 * product into empty space. */ ?>
+	<input type="text" name="_hp" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
 
 	<?php if ( $show_price ) :
 		// Only render the "החל מ:" prefix when the product actually has a

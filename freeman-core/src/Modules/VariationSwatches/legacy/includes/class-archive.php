@@ -89,18 +89,20 @@ class Etucart_VS_Archive {
 	}
 
 	/**
-	 * Loop price renderer: skip for variable products where our picker
-	 * will render the price; defer to WC's default for everything else.
+	 * Loop price renderer: skip for variable AND simple products where our
+	 * picker will render the price; defer to WC's default for everything
+	 * else. Simple products were originally falling through to WC, which
+	 * stacked WC's price above the simple-pick template's own price line.
 	 */
 	public function render_loop_price_or_skip(): void {
 		global $product;
 		if ( ! $product instanceof WC_Product ) {
 			return;
 		}
-		if ( $product->is_type( 'variable' )
+		$picker_owns_price = ( $product->is_type( 'variable' ) || $product->is_type( 'simple' ) )
 			&& Etucart_VS_Settings::should_apply_on_current_archive()
-			&& ! $this->is_product_excluded( $product )
-		) {
+			&& ! $this->is_product_excluded( $product );
+		if ( $picker_owns_price ) {
 			return; // picker owns the price line
 		}
 		woocommerce_template_loop_price();

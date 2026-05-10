@@ -51,7 +51,11 @@ $GLOBALS['fr_hooks'] = $GLOBALS['fr_hooks'] ?? array();
 
 if ( ! function_exists( 'add_filter' ) ) {
 	function add_filter( $tag, $cb, $priority = 10, $accepted_args = 1 ) {
-		$GLOBALS['fr_hooks'][ $tag ][] = array( 'cb' => $cb, 'args' => (int) $accepted_args );
+		$GLOBALS['fr_hooks'][ $tag ][] = array(
+			'cb'       => $cb,
+			'args'     => (int) $accepted_args,
+			'priority' => (int) $priority,
+		);
 		return true;
 	}
 }
@@ -356,6 +360,31 @@ if ( ! function_exists( 'wp_localize_script' ) ) {
 	}
 }
 
+// Smart wp_script_is: returns $GLOBALS['fr_wp_script_is_registered'][ $handle ]
+// (default false) so tests can simulate the WP_Scripts state without a full
+// dependency stub. Wave 4.5 (1.11.40) — added so VariationSwatches/Module's
+// inject_feature_flags() early-bail path can be exercised. Pre-existing
+// `wp_script_is` shim in tests/InfiniteScrollSkeletonTokensTest.php is
+// guarded by function_exists, so this bootstrap definition wins regardless
+// of test load order.
+if ( ! function_exists( 'wp_script_is' ) ) {
+	function wp_script_is( $handle, $list = 'enqueued' ) {
+		return (bool) ( $GLOBALS['fr_wp_script_is_registered'][ $handle ] ?? false );
+	}
+}
+
+// Smart wp_add_inline_script: captures inline JS attached to a handle into
+// $GLOBALS['fr_scripts_inline'][ $handle ][ $position ][] so tests can
+// verify the call. Position defaults to 'after' per WP's own default.
+// Wave 4.5 (1.11.40) — added so VariationSwatches/Module::inject_feature_flags()
+// can be unit-tested.
+if ( ! function_exists( 'wp_add_inline_script' ) ) {
+	function wp_add_inline_script( $handle, $code, $position = 'after' ) {
+		$GLOBALS['fr_scripts_inline'][ $handle ][ $position ][] = (string) $code;
+		return true;
+	}
+}
+
 // Smart wp_add_inline_style: captures inline CSS attached to a handle into
 // $GLOBALS['fr_styles_inline'][ $handle ][] so tests can verify the call
 // took without WP_Styles internals. Mirrors the wp_localize_script pattern.
@@ -591,7 +620,10 @@ $stubs = array(
 	'register_activation_hook', 'register_deactivation_hook', 'register_uninstall_hook',
 	'plugin_dir_path', 'plugin_dir_url',
 	'wp_enqueue_script', 'wp_enqueue_style', 'wp_register_style', 'wp_register_script',
-	'wp_localize_script', 'wp_add_inline_script',
+	'wp_localize_script',
+	// wp_add_inline_script is promoted to a smart stub below (Wave 4.5 /
+	// 1.11.40 — see "Inline script capture" block) so tests can verify
+	// which JSON payloads attach to which script handle.
 	'wp_schedule_event',
 	// wp_next_scheduled / wp_clear_scheduled_hook / wp_schedule_single_event /
 	// wp_unschedule_event are promoted to smart stubs below (Wave 2.2 / 4d

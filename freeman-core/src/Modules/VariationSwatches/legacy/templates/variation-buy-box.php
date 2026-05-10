@@ -268,6 +268,20 @@ $pdp_min_html   = wc_price( $pdp_min );
 				  // state via the `single_add_to_cart_button` class below, which
 				  // WC still toggles, and we reinforce via event listeners. ?>
 			<div class="etucart-actions">
+				<?php
+				// Wave 4.5 (1.11.40) — WC standard hook for plugins that
+				// inject hidden inputs before the add-to-cart button (e.g.
+				// WPC FBT's `woobt_ids`, WPC Bundles' `woosb-ids-*`).
+				// Without this, those inputs never land in our custom
+				// buy-box form and bundle/FBT extras silently drop on
+				// submit. Mirrors the same hook in WC core's
+				// `templates/single-product/add-to-cart/variable.php`
+				// inside `.variations_button`, and matches the position
+				// already used by `legacy/templates/simple-buy-box.php`.
+				// Hard Rule #3 single-line exception, approved at
+				// docs/roadmap.md off-roadmap Wave 4.5 entry.
+				do_action( 'woocommerce_before_add_to_cart_button' );
+				?>
 				<div class="etucart-actions__row">
 					<button type="submit"
 							class="etucart-add-to-cart single_add_to_cart_button button alt disabled wc-variation-selection-needed"

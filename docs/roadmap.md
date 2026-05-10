@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-11 (Wave 4.5 — VariationSwatches WPC Bundles + FBT compatibility — shipped 1.11.40)
+**Last updated**: 2026-05-11 (Active items block pruned: 7 shipped items removed, #11 narrowed to ProductSlider variant — see Wave-section ship markers for shipped record)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -21,22 +21,14 @@ Wave-1.1's `infinite_scroll/selector` / `before_render` / `after_render` are sti
 
 ---
 
-## Active items (9)
+## Active items (2)
 
-The original 15-item roadmap was reduced to 9 after the strategic decisions. Dropped: #7, #8, #13, #14, and parts of #15. See `/docs/decisions-2026-04-28.md` for reasoning.
+The original 15-item roadmap was reduced to 9 after the strategic decisions (dropped: #7, #8, #13, #14, and parts of #15; see `/docs/decisions-2026-04-28.md`). Of the remaining 9, seven shipped through Waves 1.1, 1.2, 2.2, 3.1, 3.2, 3.3, 4.1, 4.3 — see the "Shipped to date" table and wave sections below. #11 partially shipped via Wave 4.2 (CategorySlider variant only); ProductSlider variant remains open.
 
 | # | Priority | Module | Description |
 |---|---|---|---|
-| 1 | P0 | Core / all modules | Add per-module `apply_filters` / `do_action` hooks (D1) |
-| 2 | P0 | RestockNotify | English defaults + Hebrew opt-in locale bootstrapper |
-| 4 | P0 | VariationSwatches | Migrate settings to Settings_Hub + image swatches + tooltip |
 | 3 | P0 | ProductFeed | Multi-channel feed support (only if a client needs it; otherwise P2) |
-| 5 | P1 | InfiniteScroll | Trigger-mode selector + history API |
-| 6 | P1 | Sliders | Autoplay / loop / pagination dots / lazy-load images |
-| 9 | P1 | CheapestDefaultVariation | Strategy selector + per-product opt-out |
-| 10 | P2 | RestockNotify | CSV export of subscribers + GDPR data-export hook |
-| 11 | P2 | Sliders | Expose hardcoded design tokens as Elementor controls |
-| 12 | P2 | InfiniteScroll | Expose skeleton + fade-in tokens as admin settings |
+| 11 | P2 | ProductSlider | Expose hardcoded design tokens as Elementor controls (CategorySlider variant shipped Wave 4.2 / 1.11.39) |
 
 ---
 

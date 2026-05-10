@@ -268,14 +268,32 @@
         container.parentNode.insertBefore(state.sentinel, container.nextSibling);
     }
 
+    // Wave 3.1a JS-side dispatcher per master plan §4-D8.
+    //
+    // Single entry point that consolidates the two trigger-mode gates:
+    //   'skip-auto-attach' — 'button' mode; attachObserver uses this to
+    //                       suppress IO + scroll fallback + iOS poll so
+    //                       they don't do wasted work / skeleton-flash.
+    //                       The user-visible 'Load more' button ships
+    //                       in 3.1b; in 3.1a 'button' mode just halts
+    //                       auto-loading until 3.1b lands.
+    //   'stop'             — 'hybrid' mode once state.pagesLoaded crosses
+    //                       OPTS.hybridThreshold; loadNext uses this to
+    //                       halt further fetches. The user-facing button
+    //                       takes over in 3.1b.
+    //   null               — caller proceeds with auto-trigger behavior.
+    //
+    // Flag-OFF returns null unconditionally — callers route to the legacy
+    // triple-stack path verbatim. Flag-ON-with-mode='auto' is null too.
+    function applyTriggerMode(mode) {
+        if (!OPTS.triggerModesEnabled) return null;
+        if (mode === 'button') return 'skip-auto-attach';
+        if (mode === 'hybrid' && state.pagesLoaded >= OPTS.hybridThreshold) return 'stop';
+        return null;
+    }
+
     function attachObserver() {
-        // Wave 3.1a: trigger-mode 'button' suppresses all auto-trigger paths
-        // (IO + scroll fallback + iOS poll) at the attach point so they
-        // don't do wasted work and skeleton-flash on every fire. The
-        // user-visible 'Load more' button itself ships in 3.1b; in 3.1a
-        // 'button' mode just halts auto-loading until 3.1b lands. Flag-OFF
-        // and flag-ON-with-mode='auto' both skip this gate by design.
-        if (OPTS.triggerModesEnabled && OPTS.triggerMode === 'button') return;
+        if (applyTriggerMode(OPTS.triggerMode || 'auto') === 'skip-auto-attach') return;
         attachScrollFallback();
         if (IS_IOS) attachIosPoll();
         if (!('IntersectionObserver' in window)) return;
@@ -434,11 +452,7 @@
 
                 state.pagesLoaded++;
 
-                // Wave 3.1a: hybrid mode auto-loads up to threshold pages,
-                // then stops. The user-facing 'Load more' button takes over
-                // in 3.1b; in 3.1a alone the trigger just goes quiet at the
-                // threshold. stop() disconnects the observer + clears poll.
-                if (OPTS.triggerModesEnabled && OPTS.triggerMode === 'hybrid' && state.pagesLoaded >= OPTS.hybridThreshold) {
+                if (applyTriggerMode(OPTS.triggerMode || 'auto') === 'stop') {
                     stop('hybrid threshold reached');
                 }
 

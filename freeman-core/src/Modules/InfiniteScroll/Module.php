@@ -77,7 +77,7 @@ final class Module extends Module_Base {
 			'trigger_mode'      => array(
 				'label'       => __( 'Trigger mode', 'freeman-core' ),
 				'type'        => 'select',
-				'options'     => array(
+				'choices'     => array(
 					'auto'   => __( 'Auto — load on scroll / observer (current behavior)', 'freeman-core' ),
 					'button' => __( 'Button — render a "Load more" button (Wave 3.1b)', 'freeman-core' ),
 					'hybrid' => __( 'Hybrid — auto for first N pages, then button (Wave 3.1b)', 'freeman-core' ),
@@ -88,7 +88,7 @@ final class Module extends Module_Base {
 			'history_mode'      => array(
 				'label'       => __( 'URL update on page advance', 'freeman-core' ),
 				'type'        => 'select',
-				'options'     => array(
+				'choices'     => array(
 					'pushState'    => __( 'pushState — update URL and create back-button entries (current behavior)', 'freeman-core' ),
 					'replaceState' => __( 'replaceState — update URL without back-button entries', 'freeman-core' ),
 					'disabled'     => __( 'Disabled — leave URL unchanged on page advance', 'freeman-core' ),

@@ -21,11 +21,46 @@ final class InfiniteScrollSettingsTest extends TestCase {
 	public function test_trigger_mode_setting_registers_with_default_auto(): void {
 		$schema = ( new Module() )->settings_schema();
 		$this->assertSame( 'auto', $schema['trigger_mode']['default'] );
+		$this->assertSame( 'select', $schema['trigger_mode']['type'] );
+		$this->assertArrayHasKey( 'choices', $schema['trigger_mode'] );
+		$this->assertSame(
+			array( 'auto', 'button', 'hybrid' ),
+			array_keys( $schema['trigger_mode']['choices'] )
+		);
 	}
 
 	public function test_history_mode_setting_registers_with_default_pushState(): void {
 		$schema = ( new Module() )->settings_schema();
 		$this->assertSame( 'pushState', $schema['history_mode']['default'] );
+		$this->assertSame( 'select', $schema['history_mode']['type'] );
+		$this->assertArrayHasKey( 'choices', $schema['history_mode'] );
+		$this->assertSame(
+			array( 'pushState', 'replaceState', 'disabled' ),
+			array_keys( $schema['history_mode']['choices'] )
+		);
+	}
+
+	public function test_existing_settings_preserved_with_original_defaults(): void {
+		$schema = ( new Module() )->settings_schema();
+
+		$this->assertArrayHasKey( 'skeleton_count', $schema );
+		$this->assertSame( 6, $schema['skeleton_count']['default'] );
+
+		$this->assertArrayHasKey( 'max_pages', $schema );
+		$this->assertSame( 50, $schema['max_pages']['default'] );
+
+		$this->assertArrayHasKey( 'end_message', $schema );
+		$this->assertSame(
+			__( 'You have reached the end.', 'freeman-core' ),
+			$schema['end_message']['default']
+		);
+	}
+
+	public function test_get_option_falls_back_to_schema_defaults_for_new_settings(): void {
+		$module = new Module();
+		$this->assertSame( 'auto', $module->get_option( 'trigger_mode' ) );
+		$this->assertSame( 'pushState', $module->get_option( 'history_mode' ) );
+		$this->assertSame( 2, $module->get_option( 'hybrid_threshold' ) );
 	}
 
 	public function test_hybrid_threshold_setting_registers_with_default_2(): void {

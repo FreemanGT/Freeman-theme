@@ -320,6 +320,112 @@ final class Widget extends Widget_Base {
 			)
 		);
 
+		// Wave 4.2 — expose the four hardcoded design tokens declared on
+		// `.cs` (--cs-bg, --cs-ink, --cs-mute, --cs-line) as Elementor
+		// controls. Empty default → Elementor omits the selector → the
+		// `.cs` block's existing oklch() declaration remains as the
+		// rendered value (byte-identical to pre-4.2). User picks a color
+		// → Elementor emits the override.
+		$this->add_control(
+			'cs_bg_color',
+			array(
+				'label'     => __( 'Background color', 'freeman-core' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '',
+				'selectors' => array(
+					'{{WRAPPER}} .cs' => '--cs-bg: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'cs_ink_color',
+			array(
+				'label'     => __( 'Text color', 'freeman-core' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '',
+				'selectors' => array(
+					'{{WRAPPER}} .cs' => '--cs-ink: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'cs_mute_color',
+			array(
+				'label'     => __( 'Muted text color', 'freeman-core' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '',
+				'selectors' => array(
+					'{{WRAPPER}} .cs' => '--cs-mute: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'cs_line_color',
+			array(
+				'label'     => __( 'Divider / outline color', 'freeman-core' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => '',
+				'selectors' => array(
+					'{{WRAPPER}} .cs' => '--cs-line: {{VALUE}};',
+				),
+			)
+		);
+
+		// Wave 4.2 — three new arrow tokens. CSS file consumes them as
+		// `var(--cs-arrow-X, <hardcoded fallback>)` so empty/unset →
+		// pre-4.2 hardcoded values render.
+		$this->add_control(
+			'cs_arrow_size',
+			array(
+				'label'      => __( 'Arrow button size', 'freeman-core' ),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => array( 'px' ),
+				'range'      => array(
+					'px' => array( 'min' => 24, 'max' => 96, 'step' => 1 ),
+				),
+				'default'    => array( 'size' => 40, 'unit' => 'px' ),
+				'selectors'  => array(
+					'{{WRAPPER}} .cs' => '--cs-arrow-size: {{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'cs_arrow_radius',
+			array(
+				'label'      => __( 'Arrow button radius', 'freeman-core' ),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => array( 'px', '%' ),
+				'range'      => array(
+					'px' => array( 'min' => 0, 'max' => 50, 'step' => 1 ),
+					'%'  => array( 'min' => 0, 'max' => 50, 'step' => 1 ),
+				),
+				'default'    => array( 'size' => 50, 'unit' => '%' ),
+				'selectors'  => array(
+					'{{WRAPPER}} .cs' => '--cs-arrow-radius: {{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'cs_arrow_duration',
+			array(
+				'label'      => __( 'Arrow hover transition duration', 'freeman-core' ),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => array( 'ms' ),
+				'range'      => array(
+					'ms' => array( 'min' => 0, 'max' => 1000, 'step' => 10 ),
+				),
+				'default'    => array( 'size' => 180, 'unit' => 'ms' ),
+				'selectors'  => array(
+					'{{WRAPPER}} .cs' => '--cs-arrow-duration: {{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
 		$this->add_control(
 			'heading_typography',
 			array(

@@ -82,12 +82,12 @@
 .cs .cs-arrow {
 	-webkit-appearance: none;
 	appearance: none;
-	width: 40px;
-	height: 40px;
-	min-width: 40px;
-	min-height: 40px;
+	width: var(--cs-arrow-size, 40px);
+	height: var(--cs-arrow-size, 40px);
+	min-width: var(--cs-arrow-size, 40px);
+	min-height: var(--cs-arrow-size, 40px);
 	box-sizing: border-box;
-	border-radius: 50%;
+	border-radius: var(--cs-arrow-radius, 50%);
 	border: 1px solid var(--cs-line);
 	background: transparent;
 	background-image: none;
@@ -102,7 +102,7 @@
 	font: inherit;
 	text-shadow: none;
 	box-shadow: none;
-	transition: background .18s, border-color .18s, color .18s, opacity .18s;
+	transition: background var(--cs-arrow-duration, .18s), border-color var(--cs-arrow-duration, .18s), color var(--cs-arrow-duration, .18s), opacity var(--cs-arrow-duration, .18s);
 }
 .cs .cs-arrow:hover:not(:disabled),
 .cs .cs-arrow:focus-visible:not(:disabled) {

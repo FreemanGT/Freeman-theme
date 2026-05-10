@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.40] — 2026-05-11
+
+- Wave 4.5: VariationSwatches WPC Bundles + FBT compatibility (default-off flag, JS field-forwarding to WC AJAX, single-line legacy template hook for plugin injection)
+
 ## [1.11.39] — 2026-05-11
 
 - Wave 4.2 — CategorySlider design tokens exposed as Elementor controls. Adds 4 color controls (--cs-bg, --cs-ink, --cs-mute, --cs-line) and 3 arrow controls (size, radius, duration) on the CategorySlider widget Style tab. Colors default empty so Elementor omits the selector and the existing .cs block oklch() declarations remain. Arrow controls default to the prior hardcoded values (40px / 50% / 180ms); CSS file consumes them via var(--cs-arrow-X, fallback). No flag — purely additive, byte-identical out-of-the-box render.

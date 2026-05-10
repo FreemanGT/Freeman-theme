@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-11 (docs catch-up — Wave 4.4 dropped, Wave 4.5 open in #17, both off the original P2 numbering)
+**Last updated**: 2026-05-11 (Wave 4.5 — VariationSwatches WPC Bundles + FBT compatibility — shipped 1.11.40)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -242,13 +242,13 @@ Waves 4.4 and 4.5 were **not** drawn from the original 9-item P2 list. They came
 - Outcome: **dropped.** The original bug did not reproduce on staging; multiple fix attempts regressed Quick View. The investigation surfaced no reliable repro path. Branch `wave-4.4-preselect-timing-fix` is preserved on origin (per the explicit note in PR #17's body) as an artifact of the attempt; not merged, not intended for future merge.
 - No version on main carries any 4.4 work.
 
-**4.5 — VariationSwatches WPC FBT + Bundles compatibility (OPEN — PR [#17](https://github.com/FreemanGT/Freeman-theme/pull/17))**
+**4.5 — VariationSwatches WPC FBT + Bundles compatibility (✅ shipped 1.11.40)**
 - Scope: forward all `serializeArray()` form fields through to WC's standard `wc-ajax=add_to_cart` endpoint so WPC Product Bundles (`woosb-ids-*`) and WPC FBT (`woobt_ids`) hidden inputs reach the cart. Sister work to the dropped 4.4 attempt.
-- **Approved single-line `legacy/` edit** in `templates/variation-buy-box.php` — adds `do_action( 'woocommerce_before_add_to_cart_button' )` inside `.etucart-actions` so WPC FBT's `woobt_ids` injection point exists. Standard WC hook; no-op on sites without compat plugins. Hard Rule #3 exception explicitly framed in PR #17's body.
-- New flag `freeman_core_variation_swatches_bundle_compat_enabled` (default off).
-- New JS global `window.FreemanCoreVSFlags = { bundleCompat: <bool> }`.
-- **PR #17 status**: opened at 1.11.17 era when main was around 1.11.6. Main is now at 1.11.39 — substantial drift across 22+ version bumps and Waves 3.1, 3.2, 3.3, 4.1, 4.2, 4.3. Merge will require rebase + re-verification of the test suite against current bootstrap (Wave 4.2 enriched the Elementor stubs; Wave 4.1a/b added Privacy + CSV surfaces; Wave 4.3 added the skeleton-token bootstrap stub). Not currently on the active queue — flag-gated bugfix scope without a forcing function.
-- No flag (additive). Settings_Hub already validates `color` (hex regex) and `number` (numeric coerce) at write-time; module silently clamps numbers to sensible ranges and falls back to default on empty color.
+- **Approved single-line `legacy/` edit** in `templates/variation-buy-box.php` — adds `do_action( 'woocommerce_before_add_to_cart_button' )` inside `.etucart-actions` so WPC FBT's `woobt_ids` injection point exists. Standard WC hook; no-op on sites without compat plugins. Hard Rule #3 exception explicitly framed in PR #17's body and in this entry.
+- Flag `freeman_core_variation_swatches_bundle_compat_enabled` (default off) gates the JS payload-build branch, the `window.FreemanCoreVSFlags = { bundleCompat: <bool> }` global, and the `woobt_added_to_cart` → `wc_fragment_refresh` document-body bridge. The template `do_action` is unconditional (Hard Rule #1 additive exception — purely a new injection point, no Freeman-shipped listener).
+- PHP-side plumbing: new `Module::inject_feature_flags()` on `wp_enqueue_scripts` priority 10001, emitting the JS global before the `freeman-core` script handle.
+- **PR history**: PR #17 (1.11.17 era) carried the design + staging-validated QA against WPC FBT + FunnelKit Cart but never merged — by 1.11.39 it was 22+ version bumps stale and the JS/template/Module diffs would have regressed Waves 2.2/4a, 4b, 4c, 4d, 4e. Re-shipped on a fresh branch from current main, extracting only the bundle-compat additions; PR #17 closed with a link to the v2 PR. The stale `wave-4.5-bundle-fbt-compat` branch is preserved on origin as an artifact (same pattern as Wave 4.4's `wave-4.4-preselect-timing-fix`).
+- **Test coverage**: 4 new PHPUnit tests in `tests/VariationSwatchesBundleCompatTest.php` (one in an isolated process to bypass `Etucart_VS_Plugin` pre-loading) covering the inject_feature_flags() plumbing; +4 reported tests / +8 reported assertions. JS behavior changes (full-form serialize + woobt bridge) remain staging-validated per PR #17, as PHPUnit cannot exercise them.
 
 ---
 

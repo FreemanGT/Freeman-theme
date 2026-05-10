@@ -249,6 +249,37 @@ final class Module extends Module_Base {
 		// flag-flip listeners (handle_flag_add / handle_flag_update) fire
 		// regardless because they ARE the flip detector.
 		Sampler_Scheduler::register();
+
+		// Wave 4.5 (1.11.40) — expose feature-flag values to the swatches JS
+		// bundle. Priority 10001 runs after legacy register_assets (9999) so
+		// the `freeman-core` script handle is already registered.
+		add_action( 'wp_enqueue_scripts', array( $this, 'inject_feature_flags' ), 10001 );
+	}
+
+	/**
+	 * Inject `window.FreemanCoreVSFlags` ahead of the swatches script.
+	 *
+	 * The JS reads `FreemanCoreVSFlags.bundleCompat` to gate its WPC Bundles /
+	 * WPC FBT compatibility path (full-form serialization → wc-ajax=add_to_cart).
+	 * Flag OFF emits `{ bundleCompat: false }` and the JS stays on its legacy
+	 * whitelist payload — byte-identical to pre-1.11.40.
+	 *
+	 * @since 1.11.40
+	 */
+	public function inject_feature_flags() {
+		$handle = 'freeman-core';
+		if ( ! wp_script_is( $handle, 'registered' ) ) {
+			return;
+		}
+
+		$flags = array(
+			'bundleCompat' => Feature_Flags::is_enabled( 'variation_swatches', 'bundle_compat' ),
+		);
+		wp_add_inline_script(
+			$handle,
+			'window.FreemanCoreVSFlags = ' . wp_json_encode( $flags ) . ';',
+			'before'
+		);
 	}
 
 	/**

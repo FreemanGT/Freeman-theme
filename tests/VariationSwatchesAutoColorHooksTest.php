@@ -68,6 +68,7 @@ final class VariationSwatchesAutoColorHooksTest extends TestCase {
 		$GLOBALS['fr_attachment_paths']          = array();
 		$GLOBALS['fr_hooks']                     = array();
 		$GLOBALS['fr_cron']                      = array();
+		$GLOBALS['fr_transients']                = array();
 		$GLOBALS['fr_post_parent']               = array();
 		$GLOBALS['fr_unsampled_variations']      = null;
 		$GLOBALS['fr_variations_using_attachment'] = array();
@@ -129,6 +130,17 @@ final class VariationSwatchesAutoColorHooksTest extends TestCase {
 
 		$this->assertSame( array(), Sampler_Scheduler::queue_get() );
 		$this->assertFalse( wp_next_scheduled( Sampler_Scheduler::CRON_HOOK ) );
+	}
+
+	public function test_flag_truthiness_change_purges_archive_payload_cache(): void {
+		set_transient( 'freeman_vs_pd_archive_payload', array( 'pid' => 10 ), HOUR_IN_SECONDS );
+		set_transient( 'other_payload', array( 'pid' => 11 ), HOUR_IN_SECONDS );
+		$GLOBALS['fr_unsampled_variations'] = array();
+
+		Sampler_Scheduler::handle_flag_update( 0, 1 );
+
+		$this->assertFalse( get_transient( 'freeman_vs_pd_archive_payload' ) );
+		$this->assertSame( array( 'pid' => 11 ), get_transient( 'other_payload' ) );
 	}
 
 	public function test_flag_update_already_on_does_not_reschedule(): void {

@@ -29,6 +29,13 @@ final class Color_Sampler {
 	const QUANTIZE_BITS = 5;
 
 	/**
+	 * Per-request cache of WooCommerce variation arrays, keyed by parent product id.
+	 *
+	 * @var array<int,array<int,array<string,mixed>>>
+	 */
+	private static $available_variations_cache = array();
+
+	/**
 	 * Sample a variation's image and persist the result. Always re-samples
 	 * (overwrites any cached value) — used by the `_thumbnail_id` change
 	 * listener and explicit re-sample paths.
@@ -96,6 +103,15 @@ final class Color_Sampler {
 	}
 
 	/**
+	 * Reset request-local caches.
+	 *
+	 * @internal Test helper and safe no-op for production callers.
+	 */
+	public static function reset_request_cache() {
+		self::$available_variations_cache = array();
+	}
+
+	/**
 	 * Wave 2.2 / 4e — render-path color resolution with auto-color fallback.
 	 *
 	 * Resolution order:
@@ -153,14 +169,9 @@ final class Color_Sampler {
 			return '';
 		}
 
-		$product = function_exists( 'wc_get_product' ) ? wc_get_product( $product_id ) : null;
-		if ( ! is_object( $product ) || ! method_exists( $product, 'get_available_variations' ) ) {
-			return '';
-		}
-
 		$attribute_key = 'attribute_' . $taxonomy;
 		$hex_set       = array();
-		foreach ( (array) $product->get_available_variations() as $v ) {
+		foreach ( self::available_variations_for_product( $product_id ) as $v ) {
 			$attrs = isset( $v['attributes'] ) ? (array) $v['attributes'] : array();
 			if ( ! isset( $attrs[ $attribute_key ] ) || (string) $attrs[ $attribute_key ] !== $slug ) {
 				continue;
@@ -203,6 +214,33 @@ final class Color_Sampler {
 		);
 		$value = \Etucart_VS_Plugin::sanitize_hex_color( is_string( $value ) ? $value : '' );
 		return '' !== $value ? $value : $default;
+	}
+
+	/**
+	 * Resolve and cache a variable product's available variations for this request.
+	 *
+	 * Rendering archive swatches resolves one color per option. Without this
+	 * request cache, every option re-runs WooCommerce's full variation matrix
+	 * assembly for the same parent product.
+	 *
+	 * @param int $product_id Parent product id.
+	 * @return array<int,array<string,mixed>>
+	 */
+	private static function available_variations_for_product( $product_id ) {
+		$product_id = (int) $product_id;
+		if ( isset( self::$available_variations_cache[ $product_id ] ) ) {
+			return self::$available_variations_cache[ $product_id ];
+		}
+
+		$product = function_exists( 'wc_get_product' ) ? wc_get_product( $product_id ) : null;
+		if ( ! is_object( $product ) || ! method_exists( $product, 'get_available_variations' ) ) {
+			self::$available_variations_cache[ $product_id ] = array();
+			return array();
+		}
+
+		$variations = $product->get_available_variations();
+		self::$available_variations_cache[ $product_id ] = is_array( $variations ) ? $variations : array();
+		return self::$available_variations_cache[ $product_id ];
 	}
 
 	/**

@@ -113,6 +113,9 @@ final class Sampler_Scheduler {
 	public static function handle_flag_update( $old_value, $new_value ) {
 		$was_on = filter_var( $old_value, FILTER_VALIDATE_BOOLEAN );
 		$is_on  = filter_var( $new_value, FILTER_VALIDATE_BOOLEAN );
+		if ( $was_on !== $is_on ) {
+			self::purge_archive_payload_cache();
+		}
 		if ( $was_on || ! $is_on ) {
 			return; // already on, or being turned off.
 		}
@@ -182,6 +185,35 @@ final class Sampler_Scheduler {
 				$post_id
 			)
 		);
+	}
+
+	/**
+	 * Purge archive picker payload transients.
+	 *
+	 * Auto-color changes the `hex` field embedded in the cached shop/archive
+	 * picker payload. Toggling the flag must invalidate those blobs immediately
+	 * instead of waiting for their 6-hour TTL.
+	 */
+	public static function purge_archive_payload_cache() {
+		global $wpdb;
+
+		if ( isset( $wpdb ) && method_exists( $wpdb, 'query' ) && method_exists( $wpdb, 'prepare' ) && method_exists( $wpdb, 'esc_like' ) ) {
+			$wpdb->query(
+				$wpdb->prepare(
+					"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+					$wpdb->esc_like( '_transient_freeman_vs_pd_' ) . '%',
+					$wpdb->esc_like( '_transient_timeout_freeman_vs_pd_' ) . '%'
+				)
+			);
+		}
+
+		if ( isset( $GLOBALS['fr_transients'] ) && is_array( $GLOBALS['fr_transients'] ) ) {
+			foreach ( array_keys( $GLOBALS['fr_transients'] ) as $key ) {
+				if ( 0 === strpos( (string) $key, 'freeman_vs_pd_' ) ) {
+					unset( $GLOBALS['fr_transients'][ $key ] );
+				}
+			}
+		}
 	}
 
 	/**

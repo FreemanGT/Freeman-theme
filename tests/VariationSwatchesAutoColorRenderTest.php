@@ -70,12 +70,19 @@ final class Test_AutoColor_Variable_Product {
 	/** @var array<int,array<string,mixed>> */
 	private array $variations;
 
+	private int $available_variation_calls = 0;
+
 	public function __construct( array $variations ) {
 		$this->variations = $variations;
 	}
 
 	public function get_available_variations(): array {
+		$this->available_variation_calls++;
 		return $this->variations;
+	}
+
+	public function available_variation_calls(): int {
+		return $this->available_variation_calls;
 	}
 }
 
@@ -104,6 +111,7 @@ final class VariationSwatchesAutoColorRenderTest extends TestCase {
 		$GLOBALS['fr_wc_get_product_return'] = null;
 		$GLOBALS['fr_hooks']                 = array();
 		$GLOBALS['fr_auto_color_logged']     = array();
+		Color_Sampler::reset_request_cache();
 		Logger::clear();
 	}
 
@@ -323,5 +331,22 @@ final class VariationSwatchesAutoColorRenderTest extends TestCase {
 		// returns '' (writes empty sentinel). After two empty sentinels: 0 real
 		// hexes in the set → fall through to '' (legacy term_color() default).
 		$this->assertSame( '', Color_Sampler::resolve_term_color( 10, 99 ) );
+	}
+
+	public function test_available_variations_loaded_once_per_product_request(): void {
+		$this->flag_on();
+		$this->register_term( 10, 'pa_color', 'red' );
+		$this->register_term( 11, 'pa_color', 'blue' );
+		$this->register_product( 99, array(
+			array( 'variation_id' => 201, 'attribute_pa_color' => 'red', 'sampled_hex' => '#3366CC' ),
+			array( 'variation_id' => 202, 'attribute_pa_color' => 'blue', 'sampled_hex' => '#112233' ),
+		) );
+
+		$product = $GLOBALS['fr_wc_get_product_return'];
+
+		$this->assertSame( '#3366CC', Color_Sampler::resolve_term_color( 10, 99 ) );
+		$this->assertSame( '#112233', Color_Sampler::resolve_term_color( 11, 99 ) );
+
+		$this->assertSame( 1, $product->available_variation_calls() );
 	}
 }

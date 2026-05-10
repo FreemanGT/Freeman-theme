@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-11 (Wave 4.2 shipped — CategorySlider design tokens as Elementor controls)
+**Last updated**: 2026-05-11 (docs catch-up — Wave 4.4 dropped, Wave 4.5 open in #17, both off the original P2 numbering)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -230,6 +230,24 @@ Each item is its own PR with its own feature flag. Order within wave doesn't mat
 - 5 settings: `shimmer_base_color`, `shimmer_highlight_color`, `shimmer_duration_ms`, `fade_duration_ms`, `fade_transform_px`
 - Emitted at runtime as `--fm-is-*` CSS custom properties on `:root` via `wp_add_inline_style` (uniform-shape Mechanism A from Wave 3.1b precedent)
 - Existing hardcoded CSS values preserved as `var(--fm-is-X, fallback)` so flag-OFF / no-settings-saved is byte-identical to pre-4.3 render
+
+---
+
+### Off-roadmap waves (4.4 / 4.5 — VariationSwatches compatibility work)
+
+Waves 4.4 and 4.5 were **not** drawn from the original 9-item P2 list. They came out of an early-May client-compat investigation (1.11.6–1.11.17 era) that ran on a separate branch lineage from Waves 4.1 / 4.2 / 4.3. They are recorded here so the 4.4/4.5 numbers are not silently floating; neither has shipped to main.
+
+**4.4 — VariationSwatches preselect timing fix (DROPPED — kept on origin as artifact)**
+- Scope intent: archive→PDP variation image race (Issue 3 from internal QA notes).
+- Outcome: **dropped.** The original bug did not reproduce on staging; multiple fix attempts regressed Quick View. The investigation surfaced no reliable repro path. Branch `wave-4.4-preselect-timing-fix` is preserved on origin (per the explicit note in PR #17's body) as an artifact of the attempt; not merged, not intended for future merge.
+- No version on main carries any 4.4 work.
+
+**4.5 — VariationSwatches WPC FBT + Bundles compatibility (OPEN — PR [#17](https://github.com/FreemanGT/Freeman-theme/pull/17))**
+- Scope: forward all `serializeArray()` form fields through to WC's standard `wc-ajax=add_to_cart` endpoint so WPC Product Bundles (`woosb-ids-*`) and WPC FBT (`woobt_ids`) hidden inputs reach the cart. Sister work to the dropped 4.4 attempt.
+- **Approved single-line `legacy/` edit** in `templates/variation-buy-box.php` — adds `do_action( 'woocommerce_before_add_to_cart_button' )` inside `.etucart-actions` so WPC FBT's `woobt_ids` injection point exists. Standard WC hook; no-op on sites without compat plugins. Hard Rule #3 exception explicitly framed in PR #17's body.
+- New flag `freeman_core_variation_swatches_bundle_compat_enabled` (default off).
+- New JS global `window.FreemanCoreVSFlags = { bundleCompat: <bool> }`.
+- **PR #17 status**: opened at 1.11.17 era when main was around 1.11.6. Main is now at 1.11.39 — substantial drift across 22+ version bumps and Waves 3.1, 3.2, 3.3, 4.1, 4.2, 4.3. Merge will require rebase + re-verification of the test suite against current bootstrap (Wave 4.2 enriched the Elementor stubs; Wave 4.1a/b added Privacy + CSV surfaces; Wave 4.3 added the skeleton-token bootstrap stub). Not currently on the active queue — flag-gated bugfix scope without a forcing function.
 - No flag (additive). Settings_Hub already validates `color` (hex regex) and `number` (numeric coerce) at write-time; module silently clamps numbers to sensible ranges and falls back to default on empty color.
 
 ---

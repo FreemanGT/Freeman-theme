@@ -878,14 +878,15 @@ final class Widget extends Widget_Base {
 		 */
 		$args = (array) apply_filters( 'freeman_core/product_slider/query_args', $args, $s );
 
-		// Popularity / rating: bypass `wc_get_products()`'s INNER JOIN on the
-		// sort meta. WC translates `orderby=popularity` → `meta_value_num` on
-		// `total_sales`, which drops every product that has never been sold
+		// Popularity / rating / price: bypass `wc_get_products()`'s INNER JOIN
+		// on the sort meta. WC translates `orderby=popularity` → `meta_value_num`
+		// on `total_sales`, which drops every product that has never been sold
 		// (no postmeta row) and ties the rest at 0 — making the result
 		// indistinguishable from `orderby=date`. Same trap for `rating`
-		// (`_wc_average_rating`, no reviews). See
-		// `fetch_products_by_meta_orderby()` for the two-pass workaround.
-		if ( in_array( $args['orderby'] ?? '', array( 'popularity', 'rating' ), true ) ) {
+		// (`_wc_average_rating`, no reviews) and `price` (`_price`, e.g.
+		// "price on request" / call-for-quote products with no price set).
+		// See `fetch_products_by_meta_orderby()` for the two-pass workaround.
+		if ( in_array( $args['orderby'] ?? '', array( 'popularity', 'rating', 'price' ), true ) ) {
 			return $this->fetch_products_by_meta_orderby( $args );
 		}
 
@@ -906,9 +907,9 @@ final class Widget extends Widget_Base {
 	}
 
 	/**
-	 * Two-pass query for popularity / rating orderby — works around WC's
-	 * INNER JOIN on the sort meta key, which silently excludes products
-	 * with no `total_sales` / `_wc_average_rating` row.
+	 * Two-pass query for popularity / rating / price orderby — works around
+	 * WC's INNER JOIN on the sort meta key, which silently excludes products
+	 * with no `total_sales` / `_wc_average_rating` / `_price` row.
 	 *
 	 * 1. Fetch all eligible product IDs ordered by date (no JOIN on the
 	 *    sort meta).
@@ -919,19 +920,25 @@ final class Widget extends Widget_Base {
 	 * Defensive cap of 5000 IDs keeps the in-PHP sort bounded — far above
 	 * any realistic shop slider input — without unbounded memory on a
 	 * runaway catalog. Beyond 5000, only the newest 5000 by date are
-	 * considered for the popularity ranking.
+	 * considered for the ranking.
 	 *
 	 * @since 1.11.42
 	 *
 	 * @param array $args Filtered wc_get_products args; `orderby` is
-	 *                    `popularity` or `rating` and `order` is ASC|DESC.
+	 *                    `popularity`, `rating`, or `price` and `order` is
+	 *                    ASC|DESC.
 	 * @return \WC_Product[]
 	 */
 	private function fetch_products_by_meta_orderby( $args ) {
 		$sort_orderby = (string) ( $args['orderby'] ?? '' );
 		$sort_order   = ( 'ASC' === ( $args['order'] ?? 'DESC' ) ) ? 'ASC' : 'DESC';
 		$limit        = max( 1, (int) ( $args['limit'] ?? 12 ) );
-		$meta_key     = ( 'popularity' === $sort_orderby ) ? 'total_sales' : '_wc_average_rating';
+		$meta_key_map = array(
+			'popularity' => 'total_sales',
+			'rating'     => '_wc_average_rating',
+			'price'      => '_price',
+		);
+		$meta_key     = $meta_key_map[ $sort_orderby ] ?? 'total_sales';
 
 		$id_args            = $args;
 		$id_args['orderby'] = 'date';

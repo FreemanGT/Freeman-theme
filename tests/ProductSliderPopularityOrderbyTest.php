@@ -40,10 +40,11 @@ if ( ! function_exists( 'is_tax' ) ) {
 use Freeman\Core\Modules\ProductSlider\Widget;
 
 /**
- * Covers the 1.11.42 popularity / rating orderby fix in
+ * Covers the 1.11.42 popularity / rating / price orderby fix in
  * Widget::fetch_products_by_meta_orderby() — the two-pass query that bypasses
- * WC's INNER JOIN on `total_sales` / `_wc_average_rating`, so products with
- * no sales / reviews still appear and the sort actually applies.
+ * WC's INNER JOIN on `total_sales` / `_wc_average_rating` / `_price`, so
+ * products with no sales / reviews / price still appear and the sort actually
+ * applies.
  *
  * Tests assert sort order via the sequence of wc_get_product() lookups
  * captured by the bootstrap stub. The returned objects' get_id() is meaningless
@@ -144,6 +145,44 @@ final class ProductSliderPopularityOrderbyTest extends TestCase {
 		) );
 
 		$this->assertSame( array( 200, 300, 100 ), array_slice( $GLOBALS['fr_wc_get_product_calls'], 0, 3 ) );
+	}
+
+	public function test_price_orderby_sorts_by_price_meta(): void {
+		// Prices 29.99 / 9.99 / 19.99 — DESC expects 100, 300, 200.
+		$GLOBALS['fr_wc_get_products_return']  = array( 100, 200, 300 );
+		$GLOBALS['fr_post_meta'][100]['_price'] = '29.99';
+		$GLOBALS['fr_post_meta'][200]['_price'] = '9.99';
+		$GLOBALS['fr_post_meta'][300]['_price'] = '19.99';
+
+		$this->fetch( array(
+			'limit'   => 12,
+			'orderby' => 'price',
+			'order'   => 'DESC',
+			'source'  => 'all',
+		) );
+
+		// Confirms `price` now uses the meta-orderby bypass (return=ids path).
+		$this->assertSame( 'ids', $GLOBALS['fr_wc_get_products_args']['return'] );
+		$this->assertSame( array( 100, 300, 200 ), array_slice( $GLOBALS['fr_wc_get_product_calls'], 0, 3 ) );
+	}
+
+	public function test_price_orderby_includes_products_without_price_meta(): void {
+		// Product 200 priced; 100 and 300 have no _price ("price on request").
+		// WC's INNER JOIN would drop them; the bypass keeps all three, with the
+		// price-less ones sorting as 0.
+		$GLOBALS['fr_wc_get_products_return']   = array( 100, 200, 300 );
+		$GLOBALS['fr_post_meta'][200]['_price'] = '49.00';
+
+		$this->fetch( array(
+			'limit'   => 12,
+			'orderby' => 'price',
+			'order'   => 'DESC',
+			'source'  => 'all',
+		) );
+
+		$lookups = $GLOBALS['fr_wc_get_product_calls'];
+		$this->assertCount( 3, $lookups );
+		$this->assertSame( 200, $lookups[0], 'priced product leads on DESC' );
 	}
 
 	public function test_popularity_orderby_asc_reverses_sort(): void {

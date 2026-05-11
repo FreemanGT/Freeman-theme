@@ -2,7 +2,7 @@
 
 ## [1.11.42] — 2026-05-11
 
-- ProductSlider — popularity / rating orderby now actually sorts and includes products without total_sales / _wc_average_rating meta (bypasses WC INNER JOIN)
+- ProductSlider — popularity / rating / price orderby now actually sorts and includes products without total_sales / _wc_average_rating / _price meta (bypasses WC's INNER JOIN on the sort meta key, which silently excluded products with no recorded sales / reviews / price). Other orderby values (date, title, menu_order, rand) and the manual / current_query / related sources unchanged. Defensive 5000-ID cap on the in-PHP sort.
 
 ## [1.11.41] — 2026-05-11
 

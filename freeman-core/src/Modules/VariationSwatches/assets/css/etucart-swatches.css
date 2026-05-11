@@ -177,15 +177,6 @@ body:has(.etucart-pdp-price[data-pdp-price]) .elementor-widget-woocommerce-produ
 
 /* ---------- Host ---------- */
 .etucart-buy-box {
-	/* Hebrew-first font stack. Ploni is the primary request; we fall back
-	   through other common Hebrew-friendly webfonts before landing on
-	   sensible system defaults so the module reads correctly even if Ploni
-	   hasn't loaded yet (FOUT guard) or on environments where it's not
-	   installed at all. */
-	--etucart-font: "Ploni", "Ploni ML v2 AAA", "Ploni ML", "Assistant",
-		"Rubik", "Heebo", "Noto Sans Hebrew", -apple-system,
-		BlinkMacSystemFont, "Segoe UI", system-ui, Arial, sans-serif;
-
 	--etucart-text: #111111;
 	--etucart-muted: #6b6b6b;
 	--etucart-border: #d9d9d9;
@@ -208,7 +199,7 @@ body:has(.etucart-pdp-price[data-pdp-price]) .elementor-widget-woocommerce-produ
 
 	direction: rtl !important;
 	text-align: right !important;
-	font-family: var(--etucart-font) !important;
+	font-family: inherit !important;
 	color: var(--etucart-text) !important;
 	max-width: 640px;
 	width: 100% !important;
@@ -230,11 +221,13 @@ body:has(.etucart-pdp-price[data-pdp-price]) .elementor-widget-woocommerce-produ
 	   bar to the buy box instead of the viewport. */
 }
 
-/* Inherit the Hebrew-first stack into every descendant so theme CSS that
-   sets fonts on buttons/inputs doesn't override it. */
+/* Force the site/theme font onto every descendant so theme CSS that sets a
+   different font on buttons/inputs doesn't override it — the buy box reads in
+   the same typeface as the rest of the page (it inherits from whatever the
+   theme / Elementor applies to the surrounding content). */
 .etucart-buy-box,
 .etucart-buy-box * {
-	font-family: var(--etucart-font) !important;
+	font-family: inherit !important;
 }
 
 /* Kill the mobile tap-highlight overlay (the "bright blue flash" on press).
@@ -299,11 +292,7 @@ body:has(.etucart-pdp-price[data-pdp-price]) .elementor-widget-woocommerce-produ
 	display: flex !important;
 	flex-wrap: wrap !important;
 	gap: var(--etucart-gap) !important;
-	/* Centre the swatch row (pills, colour circles, image chips all share this
-	   container). RTL flow/order is unchanged — items keep their stored order,
-	   just centred as a group rather than hugging the right edge. The
-	   `.etucart-variation__head` label above is intentionally left right-aligned. */
-	justify-content: center !important;
+	justify-content: flex-start !important;
 	margin: 0 !important;
 	padding: 0 !important;
 	list-style: none !important;
@@ -1115,7 +1104,7 @@ body:has(.etucart-pdp-price[data-pdp-price]) .elementor-widget-woocommerce-produ
 	background: #111111;
 	color: #ffffff;
 	border-radius: 14px;
-	font-family: var(--etucart-font, inherit);
+	font-family: inherit;
 	font-size: 14px;
 	font-weight: 600;
 	line-height: 1.3;

@@ -207,7 +207,11 @@
 	margin: 0 !important;
 	padding: 0 !important;
 	list-style: none !important;
-	justify-content: flex-start !important;
+	/* Centre the chip row within the card (and the wrapped overflow rows in
+	   the `.is-expanded` state below, which inherits this). The single-product
+	   buy box deliberately keeps its swatch row right-anchored — only the
+	   archive / grid picker is centred. */
+	justify-content: center !important;
 	/* Anything that doesn't fit on the single line is hidden — the JS
 	   overflow scanner re-tags items as `is-overflow` to keep the visible
 	   set in sync with the `+N` button. `overflow: hidden` is the

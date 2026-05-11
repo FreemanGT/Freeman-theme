@@ -1,5 +1,11 @@
 # Freeman Core — Changelog
 
+## [1.11.47] — 2026-05-11
+
+- VariationSwatches: the simple-product buy box now renders its own `.etucart-pdp-price` line (same markup as the variable buy box). Fixes the missing price in simple-product quick-view modals — the WooSQ duplicate-price suppression was hiding WooCommerce's separately-rendered `<p class="price">`, which the simple buy box previously had nothing to replace. `maybe_suppress_pdp_price()` now also unhooks `woocommerce_template_single_price` for simple products so a plain simple PDP isn't doubled; on Elementor-built simple PDPs the 1.11.46 `:has()` rule consequently hides the Elementor "Product Price" widget there too. On a default-template simple PDP the price moves to just above the add-to-cart button (where the buy box renders), matching the variable buy box.
+- VariationSwatches: the buy box (and toast) now inherit the site/theme font instead of forcing a built-in "Ploni"-first stack — the buy box reads in the same typeface as the rest of the page.
+- VariationSwatches: the shop / archive variation-picker swatch row is now centred within the card; the single-product buy box's swatch row is back to its original right-anchored layout (the 1.11.46 centring there was reverted).
+
 ## [1.11.46] — 2026-05-11
 
 - VariationSwatches: hide the Elementor "Product Price" widget on variable product pages when the buy box's own (live, variation-aware) price line is present — fixes the duplicated price on Elementor-built PDPs. Simple products keep the Elementor widget's price untouched. CSS-only; falls back to current behaviour where :has() is unsupported.

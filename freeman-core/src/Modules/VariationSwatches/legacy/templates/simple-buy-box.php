@@ -28,7 +28,27 @@ $product_id = $product->get_id();
 // clear OOS state instead of a confusing half-enabled form.
 $buyable = $product->is_purchasable() && $product->is_in_stock();
 
-do_action( 'woocommerce_before_add_to_cart_form' ); ?>
+// Price line, mirroring variation-buy-box.php's `.etucart-pdp-price`. WC's
+// own `woocommerce_template_single_price` is removed for simple products in
+// Etucart_VS_Frontend::maybe_suppress_pdp_price() so this is the single price
+// surface — same markup the variable buy box uses (no range, prefix hidden),
+// so the shared `.etucart-pdp-price` CSS styles it and the quick-view
+// `.woosq-product .price:not(.etucart-pdp-price)` suppression keeps it. There
+// is no JS interaction here: this form has no `variations_form` class, so
+// WC's variation script never fires `found_variation` / `reset_data` against
+// it, and the price stays as rendered server-side.
+$pdp_price_html = $product->get_price_html(); ?>
+<p class="price etucart-pdp-price"
+   dir="<?php echo is_rtl() ? 'rtl' : 'ltr'; ?>"
+   data-pdp-price
+   data-has-range="0"
+   data-from-html="<?php echo esc_attr( $pdp_price_html ); ?>"
+   aria-live="polite">
+	<span class="etucart-pdp-price__prefix" hidden><?php esc_html_e( 'החל מ:', 'freeman-core' ); ?></span>
+	<span class="etucart-pdp-price__value"><?php echo wp_kses_post( $pdp_price_html ); ?></span>
+</p>
+
+<?php do_action( 'woocommerce_before_add_to_cart_form' ); ?>
 
 <form class="cart etucart-buy-box etucart-buy-box--simple"
 	  action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>"

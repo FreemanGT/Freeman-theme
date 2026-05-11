@@ -53,12 +53,14 @@ class Etucart_VS_Frontend {
 		remove_action( 'woocommerce_simple_add_to_cart', 'woocommerce_simple_add_to_cart', 30 );
 		add_action( 'woocommerce_simple_add_to_cart', [ $this, 'render_for_current_product' ], 30 );
 
-		// Suppress WC's default PDP price render for variable products — the
-		// buy-box template (variation-buy-box.php) emits its own
-		// `.etucart-pdp-price` line that flips between "starting from {min}"
-		// and the picked variation's price. Leaving WC's range intact would
-		// duplicate the price and create the "two prices that drift apart"
-		// failure mode the QA flagged.
+		// Suppress WC's default PDP price render for variable AND simple
+		// products — both buy-box templates emit their own `.etucart-pdp-price`
+		// line (variation-buy-box.php flips it between "starting from {min}" and
+		// the picked variation's price; simple-buy-box.php renders the static
+		// price). Leaving WC's price action in place would duplicate it (and for
+		// variable products, create the "two prices that drift apart" failure
+		// mode the QA flagged). Grouped / external products keep WC's price
+		// line — they use the native WC template, not our buy box.
 		//
 		// Hooked at priority 9 on `woocommerce_single_product_summary` so it
 		// runs immediately before WC's default `woocommerce_template_single_price`
@@ -78,8 +80,10 @@ class Etucart_VS_Frontend {
 
 	/**
 	 * Remove `woocommerce_template_single_price` from the single-product
-	 * summary when our variable buy-box will render its own price line.
-	 * Simple/grouped/external products keep WC's price line untouched.
+	 * summary for variable AND simple products — both render their own
+	 * `.etucart-pdp-price` line via our buy-box templates, so WC's price
+	 * action would only duplicate it. Grouped / external products keep WC's
+	 * price line untouched (they use the native WC add-to-cart template).
 	 *
 	 * Hooked on `woocommerce_single_product_summary` priority 9 so it
 	 * fires during every summary render — main PDP, Elementor preview,
@@ -90,7 +94,7 @@ class Etucart_VS_Frontend {
 	 */
 	public function maybe_suppress_pdp_price(): void {
 		global $product;
-		if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) ) {
+		if ( ! $product instanceof WC_Product || ! $product->is_type( [ 'variable', 'simple' ] ) ) {
 			return;
 		}
 		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );

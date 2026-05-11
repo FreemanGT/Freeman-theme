@@ -32,7 +32,13 @@
 
 	direction: rtl !important;
 	text-align: right !important;
-	font-family: inherit !important;
+	/* Kit body font via Elementor's global-typography variable (Style Kits),
+	   falling back to `inherit`. Not bare `inherit`: the picker is also
+	   AJAX-injected into quick-view modals whose wrapper sets its own font
+	   (e.g. WooSQ's `.woosq-sidebar`), and the variable cascades through that
+	   while `inherit` would pick up the modal's font. Descendants below just
+	   `inherit` from here. */
+	font-family: var(--e-global-typography-sk_type_12-font-family, inherit) !important;
 	color: var(--eshop-text) !important;
 	display: flex !important;
 	flex-direction: column !important;
@@ -44,11 +50,11 @@
 	border: 0 !important;
 }
 
-/* Force the site/theme font onto every descendant so theme CSS that sets a
-   different font on buttons/inputs doesn't override it — the picker reads in
-   the same typeface as the rest of the page (inherits from whatever the theme
-   / Elementor applies to the surrounding product-grid content). */
-.etucart-shop-pick,
+/* Force the picker font onto every descendant so theme CSS that sets a
+   different font on buttons/inputs doesn't override it. They `inherit` from
+   `.etucart-shop-pick` (which reads the kit body-font variable above) — the
+   container is intentionally NOT in this selector so its `var(...)` rule
+   isn't re-overridden back to bare `inherit`. */
 .etucart-shop-pick * {
 	font-family: inherit !important;
 }
@@ -650,7 +656,7 @@
 	width: min(360px, calc(100% - 24px));
 	pointer-events: none;
 	direction: rtl;
-	font-family: inherit;
+	font-family: var(--e-global-typography-sk_type_12-font-family, inherit);
 }
 
 .etucart-shop-toast {

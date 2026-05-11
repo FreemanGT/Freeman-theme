@@ -47,7 +47,13 @@
 	box-sizing: border-box !important;
 	font-size: 1.5rem !important;
 	line-height: 1.2 !important;
-	font-family: inherit !important;
+	/* Read the kit's body font from Elementor's global-typography variable
+	   (Style Kits writes it) rather than `inherit` — this line is rendered
+	   outside `.etucart-buy-box`, including inside quick-view modals whose
+	   wrapper sets its own `font-family` (e.g. WooSQ's `.woosq-sidebar` →
+	   "Open Sans"). The variable cascades through such wrappers untouched;
+	   `inherit` falls back to the surrounding font when no Style Kits. */
+	font-family: var(--e-global-typography-sk_type_12-font-family, inherit) !important;
 }
 
 .etucart-pdp-price[data-pdp-price] .etucart-pdp-price__prefix,
@@ -199,7 +205,13 @@ body:has(.etucart-pdp-price[data-pdp-price]) .elementor-widget-woocommerce-produ
 
 	direction: rtl !important;
 	text-align: right !important;
-	font-family: inherit !important;
+	/* Kit body font via Elementor's global-typography variable (Style Kits),
+	   falling back to `inherit`. Not bare `inherit`: the buy box is also
+	   AJAX-injected into quick-view modals whose wrapper sets its own font
+	   (e.g. WooSQ's `.woosq-sidebar`), and the variable cascades through that
+	   while `inherit` would pick up the modal's font. Descendants below just
+	   `inherit` from here. */
+	font-family: var(--e-global-typography-sk_type_12-font-family, inherit) !important;
 	color: var(--etucart-text) !important;
 	max-width: 640px;
 	width: 100% !important;
@@ -221,11 +233,11 @@ body:has(.etucart-pdp-price[data-pdp-price]) .elementor-widget-woocommerce-produ
 	   bar to the buy box instead of the viewport. */
 }
 
-/* Force the site/theme font onto every descendant so theme CSS that sets a
-   different font on buttons/inputs doesn't override it — the buy box reads in
-   the same typeface as the rest of the page (it inherits from whatever the
-   theme / Elementor applies to the surrounding content). */
-.etucart-buy-box,
+/* Force the buy-box font onto every descendant so theme CSS that sets a
+   different font on buttons/inputs doesn't override it. They `inherit` from
+   `.etucart-buy-box` (which reads the kit body-font variable above) — the
+   container is intentionally NOT in this selector so its `var(...)` rule
+   isn't re-overridden back to bare `inherit`. */
 .etucart-buy-box * {
 	font-family: inherit !important;
 }
@@ -1104,7 +1116,7 @@ body:has(.etucart-pdp-price[data-pdp-price]) .elementor-widget-woocommerce-produ
 	background: #111111;
 	color: #ffffff;
 	border-radius: 14px;
-	font-family: inherit;
+	font-family: var(--e-global-typography-sk_type_12-font-family, inherit);
 	font-size: 14px;
 	font-weight: 600;
 	line-height: 1.3;

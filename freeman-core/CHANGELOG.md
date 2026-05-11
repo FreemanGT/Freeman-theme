@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.49] — 2026-05-11
+
+- VariationSwatches: the buy box, the shop / archive picker, the PDP price line and the toast notifications now read the kit body font from Elementor's `--e-global-typography-sk_type_12-font-family` variable (with `inherit` as fallback) instead of bare `font-family: inherit`. Bare `inherit` picked up the *wrapping element's* font when the buy box / picker is AJAX-injected into a foreign-styled container — e.g. WooSQ (Woo Smart Quick View)'s `.woosq-sidebar { font-family: "Open Sans", … }` — so the quick-view buy box wasn't matching the site's Style Kits typeface. A CSS custom property cascades through such wrappers untouched, so the kit font reaches it regardless. No regression: without Style Kits the `inherit` fallback applies as before. CSS-only.
+
 ## [1.11.48] — 2026-05-11
 
 - VariationSwatches: the shop / archive variation-picker now `font-family: inherit !important` instead of forcing the built-in `--eshop-font` ("Ploni"-first) stack — matches the 1.11.47 buy-box change, so the picker reads in the page typeface (whatever Style Kits / Elementor global typography or the theme sets). Also drops a stale `var(--etucart-font, inherit)` reference in the picker's toast. CSS-only; no behaviour change beyond the typeface.

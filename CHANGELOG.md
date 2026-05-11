@@ -2,6 +2,14 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [freeman-core 1.11.48] — 2026-05-11
+
+- VariationSwatches: the shop / archive variation-picker now inherits the site/theme font instead of forcing a built-in "Ploni"-first stack — matches the 1.11.47 buy-box change so the picker reads in the page typeface (i.e. whatever Style Kits / Elementor global typography sets). CSS-only.
+
+## [freeman-theme 1.11.23] — 2026-05-11
+
+- Typography: `--fm-font-body` / `--fm-font-display` now follow Elementor's global typography (`--e-global-typography-sk_type_12/2-font-family`, written by the Style Kits for Elementor addon) with the previous hardcoded stacks as fallback — the theme no longer overrides Style Kits' fonts. `--fm-font-mono` (code/preformatted) unchanged. Also bumped `FREEMAN_THEME_VERSION` 1.0.3 → 1.11.23 so it matches `style.css` and the theme's CSS asset URLs actually cache-bust on this change (the constant, not `style.css`'s `Version:`, is what `wp_enqueue_style` uses).
+
 ## [1.11.47] — 2026-05-11
 
 - VariationSwatches: the simple-product buy box now renders its own `.etucart-pdp-price` line (same markup as the variable buy box). Fixes the missing price in simple-product quick-view modals — the WooSQ duplicate-price suppression was hiding WooCommerce's separately-rendered `<p class="price">`, which the simple buy box previously had nothing to replace. `maybe_suppress_pdp_price()` now also unhooks `woocommerce_template_single_price` for simple products so a plain simple PDP isn't doubled; on Elementor-built simple PDPs the 1.11.46 `:has()` rule consequently hides the Elementor "Product Price" widget there too. On a default-template simple PDP the price moves to just above the add-to-cart button (where the buy box renders), matching the variable buy box.

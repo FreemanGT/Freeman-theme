@@ -29,13 +29,10 @@
 	--eshop-radius-pill: 999px;
 	--eshop-gap: 8px;
 	--eshop-transition: 140ms ease;
-	--eshop-font: "Ploni", "Ploni ML v2 AAA", "Ploni ML", "Assistant",
-		"Rubik", "Heebo", "Noto Sans Hebrew", -apple-system,
-		BlinkMacSystemFont, "Segoe UI", system-ui, Arial, sans-serif;
 
 	direction: rtl !important;
 	text-align: right !important;
-	font-family: var(--eshop-font) !important;
+	font-family: inherit !important;
 	color: var(--eshop-text) !important;
 	display: flex !important;
 	flex-direction: column !important;
@@ -47,9 +44,13 @@
 	border: 0 !important;
 }
 
+/* Force the site/theme font onto every descendant so theme CSS that sets a
+   different font on buttons/inputs doesn't override it — the picker reads in
+   the same typeface as the rest of the page (inherits from whatever the theme
+   / Elementor applies to the surrounding product-grid content). */
 .etucart-shop-pick,
 .etucart-shop-pick * {
-	font-family: var(--eshop-font) !important;
+	font-family: inherit !important;
 }
 
 .etucart-shop-pick button {
@@ -649,7 +650,7 @@
 	width: min(360px, calc(100% - 24px));
 	pointer-events: none;
 	direction: rtl;
-	font-family: var(--etucart-font, inherit);
+	font-family: inherit;
 }
 
 .etucart-shop-toast {

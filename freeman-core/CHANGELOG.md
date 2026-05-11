@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.48] — 2026-05-11
+
+- VariationSwatches: the shop / archive variation-picker now `font-family: inherit !important` instead of forcing the built-in `--eshop-font` ("Ploni"-first) stack — matches the 1.11.47 buy-box change, so the picker reads in the page typeface (whatever Style Kits / Elementor global typography or the theme sets). Also drops a stale `var(--etucart-font, inherit)` reference in the picker's toast. CSS-only; no behaviour change beyond the typeface.
+
 ## [1.11.47] — 2026-05-11
 
 - VariationSwatches: the simple-product buy box now renders its own `.etucart-pdp-price` line (same markup as the variable buy box). Fixes the missing price in simple-product quick-view modals — the WooSQ duplicate-price suppression was hiding WooCommerce's separately-rendered `<p class="price">`, which the simple buy box previously had nothing to replace. `maybe_suppress_pdp_price()` now also unhooks `woocommerce_template_single_price` for simple products so a plain simple PDP isn't doubled; on Elementor-built simple PDPs the 1.11.46 `:has()` rule consequently hides the Elementor "Product Price" widget there too. On a default-template simple PDP the price moves to just above the add-to-cart button (where the buy box renders), matching the variable buy box.

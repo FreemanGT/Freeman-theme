@@ -1,5 +1,10 @@
 # Freeman Theme — Changelog
 
+## [1.11.23] — 2026-05-11
+
+- Typography: `--fm-font-body` and `--fm-font-display` now resolve from Elementor's global typography (`var(--e-global-typography-sk_type_12-font-family, …)` / `…sk_type_2…`, which the Style Kits for Elementor addon writes), with the previous hardcoded `'Heebo'` / `'Assistant'` stacks as fallback. The theme no longer overrides Style Kits' fonts; `--fm-font-mono` (used for `<code>` / `<pre>`) is unchanged. Since `freeman.css`'s `body` / heading rules read those tokens — and `freeman-core`'s My Account reads `--fm-font-body` — they all follow automatically.
+- Bumped `FREEMAN_THEME_VERSION` 1.0.3 → 1.11.23 so it matches `style.css` and the theme's CSS asset URLs cache-bust on this change (`wp_enqueue_style` uses that constant, not `style.css`'s `Version:`, which `tools/release.sh` bumps separately).
+
 ## [1.11.22] — 2026-05-03
 
 - Drop PHP 7.4 from CI matrix and bump min PHP to 8.0 (freeman-core + freeman-theme headers, composer.json require, .github/workflows/ci.yml). Aligns CI to reality after Wave 2.3a-c baked PHP 8.0+ idioms (str_starts_with, str_contains) into shipped code; PHP 7.4 PHPUnit lane was de-facto failing.

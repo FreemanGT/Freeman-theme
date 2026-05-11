@@ -15,7 +15,7 @@ if ( ! class_exists( '\\Elementor\\Group_Control_Typography' ) ) {
 	eval( 'namespace Elementor; class Group_Control_Typography { public static function get_type() { return "typography"; } }' );
 }
 if ( ! class_exists( '\\WC_Product' ) ) {
-	eval( 'class WC_Product { private $id; public function __construct( $id ) { $this->id = $id; } public function get_id() { return $this->id; } }' );
+	eval( 'class WC_Product { private $id; public function __construct( $id ) { $this->id = $id; } public function get_id() { return $this->id; } public function is_visible() { return ! isset( $GLOBALS["fr_wc_visible"][ $this->id ] ) || (bool) $GLOBALS["fr_wc_visible"][ $this->id ]; } }' );
 }
 
 if ( ! function_exists( 'wc_get_products' ) ) {

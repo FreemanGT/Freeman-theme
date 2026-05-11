@@ -878,6 +878,17 @@ final class Widget extends Widget_Base {
 		 */
 		$args = (array) apply_filters( 'freeman_core/product_slider/query_args', $args, $s );
 
+		// Popularity / rating: bypass `wc_get_products()`'s INNER JOIN on the
+		// sort meta. WC translates `orderby=popularity` → `meta_value_num` on
+		// `total_sales`, which drops every product that has never been sold
+		// (no postmeta row) and ties the rest at 0 — making the result
+		// indistinguishable from `orderby=date`. Same trap for `rating`
+		// (`_wc_average_rating`, no reviews). See
+		// `fetch_products_by_meta_orderby()` for the two-pass workaround.
+		if ( in_array( $args['orderby'] ?? '', array( 'popularity', 'rating' ), true ) ) {
+			return $this->fetch_products_by_meta_orderby( $args );
+		}
+
 		$products = wc_get_products( $args );
 		if ( ! is_array( $products ) ) {
 			return array();
@@ -892,6 +903,80 @@ final class Widget extends Widget_Base {
 				}
 			)
 		);
+	}
+
+	/**
+	 * Two-pass query for popularity / rating orderby — works around WC's
+	 * INNER JOIN on the sort meta key, which silently excludes products
+	 * with no `total_sales` / `_wc_average_rating` row.
+	 *
+	 * 1. Fetch all eligible product IDs ordered by date (no JOIN on the
+	 *    sort meta).
+	 * 2. Bulk-load postmeta into WP's object cache, then read the sort
+	 *    key per ID (missing rows default to 0 so the product still sorts).
+	 * 3. Sort in PHP, load top-N product objects, drop hidden ones.
+	 *
+	 * Defensive cap of 5000 IDs keeps the in-PHP sort bounded — far above
+	 * any realistic shop slider input — without unbounded memory on a
+	 * runaway catalog. Beyond 5000, only the newest 5000 by date are
+	 * considered for the popularity ranking.
+	 *
+	 * @since 1.11.42
+	 *
+	 * @param array $args Filtered wc_get_products args; `orderby` is
+	 *                    `popularity` or `rating` and `order` is ASC|DESC.
+	 * @return \WC_Product[]
+	 */
+	private function fetch_products_by_meta_orderby( $args ) {
+		$sort_orderby = (string) ( $args['orderby'] ?? '' );
+		$sort_order   = ( 'ASC' === ( $args['order'] ?? 'DESC' ) ) ? 'ASC' : 'DESC';
+		$limit        = max( 1, (int) ( $args['limit'] ?? 12 ) );
+		$meta_key     = ( 'popularity' === $sort_orderby ) ? 'total_sales' : '_wc_average_rating';
+
+		$id_args            = $args;
+		$id_args['orderby'] = 'date';
+		$id_args['order']   = 'DESC';
+		$id_args['limit']   = -1;
+		$id_args['return']  = 'ids';
+		unset( $id_args['paginate'] );
+		$ids = wc_get_products( $id_args );
+		if ( ! is_array( $ids ) || empty( $ids ) ) {
+			return array();
+		}
+		$ids = array_values( array_unique( array_map( 'intval', $ids ) ) );
+		if ( count( $ids ) > 5000 ) {
+			$ids = array_slice( $ids, 0, 5000 );
+		}
+
+		if ( function_exists( 'update_meta_cache' ) ) {
+			update_meta_cache( 'post', $ids );
+		}
+
+		$values = array();
+		foreach ( $ids as $id ) {
+			$raw           = get_post_meta( $id, $meta_key, true );
+			$values[ $id ] = ( '' === $raw || null === $raw ) ? 0.0 : (float) $raw;
+		}
+
+		if ( 'ASC' === $sort_order ) {
+			asort( $values, SORT_NUMERIC );
+		} else {
+			arsort( $values, SORT_NUMERIC );
+		}
+
+		// Overshoot to absorb visibility-filter drops without a second pass.
+		$top_ids  = array_slice( array_keys( $values ), 0, $limit * 2 );
+		$products = array();
+		foreach ( $top_ids as $id ) {
+			$p = wc_get_product( $id );
+			if ( $p instanceof \WC_Product && $p->is_visible() ) {
+				$products[] = $p;
+				if ( count( $products ) >= $limit ) {
+					break;
+				}
+			}
+		}
+		return $products;
 	}
 
 	protected function render() {

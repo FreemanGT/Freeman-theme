@@ -447,6 +447,26 @@ if ( ! class_exists( '\\Elementor\\Group_Control_Typography' ) ) {
 	eval( 'namespace Elementor; class Group_Control_Typography { public static function get_type() { return "typography"; } }' );
 }
 
+// Singular wc_get_product — looks up a per-ID registry first
+// ($GLOBALS['fr_wc_products'][ (int) $id ], used by ProductSlider popularity-
+// orderby tests where each ID needs to resolve to a distinct mock object),
+// then falls back to the legacy single-product return ($GLOBALS['fr_wc_get_product_return'],
+// used by RestockNotify / ProductFeed tests). Returns false when neither is
+// set, matching WC's behavior for missing products. Each call appends the
+// requested ID to $GLOBALS['fr_wc_get_product_calls'] so tests can assert
+// the sequence of lookups (essential for popularity-orderby tests, where the
+// returned objects are interchangeable but the LOOKUP ORDER carries the
+// sort result). Wave 4.6 (1.11.42).
+if ( ! function_exists( 'wc_get_product' ) ) {
+	function wc_get_product( $id ) {
+		$GLOBALS['fr_wc_get_product_calls'][] = (int) $id;
+		if ( isset( $GLOBALS['fr_wc_products'][ (int) $id ] ) ) {
+			return $GLOBALS['fr_wc_products'][ (int) $id ];
+		}
+		return $GLOBALS['fr_wc_get_product_return'] ?? false;
+	}
+}
+
 // Page-type predicates — read from $GLOBALS['fr_page_type'] so tests can
 // drive frontend code paths (e.g. Frontend::should_enqueue_here heuristic).
 // Each defaults false. Set $GLOBALS['fr_page_type'] = 'product' (etc.) once

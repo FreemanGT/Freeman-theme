@@ -11,6 +11,7 @@ freeman_core_log
 freeman_core_modules
 freeman_core_modules_group
 freeman_core_onboarded
+freeman_core_onboarding_notice_dismissed
 freeman_core_product_feed
 freeman_core_product_feed_async
 freeman_core_product_feed_generate_now
@@ -53,6 +54,7 @@ freeman_core_variation_swatches_term_image_id
 freeman_core_variation_swatches_term_tooltip_text
 freeman_core_vs_sampled_color
 freeman_digital_
+freeman_dismiss_onboarding_notice
 freeman_legacy_delete
 freeman_legacy_import
 freeman_mark_onboarded

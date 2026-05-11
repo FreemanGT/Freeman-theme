@@ -19,6 +19,13 @@ defined( 'ABSPATH' ) || exit;
 final class Dashboard {
 
 	/**
+	 * Per-user meta key — truthy once the user dismisses the onboarding nudge
+	 * via its "×" button. Distinct from the global `freeman_core_onboarded`
+	 * option (set only when onboarding is completed or explicitly skipped).
+	 */
+	const ONBOARDING_NOTICE_DISMISSED_META = 'freeman_core_onboarding_notice_dismissed';
+
+	/**
 	 * Plugin.
 	 *
 	 * @var Plugin
@@ -285,14 +292,25 @@ final class Dashboard {
 		if ( (bool) get_option( 'freeman_core_onboarded', false ) ) {
 			return;
 		}
+		if ( get_user_meta( get_current_user_id(), self::ONBOARDING_NOTICE_DISMISSED_META, true ) ) {
+			return;
+		}
 		if ( ! current_user_can( Settings_Hub::CAP ) ) {
 			return;
 		}
 		printf(
-			'<div class="notice notice-info is-dismissible"><p>%s <a href="%s">%s</a></p></div>',
+			'<div class="notice notice-info is-dismissible" data-freeman-notice="onboarding"><p>%s <a href="%s">%s</a></p></div>',
 			esc_html__( 'Freeman Core is installed — pick which modules to activate.', 'freeman-core' ),
 			esc_url( admin_url( 'admin.php?page=freeman' ) ),
 			esc_html__( 'Open the dashboard', 'freeman-core' )
+		);
+
+		// WordPress's `is-dismissible` only hides the notice client-side for the
+		// current pageview — it persists nothing, so the nudge reappears on reload.
+		// Mirror the "×" click to an AJAX call that records a per-user dismissal.
+		printf(
+			'<script>(function(){document.addEventListener("click",function(e){var b=e.target&&e.target.closest&&e.target.closest(".notice-dismiss");if(!b||!b.closest("[data-freeman-notice=\'onboarding\']")||!window.fetch)return;var d=new FormData();d.append("action","freeman_dismiss_onboarding_notice");d.append("_ajax_nonce",%s);fetch(ajaxurl,{method:"POST",credentials:"same-origin",body:d});});})();</script>', // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript
+			wp_json_encode( wp_create_nonce( 'freeman_dismiss_onboarding_notice' ) )
 		);
 	}
 }
@@ -315,5 +333,17 @@ add_action(
 		if ( ! get_option( 'freeman_core_onboarded', false ) ) {
 			update_option( 'freeman_core_onboarded', 1 );
 		}
+	}
+);
+
+// Persist the onboarding-nudge "×" click (the dismiss button itself is rendered
+// and animated by WP core; this only records that the user dismissed it).
+add_action(
+	'wp_ajax_freeman_dismiss_onboarding_notice',
+	static function () {
+		\Freeman\Core\Core\Security::verify_ajax_nonce( 'freeman_dismiss_onboarding_notice' );
+		\Freeman\Core\Core\Security::require_cap_ajax( \Freeman\Core\Core\Settings_Hub::CAP );
+		update_user_meta( get_current_user_id(), Dashboard::ONBOARDING_NOTICE_DISMISSED_META, 1 );
+		wp_send_json_success();
 	}
 );

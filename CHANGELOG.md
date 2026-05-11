@@ -2,6 +2,11 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.46] — 2026-05-11
+
+- VariationSwatches: hide the Elementor "Product Price" widget on variable product pages when the buy box's own (live, variation-aware) price line is present — fixes the duplicated price on Elementor-built PDPs. Simple products keep the Elementor widget's price untouched. CSS-only; falls back to current behaviour where :has() is unsupported.
+- VariationSwatches: centre the variation swatch row (size pills / colour circles / image chips) instead of right-anchoring it; RTL order is unchanged. The attribute heading above stays right-aligned.
+
 ## [1.11.45] — 2026-05-11
 
 - Wave 2.2/4g: VariationSwatches settings moved to Freeman -> Variation Swatches page (sole editing surface); settings_hub flag retired; legacy WooCommerce Products section soft-deprecated to a moved-notice; re-sync migration for flag-off sites

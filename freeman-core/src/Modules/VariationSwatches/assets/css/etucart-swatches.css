@@ -108,6 +108,21 @@
 	display: none !important;
 }
 
+/* Elementor "Product Price" widget — on Elementor-built product pages this
+   widget renders its own static `<p class="price">` directly inside its
+   render(), bypassing the `woocommerce_single_product_summary` hook our PHP
+   price-suppression uses (Etucart_VS_Frontend::maybe_suppress_pdp_price), so
+   that suppression never reaches it. When our buy box is on the page it
+   already emits `.etucart-pdp-price` (which updates live on `found_variation`),
+   so the Elementor widget's copy is a redundant second price. Hide it ONLY
+   when our line is present: variable products get it hidden (one live price);
+   simple products (the simple buy box emits no `.etucart-pdp-price`) keep the
+   Elementor widget's price untouched. If `:has()` is unsupported the whole
+   rule is dropped → both prices show, i.e. current behaviour — degrades safely. */
+body:has(.etucart-pdp-price[data-pdp-price]) .elementor-widget-woocommerce-product-price {
+	display: none !important;
+}
+
 /* ---------- Theme reset (scoped) ----------
    Zap any inherited button / input styling the theme might push down onto our
    controls. We do this WITHOUT touching typography so the site font carries
@@ -284,7 +299,11 @@
 	display: flex !important;
 	flex-wrap: wrap !important;
 	gap: var(--etucart-gap) !important;
-	justify-content: flex-start !important;
+	/* Centre the swatch row (pills, colour circles, image chips all share this
+	   container). RTL flow/order is unchanged — items keep their stored order,
+	   just centred as a group rather than hugging the right edge. The
+	   `.etucart-variation__head` label above is intentionally left right-aligned. */
+	justify-content: center !important;
 	margin: 0 !important;
 	padding: 0 !important;
 	list-style: none !important;

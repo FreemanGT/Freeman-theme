@@ -32,7 +32,7 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		// Self-contained — does not leak into other tests (tearDown restores
 		// the prior global). Only supports the methods Wave 4.1a needs:
 		// prefix, prepare (best-effort %s/%d substitution), get_results,
-		// update (matches by 'customer_email' WHERE and mutates the store).
+		// update (matches the WHERE array and mutates the store).
 		$GLOBALS['wpdb'] = new class {
 			public $prefix = 'wp_';
 			public array $rows = array();
@@ -183,7 +183,7 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		$this->assertTrue( $result['done'] );
 	}
 
-	public function test_eraser_nulls_name_and_email_and_sets_status_unsubscribed(): void {
+	public function test_eraser_clears_name_and_replaces_email_and_sets_status_unsubscribed(): void {
 		$row = $this->seed_row( array(
 			'customer_name'  => 'Alice',
 			'customer_email' => 'alice@example.test',
@@ -193,8 +193,32 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		( new Privacy() )->eraser( 'alice@example.test' );
 
 		$this->assertSame( '', $row->customer_name );
-		$this->assertSame( '', $row->customer_email );
+		$this->assertSame( 'freeman-erased-' . $row->id, $row->customer_email );
 		$this->assertSame( 'unsubscribed', $row->status );
+	}
+
+	public function test_eraser_uses_unique_non_personal_email_markers_for_duplicate_product_status_rows(): void {
+		$waiting = $this->seed_row( array(
+			'product_id'     => 100,
+			'variation_id'   => 7,
+			'customer_email' => 'alice@example.test',
+			'status'         => 'waiting',
+		) );
+		$notified = $this->seed_row( array(
+			'product_id'     => 100,
+			'variation_id'   => 7,
+			'customer_email' => 'alice@example.test',
+			'status'         => 'notified',
+		) );
+
+		$result = ( new Privacy() )->eraser( 'alice@example.test' );
+
+		$this->assertSame( 2, $result['items_removed'] );
+		$this->assertSame( 'freeman-erased-' . $waiting->id, $waiting->customer_email );
+		$this->assertSame( 'freeman-erased-' . $notified->id, $notified->customer_email );
+		$this->assertNotSame( $waiting->customer_email, $notified->customer_email );
+		$this->assertSame( 'unsubscribed', $waiting->status );
+		$this->assertSame( 'unsubscribed', $notified->status );
 	}
 
 	public function test_eraser_returns_items_removed_count(): void {

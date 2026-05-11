@@ -94,8 +94,7 @@ final class Subscribers {
 	 * blocks extending the legacy class.
 	 *
 	 * Empty-string guard: returns `[]` early when `$email === ''` so that
-	 * a stray empty input cannot match the population of erased rows
-	 * (whose `customer_email` was set to '' by `erase_pii_by_email`).
+	 * a stray empty input cannot match erased rows.
 	 *
 	 * @since 1.11.37
 	 *
@@ -122,13 +121,15 @@ final class Subscribers {
 	 * Erase PII for all subscriptions matching an exact email address.
 	 * Used by the Wave 4.1a Privacy eraser.
 	 *
-	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
-	 * via a single `UPDATE`. The legacy schema declares these columns as
-	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 * Sets `customer_name=''`, `customer_email='freeman-erased-<id>'`,
+	 * `status='unsubscribed'` one row at a time. The legacy schema declares
+	 * these columns as NOT NULL and has a unique key over
+	 * (customer_email, product_id, variation_id, status), so the email marker
+	 * must stay unique per row after erasure.
 	 *
 	 * The row is preserved (not DELETEd) so the stock monitor's audit
-	 * trail stays intact; the empty `customer_email` prevents future
-	 * email matches.
+	 * trail stays intact; replacing `customer_email` prevents future
+	 * matches for the erased address.
 	 *
 	 * Empty-string guard: returns `0` early when `$email === ''` so a
 	 * stray empty input cannot "erase" rows that were already erased.
@@ -145,18 +146,30 @@ final class Subscribers {
 		}
 		global $wpdb;
 		$table   = $wpdb->prefix . 'rsn_subscribers';
-		$updated = $wpdb->update(
-			$table,
-			array(
-				'customer_name'  => '',
-				'customer_email' => '',
-				'status'         => 'unsubscribed',
-			),
-			array( 'customer_email' => $email ),
-			array( '%s', '%s', '%s' ),
-			array( '%s' )
-		);
-		return (int) $updated;
+		$removed = 0;
+
+		foreach ( self::find_by_email( $email ) as $row ) {
+			$id = (int) $row->id;
+			if ( $id <= 0 ) {
+				continue;
+			}
+			$updated = $wpdb->update(
+				$table,
+				array(
+					'customer_name'  => '',
+					'customer_email' => 'freeman-erased-' . $id,
+					'status'         => 'unsubscribed',
+				),
+				array( 'id' => $id ),
+				array( '%s', '%s', '%s' ),
+				array( '%d' )
+			);
+			if ( false !== $updated ) {
+				$removed += (int) $updated;
+			}
+		}
+
+		return $removed;
 	}
 
 	/**

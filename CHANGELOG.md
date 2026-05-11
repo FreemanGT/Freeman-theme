@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.41] — 2026-05-11
+
+- Fix RestockNotify privacy erasure for duplicate product/status subscription rows
+
 ## [1.11.40] — 2026-05-11
 
 - Wave 4.5: VariationSwatches WPC Bundles + FBT compatibility (default-off flag, JS field-forwarding to WC AJAX, single-line legacy template hook for plugin injection)

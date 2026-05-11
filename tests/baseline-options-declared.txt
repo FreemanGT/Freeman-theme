@@ -64,6 +64,7 @@ freeman_productfeed_async
 freeman_productfeed_generate_now
 freeman_productfeed_hourly
 freeman_restock_notify_csv_export
+freeman_save_feature_flags
 freeman_settings_export
 freeman_settings_import
 freeman_settings_restore

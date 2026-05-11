@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-11 (Active items block pruned: 7 shipped items removed, #11 narrowed to ProductSlider variant — see Wave-section ship markers for shipped record)
+**Last updated**: 2026-05-11 (added Wave 5 — Admin & operability; Wave 5.1 — Feature Flags admin page — ✅ shipped 1.11.44)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -241,6 +241,19 @@ Waves 4.4 and 4.5 were **not** drawn from the original 9-item P2 list. They came
 - PHP-side plumbing: new `Module::inject_feature_flags()` on `wp_enqueue_scripts` priority 10001, emitting the JS global before the `freeman-core` script handle.
 - **PR history**: PR #17 (1.11.17 era) carried the design + staging-validated QA against WPC FBT + FunnelKit Cart but never merged — by 1.11.39 it was 22+ version bumps stale and the JS/template/Module diffs would have regressed Waves 2.2/4a, 4b, 4c, 4d, 4e. Re-shipped on a fresh branch from current main, extracting only the bundle-compat additions; PR #17 closed with a link to the v2 PR. The stale `wave-4.5-bundle-fbt-compat` branch is preserved on origin as an artifact (same pattern as Wave 4.4's `wave-4.4-preselect-timing-fix`).
 - **Test coverage**: 4 new PHPUnit tests in `tests/VariationSwatchesBundleCompatTest.php` (one in an isolated process to bypass `Etucart_VS_Plugin` pre-loading) covering the inject_feature_flags() plumbing; +4 reported tests / +8 reported assertions. JS behavior changes (full-form serialize + woobt bridge) remain staging-validated per PR #17, as PHPUnit cannot exercise them.
+
+---
+
+## Wave 5 — Admin & operability
+
+Not from the original 9-item audit list. Operability work surfaced from day-to-day use of the suite.
+
+**5.1 — Feature Flags admin page — ✅ shipped 1.11.44 (#TBD, 2026-05-11)**
+- New `Freeman → Feature Flags` submenu: one checkbox per flag, grouped by module, each with a one-line "what this gates" description, the equivalent `wp option update …` line, the introducing version, and a "shared switch" marker where one flag drives several sub-features. Saving posts to `admin-post.php` (`freeman_save_feature_flags`, nonce + `manage_woocommerce`), writing each registry flag to `1`/`0`.
+- New `Feature_Flags::registry()` — canonical list of all 11 flags (`tools/settings_import`, `variation_swatches/{settings_hub, card_image_swap, image_swatches, tooltip, auto_color, bundle_compat}`, `sliders/advanced_controls`, `cheapest_variation/strategy`, `infinite_scroll/trigger_modes`, `restock_notify/csv_export`) — and `Feature_Flags::option_name()` / `Feature_Flags::is_forced_by_filter()` helpers. The registry is the single source of truth shared by the admin page and the `/docs/feature-flags.md` table; a test asserts it stays in sync with the `is_enabled()` call sites in `src/` (no missing or stale entries).
+- A flag whose effective state is forced by a `freeman_core/feature_flag/{module}/{feature}` filter renders its checkbox **disabled** with a "forced by code" note — the DB option can't override a filter, so the UI says so rather than lying. Such flags are also skipped by the save handler.
+- **No feature flag** — this is infra (a new admin submenu, writes only on user action), same class as the unflagged Dashboard / Tools pages; Hard Rule #1's additive exception applies. Also fixed the stale `/docs/feature-flags.md` "Active flags" table (added the missing 3.1 / 3.2 / 3.3 / 4.1b rows; corrected the auto-color "4e (pending)" marker to 1.11.28) and added an "Admin page" + registry-is-canonical note there — stated separately in the PR description per "decisions separate from code".
+- **Test coverage**: 8 new PHPUnit tests in `tests/FeatureFlagsAdminTest.php` (registry⇄source completeness both directions, registry-entry shape, no duplicates, `option_name()` format, `is_forced_by_filter()` true/false, hub registers the save handler); +8 reported tests / +239 reported assertions (the assertion count is loop-heavy — several tests iterate the 11-entry registry). Added a `has_filter` / `has_action` smart stub to `tests/bootstrap.php` backed by the existing hook registry.
 
 ---
 

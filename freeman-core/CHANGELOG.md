@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.44] — 2026-05-11
+
+- Add Freeman -> Feature Flags admin page (checkbox per flag, grouped by module, with descriptions); Feature_Flags::registry/option_name/is_forced_by_filter helpers
+
 ## [1.11.43] — 2026-05-11
 
 - Persist onboarding-notice dismissal so the nudge stays gone after a page reload

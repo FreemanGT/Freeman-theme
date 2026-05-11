@@ -92,6 +92,27 @@ if ( ! function_exists( 'do_action' ) ) {
 		}
 	}
 }
+if ( ! function_exists( 'has_filter' ) ) {
+	function has_filter( $tag, $callback = false ) {
+		if ( empty( $GLOBALS['fr_hooks'][ $tag ] ) ) {
+			return false;
+		}
+		if ( false === $callback ) {
+			return true;
+		}
+		foreach ( $GLOBALS['fr_hooks'][ $tag ] as $h ) {
+			if ( $h['cb'] === $callback ) {
+				return (int) $h['priority'];
+			}
+		}
+		return false;
+	}
+}
+if ( ! function_exists( 'has_action' ) ) {
+	function has_action( $tag, $callback = false ) {
+		return has_filter( $tag, $callback );
+	}
+}
 if ( ! function_exists( 'sanitize_text_field' ) ) {
 	function sanitize_text_field( $v ) { return is_scalar( $v ) ? (string) $v : ''; }
 }

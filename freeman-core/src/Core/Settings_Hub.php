@@ -51,6 +51,7 @@ final class Settings_Hub {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_post_freeman_toggle_module', array( $this, 'handle_toggle' ) );
+		add_action( 'admin_post_freeman_save_feature_flags', array( $this, 'handle_save_feature_flags' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 	}
 
@@ -107,6 +108,15 @@ final class Settings_Hub {
 				}
 			);
 		}
+
+		add_submenu_page(
+			self::MENU_SLUG,
+			__( 'Feature Flags', 'freeman-core' ),
+			__( 'Feature Flags', 'freeman-core' ),
+			self::CAP,
+			self::MENU_SLUG . '-feature-flags',
+			array( $this, 'render_feature_flags' )
+		);
 
 		add_submenu_page(
 			self::MENU_SLUG,
@@ -219,6 +229,37 @@ final class Settings_Hub {
 		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=' . self::MENU_SLUG ) );
+		exit;
+	}
+
+	/**
+	 * Persist the Feature Flags page submission. The form posts a set of
+	 * checked flag option names under `flags[<option_name>]`; every flag in
+	 * the registry is written to 1/0 from that set (a flag's checkbox absent
+	 * from the POST means "off"). Flags whose effective state is forced by a
+	 * `freeman_core/feature_flag/...` filter are skipped — the UI disables
+	 * those checkboxes, so honouring the POST would write a value the filter
+	 * ignores anyway.
+	 */
+	public function handle_save_feature_flags() {
+		Security::verify_nonce( 'freeman_save_feature_flags' );
+		Security::require_cap( self::CAP );
+
+		$checked = array();
+		$raw     = ( isset( $_POST['flags'] ) && is_array( $_POST['flags'] ) ) ? array_keys( wp_unslash( $_POST['flags'] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nonce verified by Security::verify_nonce() above; keys are whitelisted against the registry below and values are unused.
+		foreach ( $raw as $key ) {
+			$checked[ sanitize_key( $key ) ] = true;
+		}
+
+		foreach ( Feature_Flags::registry() as $flag ) {
+			if ( Feature_Flags::is_forced_by_filter( $flag['module'], $flag['feature'] ) ) {
+				continue;
+			}
+			$option = Feature_Flags::option_name( $flag['module'], $flag['feature'] );
+			update_option( $option, isset( $checked[ $option ] ) ? 1 : 0 );
+		}
+
+		wp_safe_redirect( add_query_arg( 'updated', '1', admin_url( 'admin.php?page=' . self::MENU_SLUG . '-feature-flags' ) ) );
 		exit;
 	}
 
@@ -362,5 +403,13 @@ final class Settings_Hub {
 	public function render_tools() {
 		Security::require_cap( self::CAP );
 		include FREEMAN_CORE_PATH . 'src/Admin/views/tools.php';
+	}
+
+	/**
+	 * Feature Flags page.
+	 */
+	public function render_feature_flags() {
+		Security::require_cap( self::CAP );
+		include FREEMAN_CORE_PATH . 'src/Admin/views/feature-flags.php';
 	}
 }

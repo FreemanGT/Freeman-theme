@@ -66,24 +66,20 @@ final class Module extends Module_Base {
 	/**
 	 * Settings schema.
 	 *
-	 * The 14 etucart_vs_* options live under WooCommerce → Settings → Products
-	 * (preserved as the writable surface in the 1.11.21 transitional period).
-	 * When the settings_hub feature flag is OFF (default), this returns an
-	 * empty array so the Freeman → Variation Swatches admin page does not
-	 * appear in the Settings_Hub menu — admins continue to use the legacy WC
-	 * tab. When ON, the same 14 options surface under Freeman → Variation
-	 * Swatches; the read-shim (Settings_Reader) prefers the new namespaced
-	 * keys, falling back to the legacy keys.
+	 * The 14 options are owned by this page (Freeman → Variation Swatches);
+	 * they are stored under `freeman_core_variation_swatches_*` and read via
+	 * the {@see Settings_Reader} shim (new key first, legacy `etucart_vs_*`
+	 * key as fallback). The legacy WooCommerce → Settings → Products → "Shop
+	 * swatches" section is retired to a "moved" notice — see
+	 * `legacy/includes/class-settings.php`.
 	 *
-	 * Wave 2.2 / sub-PR 4a (1.11.21).
+	 * Wave 2.2 / 4a (1.11.21) added the page behind the `settings_hub` flag;
+	 * Wave 2.2 / 4g (1.11.45) graduated it (flag retired) and made it the
+	 * sole editing surface.
 	 *
 	 * @return array
 	 */
 	public function settings_schema() {
-		if ( ! Feature_Flags::is_enabled( 'variation_swatches', 'settings_hub' ) ) {
-			return array();
-		}
-
 		return array(
 			'shop_enabled'             => array(
 				'label'          => __( 'Enable shop-grid variation picker', 'freeman-core' ),
@@ -173,11 +169,14 @@ final class Module extends Module_Base {
 	}
 
 	/**
-	 * Swatches settings live in the WC Products settings tab. Point the
-	 * Dashboard "Settings" button at it so admins don't have to hunt.
+	 * Settings now live under Freeman → Variation Swatches (Wave 2.2 / 4g).
+	 * The Dashboard renders a "Settings" button from `settings_schema()`
+	 * pointing at `admin.php?page=freeman-variation_swatches` automatically,
+	 * so this legacy shim — kept only because Dashboard checks for it — just
+	 * points there too rather than at the retired WooCommerce tab.
 	 */
 	public function legacy_settings_url() {
-		return admin_url( 'admin.php?page=wc-settings&tab=products&section=etucart_vs' );
+		return admin_url( 'admin.php?page=freeman-variation_swatches' );
 	}
 
 	/**

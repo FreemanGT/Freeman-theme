@@ -99,6 +99,21 @@ final class Migrations {
 		if ( version_compare( $previous_version, '1.11.21', '<' ) ) {
 			$this->migrate_variation_swatches_settings_to_hub();
 		}
+
+		// 1.11.45 — Wave 2.2 / 4g: the Freeman → Variation Swatches page is now
+		// the sole editing surface and the settings_hub flag is retired. On
+		// sites where the flag was OFF (the default), the legacy WooCommerce →
+		// Products tab has been the live writer since 1.11.21, so the
+		// freeman_core_variation_swatches_* keys hold only the frozen 1.11.21
+		// snapshot — re-sync them from the current legacy values so nothing is
+		// lost. On sites where the flag was ON, the new keys are already
+		// current; leave them alone. (This is the last read of the retired
+		// flag option.)
+		if ( version_compare( $previous_version, '1.11.45', '<' )
+			&& ! Feature_Flags::is_enabled( 'variation_swatches', 'settings_hub' )
+		) {
+			$this->resync_variation_swatches_settings_from_legacy();
+		}
 	}
 
 	/**
@@ -142,19 +157,13 @@ final class Migrations {
 	}
 
 	/**
-	 * 1.11.21 Wave 2.2 / 4a — copy etucart_vs_* settings into the
-	 * freeman_core_variation_swatches_* namespace.
+	 * Legacy → new option-key pairs for the VariationSwatches settings.
+	 * Shared by the 1.11.21 (4a) initial copy and the 1.11.45 (4g) re-sync.
 	 *
-	 * Idempotent: a new key that already has a value is never overwritten,
-	 * so re-running this method is a no-op (and the version-gate in
-	 * run_one_shot_migrations() prevents re-runs anyway via DB_VERSION_OPTION).
-	 *
-	 * Never deletes legacy keys — they remain as the writable surface for
-	 * the legacy WC Settings → Products tab during the transition (per the
-	 * §4.5 zero-downtime migration decision).
+	 * @return array<string,string> legacy `etucart_vs_*` => new `freeman_core_variation_swatches_*`
 	 */
-	private function migrate_variation_swatches_settings_to_hub() {
-		$pairs = array(
+	private function vs_settings_key_pairs() {
+		return array(
 			'etucart_vs_shop_enabled'             => 'freeman_core_variation_swatches_shop_enabled',
 			'etucart_vs_shop_max_visible'         => 'freeman_core_variation_swatches_shop_max_visible',
 			'etucart_vs_shop_show_price'          => 'freeman_core_variation_swatches_shop_show_price',
@@ -170,13 +179,47 @@ final class Migrations {
 			'etucart_vs_shop_hide_attr_labels'    => 'freeman_core_variation_swatches_shop_hide_attr_labels',
 			'etucart_vs_shop_hide_selected'       => 'freeman_core_variation_swatches_shop_hide_selected',
 		);
+	}
 
+	/**
+	 * 1.11.21 Wave 2.2 / 4a — copy etucart_vs_* settings into the
+	 * freeman_core_variation_swatches_* namespace.
+	 *
+	 * Idempotent: a new key that already has a value is never overwritten,
+	 * so re-running this method is a no-op (and the version-gate in
+	 * run_one_shot_migrations() prevents re-runs anyway via DB_VERSION_OPTION).
+	 *
+	 * Never deletes legacy keys — they remain readable forever via
+	 * Settings_Reader's legacy fallback (per the §4.5 zero-downtime decision).
+	 */
+	private function migrate_variation_swatches_settings_to_hub() {
 		$sentinel = '__FR_NOT_SET__'; // Non-`freeman_*` so it stays out of baseline-options-declared.txt; in-memory only.
-		foreach ( $pairs as $legacy_key => $new_key ) {
+		foreach ( $this->vs_settings_key_pairs() as $legacy_key => $new_key ) {
 			$existing_new = get_option( $new_key, $sentinel );
 			if ( $sentinel !== $existing_new ) {
 				continue;
 			}
+			$legacy_val = get_option( $legacy_key, $sentinel );
+			if ( $sentinel === $legacy_val ) {
+				continue;
+			}
+			update_option( $new_key, $legacy_val );
+		}
+	}
+
+	/**
+	 * 1.11.45 Wave 2.2 / 4g — re-sync etucart_vs_* → freeman_core_variation_swatches_*,
+	 * overwriting the new key with the current legacy value.
+	 *
+	 * Called only when the (now-retired) settings_hub flag was OFF, i.e. the
+	 * legacy WooCommerce → Products tab has been the live writer since 1.11.21
+	 * and the new keys hold only the frozen 1.11.21 snapshot. A legacy key
+	 * that was never set is skipped (the new key keeps its schema default).
+	 * Legacy keys are not deleted.
+	 */
+	private function resync_variation_swatches_settings_from_legacy() {
+		$sentinel = '__FR_NOT_SET__';
+		foreach ( $this->vs_settings_key_pairs() as $legacy_key => $new_key ) {
 			$legacy_val = get_option( $legacy_key, $sentinel );
 			if ( $sentinel === $legacy_val ) {
 				continue;

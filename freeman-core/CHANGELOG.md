@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.45] — 2026-05-11
+
+- Wave 2.2/4g: VariationSwatches settings moved to Freeman -> Variation Swatches page (sole editing surface); settings_hub flag retired; legacy WooCommerce Products section soft-deprecated to a moved-notice; re-sync migration for flag-off sites
+
 ## [1.11.44] — 2026-05-11
 
 - Add Freeman -> Feature Flags admin page (checkbox per flag, grouped by module, with descriptions); Feature_Flags::registry/option_name/is_forced_by_filter helpers

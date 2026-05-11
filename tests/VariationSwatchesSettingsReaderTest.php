@@ -9,9 +9,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class VariationSwatchesSettingsReaderTest extends TestCase {
 
-	private const FLAG_OPT = 'freeman_core_variation_swatches_settings_hub_enabled';
-	private const LEGACY   = 'etucart_vs_shop_enabled';
-	private const NEW_KEY  = 'freeman_core_variation_swatches_shop_enabled';
+	private const LEGACY  = 'etucart_vs_shop_enabled';
+	private const NEW_KEY = 'freeman_core_variation_swatches_shop_enabled';
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -31,62 +30,40 @@ final class VariationSwatchesSettingsReaderTest extends TestCase {
 		$this->assertSame( 'unrelated_option', Settings_Reader::translate( 'unrelated_option' ) );
 	}
 
-	public function test_flag_off_returns_legacy_directly_ignoring_new_key(): void {
-		// Flag OFF (default).
-		update_option( self::LEGACY, 'no' );
-		update_option( self::NEW_KEY, 'yes' ); // Should be ignored when flag is OFF.
-
-		$this->assertSame( 'no', Settings_Reader::get( self::LEGACY, 'fallback' ) );
-	}
-
-	public function test_flag_off_falls_back_to_caller_default_when_legacy_unset(): void {
-		// Flag OFF, no legacy value either.
-		$this->assertSame( 'fallback', Settings_Reader::get( self::LEGACY, 'fallback' ) );
-	}
-
-	public function test_flag_on_prefers_new_key_when_set(): void {
-		update_option( self::FLAG_OPT, 1 );
+	public function test_prefers_new_key_when_set(): void {
 		update_option( self::LEGACY, 'no' );
 		update_option( self::NEW_KEY, 'yes' );
 
 		$this->assertSame( 'yes', Settings_Reader::get( self::LEGACY, 'fallback' ) );
 	}
 
-	public function test_flag_on_falls_back_to_legacy_when_new_unset(): void {
-		update_option( self::FLAG_OPT, 1 );
+	public function test_falls_back_to_legacy_when_new_unset(): void {
 		update_option( self::LEGACY, 'no' );
 		// New key intentionally unset.
 
 		$this->assertSame( 'no', Settings_Reader::get( self::LEGACY, 'fallback' ) );
 	}
 
-	public function test_flag_on_falls_back_to_caller_default_when_neither_set(): void {
-		update_option( self::FLAG_OPT, 1 );
-		// Neither legacy nor new is set.
-
+	public function test_falls_back_to_caller_default_when_neither_set(): void {
 		$this->assertSame( 'fallback', Settings_Reader::get( self::LEGACY, 'fallback' ) );
 	}
 
-	public function test_flag_on_returns_falsy_legacy_value_not_default(): void {
+	public function test_returns_falsy_legacy_value_not_default(): void {
 		// Empty string is a real value the admin saved; must not be confused with "unset."
-		update_option( self::FLAG_OPT, 1 );
 		update_option( self::LEGACY, '' );
 
 		$this->assertSame( '', Settings_Reader::get( self::LEGACY, 'fallback' ) );
 	}
 
-	public function test_flag_on_returns_falsy_new_value_not_falling_back_to_legacy(): void {
-		// New key explicitly set to '0' (or empty string) must win over legacy.
-		update_option( self::FLAG_OPT, 1 );
+	public function test_falsy_new_value_wins_over_legacy(): void {
+		// New key explicitly set to '0' must win over a truthy legacy value.
 		update_option( self::LEGACY, 'yes' );
 		update_option( self::NEW_KEY, '0' );
 
 		$this->assertSame( 'no', Settings_Reader::get( self::LEGACY, 'fallback' ) );
 	}
 
-	public function test_flag_on_normalizes_settings_hub_checkbox_values_to_legacy_strings(): void {
-		update_option( self::FLAG_OPT, 1 );
-
+	public function test_normalizes_checkbox_int_values_to_legacy_strings(): void {
 		update_option( self::NEW_KEY, 1 );
 		$this->assertSame( 'yes', Settings_Reader::get( self::LEGACY, 'fallback' ) );
 
@@ -94,9 +71,7 @@ final class VariationSwatchesSettingsReaderTest extends TestCase {
 		$this->assertSame( 'no', Settings_Reader::get( self::LEGACY, 'fallback' ) );
 	}
 
-	public function test_flag_on_normalizes_settings_hub_checkbox_strings_to_legacy_strings(): void {
-		update_option( self::FLAG_OPT, 1 );
-
+	public function test_normalizes_checkbox_string_values_to_legacy_strings(): void {
 		update_option( self::NEW_KEY, 'yes' );
 		$this->assertSame( 'yes', Settings_Reader::get( self::LEGACY, 'fallback' ) );
 
@@ -104,8 +79,7 @@ final class VariationSwatchesSettingsReaderTest extends TestCase {
 		$this->assertSame( 'no', Settings_Reader::get( self::LEGACY, 'fallback' ) );
 	}
 
-	public function test_flag_on_normalizes_comma_separated_excluded_categories(): void {
-		update_option( self::FLAG_OPT, 1 );
+	public function test_normalizes_comma_separated_excluded_categories(): void {
 		update_option( 'freeman_core_variation_swatches_shop_excluded_categories', '12, 34, invalid, 0, 56' );
 
 		$this->assertSame(
@@ -114,8 +88,7 @@ final class VariationSwatchesSettingsReaderTest extends TestCase {
 		);
 	}
 
-	public function test_flag_on_preserves_array_excluded_categories_from_migration(): void {
-		update_option( self::FLAG_OPT, 1 );
+	public function test_preserves_array_excluded_categories(): void {
 		update_option( 'freeman_core_variation_swatches_shop_excluded_categories', array( 12, 34, 56 ) );
 
 		$this->assertSame(
@@ -132,8 +105,6 @@ final class VariationSwatchesSettingsReaderTest extends TestCase {
 	 * 1.11.21 storage-shape bug.
 	 */
 	public function test_every_checkbox_in_settings_schema_is_in_checkbox_keys_list(): void {
-		update_option( self::FLAG_OPT, 1 ); // Module::settings_schema() returns [] when flag is OFF.
-
 		$schema = ( new \Freeman\Core\Modules\VariationSwatches\Module() )->settings_schema();
 
 		$ref           = new ReflectionClass( Settings_Reader::class );
@@ -154,7 +125,7 @@ final class VariationSwatchesSettingsReaderTest extends TestCase {
 		$this->assertSame(
 			array(),
 			$missing,
-			"Schema has checkbox-typed entries whose legacy keys are missing from Settings_Reader::CHECKBOX_KEYS — flag-ON sites would read these as raw 1/0 integers instead of 'yes'/'no' strings, breaking Etucart_VS_Settings::bool(). Add the missing keys to the const list. Missing: " . implode( ', ', $missing )
+			'Schema has checkbox-typed entries whose legacy keys are missing from Settings_Reader::CHECKBOX_KEYS — reads would surface as raw 1/0 ints instead of "yes"/"no". Missing: ' . implode( ', ', $missing )
 		);
 	}
 
@@ -164,8 +135,6 @@ final class VariationSwatchesSettingsReaderTest extends TestCase {
 	 * behind when a setting is removed.
 	 */
 	public function test_every_checkbox_keys_entry_corresponds_to_a_schema_checkbox(): void {
-		update_option( self::FLAG_OPT, 1 );
-
 		$schema = ( new \Freeman\Core\Modules\VariationSwatches\Module() )->settings_schema();
 
 		$ref           = new ReflectionClass( Settings_Reader::class );
@@ -188,7 +157,7 @@ final class VariationSwatchesSettingsReaderTest extends TestCase {
 		$this->assertSame(
 			array(),
 			$stale,
-			'CHECKBOX_KEYS contains entries that no longer match a checkbox-typed schema field. Remove them. Stale: ' . implode( ', ', $stale )
+			'CHECKBOX_KEYS contains entries that no longer match a checkbox-typed schema field. Stale: ' . implode( ', ', $stale )
 		);
 	}
 }

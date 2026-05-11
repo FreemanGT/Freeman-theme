@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-11 (added Wave 5 — Admin & operability; Wave 5.1 — Feature Flags admin page — ✅ shipped 1.11.44)
+**Last updated**: 2026-05-11 (Wave 5.1 — Feature Flags admin page — ✅ shipped 1.11.44; Wave 2.2 / 4g — VariationSwatches settings surface graduated, `settings_hub` flag retired — ✅ shipped 1.11.45)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -146,8 +146,10 @@ Sub-PR statuses (to be updated as each ships):
 - **4c — Tooltip on hover** — ✅ shipped 1.11.25 (2026-05-03) — flag `freeman_core_variation_swatches_tooltip_enabled`
 - **4d — Auto-color sampler (pipeline + caching + scheduling)** — ✅ shipped 1.11.27 (2026-05-03) — flag `freeman_core_variation_swatches_auto_color_enabled` _(shared with 4e)_
 - **4e — Auto-color fallback wiring (render path)** — ✅ shipped 1.11.28 (2026-05-03) — flag `freeman_core_variation_swatches_auto_color_enabled` _(shared with 4d)_
+- **4g — Settings surface graduated** — ✅ shipped 1.11.45 (#TBD, 2026-05-11). Completes 4a: the Freeman → Variation Swatches page is now the **sole** editing surface (the `settings_hub` flag is **retired** — `settings_schema()` always returns the 14 keys; `Settings_Reader` always prefers the new `freeman_core_variation_swatches_*` key with the legacy `etucart_vs_*` key as a permanent fallback per §4.5). The legacy WooCommerce → Settings → Products → "Shop swatches" section is **soft-deprecated** — kept registered (Hard Rule #2: the `?section=etucart_vs_shop_pick` URL keeps resolving) but renders only a one-line "moved" notice; WC's save pipeline no longer writes `etucart_vs_*` from there. **Hard Rule #3 `legacy/` edit** in `legacy/includes/class-settings.php` — approved 2026-05-11 for this wave (the `OPT_*` constants and the static read helpers `bool` / `max_visible` / `excluded_category_ids` / `should_apply_on_current_archive` are unchanged; only `add_settings()` changes). A version-gated re-sync migration at 1.11.45 (`Migrations::resync_variation_swatches_settings_from_legacy()`) copies the current `etucart_vs_*` values onto their new-namespace counterparts on sites where the flag was OFF (the default) — closing the post-1.11.21 drift the master plan's "P1 read model" had been guarding against — and is skipped on sites where the flag was ON (their new keys are already current). The `etucart_vs_*` option keys and the `freeman_core_variation_swatches_settings_hub_enabled` option are never deleted (the latter is now vestigial — read once by the migration, ignored thereafter). _(No new flag — this wave retires one. The legacy_settings_url shim repoints at the Freeman page.)_
+  - **Tests**: rewrote `tests/VariationSwatchesSettingsReaderTest.php` (dropped the flag-OFF/ON split — the shim is now unconditional); deleted `tests/VariationSwatchesSettingsHubSnapshotTest.php` (the flag-OFF "empty schema" contract no longer exists); added `tests/VariationSwatchesSettingsRelocationTest.php` (schema-unconditional, WC section is a moved-notice, section still registered, flag absent from registry, re-sync method + version/flag gating). `FeatureFlagsAdminTest`'s registry-completeness scan now skips `Core/Migrations.php` (migrations may read a retired flag's option to choose an upgrade path; that's not a runtime gate). Net suite: 389 tests / 1308 assertions.
 
-**Wave 2.2 — ✅ shipped 1.11.28 (2026-05-03)** — parent shipped-marker landed with 4e per ship order, per CLAUDE.md hard rule #9.
+**Wave 2.2 — ✅ shipped 1.11.28 (2026-05-03); 4g graduation 1.11.45 (2026-05-11)** — the 4e shipped-marker landed the parent per CLAUDE.md hard rule #9; 4g is a later additive sub-PR that closes the §4.5 migration of Roadmap item #4.
 
 **2.3 — RestockNotify legacy migration (committed 2026-04-29)**
 

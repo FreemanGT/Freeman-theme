@@ -37,6 +37,13 @@ final class FeatureFlagsAdminTest extends TestCase {
 			if ( ! $file->isFile() || 'php' !== strtolower( $file->getExtension() ) ) {
 				continue;
 			}
+			// Migrations may read a *retired* flag's option to decide an
+			// upgrade path (e.g. the Wave 4g re-sync checks the retired
+			// settings_hub flag); those are intentionally absent from the
+			// registry, so don't treat a Migrations.php hit as a missing entry.
+			if ( false !== strpos( str_replace( '\\', '/', $file->getPathname() ), 'Core/Migrations.php' ) ) {
+				continue;
+			}
 			$src = (string) file_get_contents( $file->getPathname() );
 			if ( preg_match_all( "/is_enabled\\(\\s*'([a-z0-9_]+)'\\s*,\\s*'([a-z0-9_]+)'\\s*\\)/", $src, $m, PREG_SET_ORDER ) ) {
 				foreach ( $m as $hit ) {

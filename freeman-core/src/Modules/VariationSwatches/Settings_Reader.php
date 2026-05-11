@@ -1,27 +1,28 @@
 <?php
 /**
- * Read-shim for VariationSwatches settings during the 1.11.21 migration to
- * Settings_Hub.
+ * Read-shim for VariationSwatches settings.
  *
- * The legacy Etucart_VS_Settings static helpers (bool / max_visible /
+ * The legacy `Etucart_VS_Settings` static helpers (bool / max_visible /
  * excluded_category_ids) and the one direct get_option() call in
  * class-plugin.php delegate here instead of calling get_option() directly.
  *
- * Behavior depends on the freeman_core_variation_swatches_settings_hub_enabled
- * feature flag (P1 model approved 2026-05-03):
+ * As of Wave 2.2 / 4g (1.11.45) the settings are owned by the Freeman →
+ * Variation Swatches admin page and stored under
+ * `freeman_core_variation_swatches_*`. This reader prefers that key and falls
+ * back to the legacy `etucart_vs_*` key (which is never deleted — per the
+ * §4.5 zero-downtime decision — so a direct DB write or an old backup restore
+ * still resolves). It also converts Settings_Hub's storage shapes (checkbox
+ * 1/0 ints, comma-separated category-id strings) back to the legacy helper
+ * contract ('yes'/'no', int arrays).
  *
- * - Flag OFF: read the legacy etucart_vs_* key directly. No new-key check.
- *             Avoids stale-new-key shadowing fresh edits made via the still-
- *             active legacy WC settings page.
- * - Flag ON:  prefer the new freeman_core_variation_swatches_* key; fall back
- *             to the legacy key; fall back to caller default.
+ * Prior to 4g this behaviour was gated behind the
+ * `freeman_core_variation_swatches_settings_hub_enabled` flag (flag OFF read
+ * legacy directly); that flag is retired and the option is now ignored.
  *
  * @package FreemanCore
  */
 
 namespace Freeman\Core\Modules\VariationSwatches;
-
-use Freeman\Core\Core\Feature_Flags;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -73,17 +74,13 @@ final class Settings_Reader {
 	);
 
 	/**
-	 * Read a setting honoring the read-shim contract.
+	 * Read a setting: new key first, legacy key as fallback, caller default last.
 	 *
 	 * @param string $legacy_key Full legacy option key (e.g. etucart_vs_shop_enabled).
 	 * @param mixed  $default    Caller fallback when neither key is set.
 	 * @return mixed
 	 */
 	public static function get( $legacy_key, $default = null ) {
-		if ( ! Feature_Flags::is_enabled( 'variation_swatches', 'settings_hub' ) ) {
-			return get_option( $legacy_key, $default );
-		}
-
 		$new_key = self::translate( $legacy_key );
 		$new_val = get_option( $new_key, self::SENTINEL );
 		if ( self::SENTINEL !== $new_val ) {

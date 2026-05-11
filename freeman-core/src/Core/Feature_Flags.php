@@ -103,14 +103,6 @@ final class Feature_Flags {
 			),
 			array(
 				'module'      => 'variation_swatches',
-				'feature'     => 'settings_hub',
-				'label'       => __( 'Variation Swatches — settings hub page', 'freeman-core' ),
-				'description' => __( 'Surfaces the 14 Variation Swatches options under Freeman → Variation Swatches and reads them new-key-first (the legacy WooCommerce → Products keys are the fallback). Off: the WooCommerce → Products → Shop swatches tab stays the editing surface.', 'freeman-core' ),
-				'since'       => '1.11.21',
-				'shared'      => false,
-			),
-			array(
-				'module'      => 'variation_swatches',
 				'feature'     => 'card_image_swap',
 				'label'       => __( 'Variation Swatches — card image swap', 'freeman-core' ),
 				'description' => __( 'On shop / archive pages, clicking a swatch swaps the product card image to the matching variation image — no navigation, no Quick View.', 'freeman-core' ),

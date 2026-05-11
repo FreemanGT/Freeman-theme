@@ -1,19 +1,21 @@
 <?php
 /**
- * Settings for the shop-page compact variation picker (new in 1.6.0).
+ * Variation Swatches settings — legacy WooCommerce → Settings → Products tab.
  *
- * Adds a sub-section under WooCommerce → Settings → Products → "Shop swatches".
- * Feature flag defaults to ENABLED on first install so the new picker is visible
- * out-of-the-box on upgrade; shop owners can toggle it off from the same screen.
+ * As of Wave 2.2 / 4g (freeman-core 1.11.45) the editable settings UI has
+ * moved to **Freeman → Variation Swatches** (the Settings_Hub page, stored
+ * under `freeman_core_variation_swatches_*` and read via {@see
+ * \Freeman\Core\Modules\VariationSwatches\Settings_Reader}). This class no
+ * longer renders the form. Per Hard Rule #2 the WooCommerce sub-section
+ * (`?section=etucart_vs_shop_pick`) is **not** removed — it stays registered
+ * so the URL keeps resolving — but `add_settings()` now returns only a short
+ * "moved" notice. The `OPT_*` constants and the static read helpers (`bool`,
+ * `max_visible`, `excluded_category_ids`, `should_apply_on_current_archive`)
+ * are unchanged; they delegate reads to `Settings_Reader`.
  *
- * The single-product buy box is NOT controlled from here — these settings only
- * affect the archive / shop-grid picker introduced in 1.6.0.
- *
- * Storage strategy: each setting is its own `etucart_vs_shop_*` option so
- * WooCommerce's native settings-save pipeline (WC_Admin_Settings::save_fields)
- * round-trips cleanly for checkboxes, numbers and multiselects. Nested
- * bracket IDs (foo[bar]) do not survive WC's save path — it update_option()s
- * the literal string key, not the nested subkey.
+ * Hard Rule #3: this `legacy/` edit was approved for Wave 4g (see the
+ * roadmap Wave 2.2 / 4g entry). The historic `etucart_vs_*` option keys are
+ * never deleted (§4.5 zero-downtime decision).
  *
  * @package EtucartVariationSwatches
  */
@@ -127,148 +129,29 @@ class Etucart_VS_Settings {
 		return $sections;
 	}
 
+	/**
+	 * Wave 2.2 / 4g: the editable form moved to Freeman → Variation Swatches.
+	 * The sub-section stays registered (Hard Rule #2 — the URL must keep
+	 * resolving) but renders only a short "moved" notice. WooCommerce's save
+	 * pipeline has nothing to write here now, so the legacy `etucart_vs_*`
+	 * option keys stop being written from this screen (they remain readable
+	 * forever via Settings_Reader's legacy fallback — §4.5).
+	 */
 	public function add_settings( array $settings, string $current_section ): array {
 		if ( self::SECTION_ID !== $current_section ) {
 			return $settings;
 		}
 
-		// Build product-category choices for the excluded-categories multi.
-		$category_choices = [];
-		$terms            = get_terms( [
-			'taxonomy'   => 'product_cat',
-			'hide_empty' => false,
-		] );
-		if ( ! is_wp_error( $terms ) && is_array( $terms ) ) {
-			foreach ( $terms as $term ) {
-				$category_choices[ (string) $term->term_id ] = $term->name;
-			}
-		}
-
 		return [
 			[
-				'title' => __( 'Shop-page variation picker', 'freeman-core' ),
+				'title' => __( 'Variation Swatches settings have moved', 'freeman-core' ),
 				'type'  => 'title',
-				'desc'  => __( 'Compact inline color / size picker shown on shop and archive pages instead of the default "Choose options" button. The single-product buy box is not affected by these settings.', 'freeman-core' ),
-				'id'    => 'etucart_vs_shop_pick_title',
-			],
-			[
-				'title'   => __( 'Enable on shop / archive pages', 'freeman-core' ),
-				'desc'    => __( 'Replace the default "Choose options" link with the compact picker.', 'freeman-core' ),
-				'id'      => self::OPT_ENABLED,
-				'type'    => 'checkbox',
-				'default' => 'yes',
-			],
-			[
-				'title'             => __( 'Options visible before "+N"', 'freeman-core' ),
-				'desc'              => __( 'Per attribute. Anything above this count collapses behind a "+N" reveal pill.', 'freeman-core' ),
-				'id'                => self::OPT_MAX_VISIBLE,
-				'type'              => 'number',
-				'default'           => 5,
-				'custom_attributes' => [ 'min' => '1', 'max' => '50', 'step' => '1' ],
-			],
-			[
-				'title'   => __( 'Show price', 'freeman-core' ),
-				'desc'    => __( 'Show "החל מ: ₪X" above the Add to cart button (updates to the selected variation\'s price once all attributes are picked). When on, also hides WooCommerce\'s default range price (e.g. ₪20 – ₪100) on the same card so the two displays don\'t fight.', 'freeman-core' ),
-				'id'      => self::OPT_SHOW_PRICE,
-				'type'    => 'checkbox',
-				'default' => 'yes',
-			],
-			[
-				'title'         => __( 'Apply on', 'freeman-core' ),
-				'desc'          => __( 'Shop page', 'freeman-core' ),
-				'id'            => self::OPT_APPLY_SHOP,
-				'type'          => 'checkbox',
-				'default'       => 'yes',
-				'checkboxgroup' => 'start',
-			],
-			[
-				'desc'          => __( 'Product category pages', 'freeman-core' ),
-				'id'            => self::OPT_APPLY_CATEGORY,
-				'type'          => 'checkbox',
-				'default'       => 'yes',
-				'checkboxgroup' => '',
-			],
-			[
-				'desc'          => __( 'Product tag pages', 'freeman-core' ),
-				'id'            => self::OPT_APPLY_TAG,
-				'type'          => 'checkbox',
-				'default'       => 'yes',
-				'checkboxgroup' => '',
-			],
-			[
-				'desc'          => __( 'Search results', 'freeman-core' ),
-				'id'            => self::OPT_APPLY_SEARCH,
-				'type'          => 'checkbox',
-				'default'       => 'yes',
-				'checkboxgroup' => '',
-			],
-			[
-				'desc'          => __( 'Related / Upsells / Cross-sells on product pages', 'freeman-core' ),
-				'id'            => self::OPT_APPLY_RELATED,
-				'type'          => 'checkbox',
-				'default'       => 'yes',
-				'checkboxgroup' => 'end',
-			],
-			[
-				'title'   => __( 'Exclude categories', 'freeman-core' ),
-				'desc'    => __( 'Products in these categories keep the default "Choose options" link.', 'freeman-core' ),
-				'id'      => self::OPT_EXCLUDED_CATEGORIES,
-				'type'    => 'multiselect',
-				'options' => $category_choices,
-				'class'   => 'wc-enhanced-select',
-				'default' => [],
-				'css'     => 'min-width: 350px;',
-			],
-			[
-				'title'   => __( 'Hide out-of-stock options', 'freeman-core' ),
-				'desc'    => __( 'On shop / archive cards, only show attribute options (colors, sizes, etc.) that have at least one in-stock variation. Sold-out options are removed from the picker entirely. Turn off to keep showing every option and let customers see the sold-out ones too.', 'freeman-core' ),
-				'id'      => self::OPT_SHOP_HIDE_OOS,
-				'type'    => 'checkbox',
-				'default' => 'yes',
-			],
-			[
-				'title'   => __( 'No pre-selected variation on archive', 'freeman-core' ),
-				'desc'    => __( 'Render every shop / archive picker with nothing pre-selected. The customer must actively click a swatch. Ignores both the product editor\'s manual defaults and the auto-cheapest pick — applies on shop / category / search / loop contexts only. The single-product page is unaffected.', 'freeman-core' ),
-				'id'      => self::OPT_SHOP_NO_PRESELECT,
-				'type'    => 'checkbox',
-				'default' => 'yes',
-			],
-			[
-				'title'   => __( 'Hide attribute labels', 'freeman-core' ),
-				'desc'    => __( 'On shop / archive cards, hide the attribute label row (e.g. "Size:" / "Colour:"). The swatches themselves are usually self-explanatory and the labels add visual noise to the card. The currently-selected value text stays. PDP buy-box is unaffected.', 'freeman-core' ),
-				'id'      => self::OPT_SHOP_HIDE_ATTR_LABELS,
-				'type'    => 'checkbox',
-				'default' => 'yes',
-			],
-			[
-				'title'   => __( 'Hide selected-option text', 'freeman-core' ),
-				'desc'    => __( 'On shop / archive cards, hide the "Choose an option" / "{selected value}" text row that sits above the swatches. The swatches\' active state already shows what\'s picked. PDP buy-box is unaffected.', 'freeman-core' ),
-				'id'      => self::OPT_SHOP_HIDE_SELECTED,
-				'type'    => 'checkbox',
-				'default' => 'yes',
+				'desc'  => __( 'These settings are now under Freeman → Variation Swatches.', 'freeman-core' ),
+				'id'    => 'etucart_vs_shop_pick_moved',
 			],
 			[
 				'type' => 'sectionend',
-				'id'   => 'etucart_vs_shop_pick_title',
-			],
-
-			// ---- Single-product buy box (PDP) --------------------------------
-			[
-				'title' => __( 'Product page buy box', 'freeman-core' ),
-				'type'  => 'title',
-				'desc'  => __( 'These settings only affect the variation buy box on the single product page.', 'freeman-core' ),
-				'id'    => 'etucart_vs_pdp_title',
-			],
-			[
-				'title'   => __( 'Hide out-of-stock options', 'freeman-core' ),
-				'desc'    => __( 'On the product page, only show variation options (colors, sizes, etc.) that have at least one in-stock variation. Options that are completely sold out won\'t appear at all. Off by default — out-of-stock options are shown greyed with a strike-through so customers can see what sizes/colors this product normally comes in. OOS hiding happens on shop / archive cards instead (see the setting in the section above).', 'freeman-core' ),
-				'id'      => self::OPT_PDP_HIDE_OOS,
-				'type'    => 'checkbox',
-				'default' => 'no',
-			],
-			[
-				'type' => 'sectionend',
-				'id'   => 'etucart_vs_pdp_title',
+				'id'   => 'etucart_vs_shop_pick_moved',
 			],
 		];
 	}

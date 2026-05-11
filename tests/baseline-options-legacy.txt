@@ -5,12 +5,10 @@ etucart_shop_add_to_cart
 etucart_swatch_color
 etucart_swatch_image_id
 etucart_swatch_tooltip
-etucart_vs
 etucart_vs_
 etucart_vs_checkout_url
 etucart_vs_migrated_1_6_6
 etucart_vs_pdp_hide_oos
-etucart_vs_pdp_title
 etucart_vs_shop_
 etucart_vs_shop_apply_category
 etucart_vs_shop_apply_related
@@ -25,5 +23,5 @@ etucart_vs_shop_hide_selected
 etucart_vs_shop_max_visible
 etucart_vs_shop_no_preselect
 etucart_vs_shop_pick
-etucart_vs_shop_pick_title
+etucart_vs_shop_pick_moved
 etucart_vs_shop_show_price

@@ -191,4 +191,24 @@ final class VariationSwatchesAttributeOrderTest extends TestCase {
 		);
 		$this->assertSame( array( 'One Size', 'S', 'M', 'L' ), $out['Size'] );
 	}
+
+	public function test_age_range_values_sort_by_first_number(): void {
+		// Baby clothing: "<a>-<b> חודשים" (months). Sort by the first number.
+		$out = Attribute_Order::reorder(
+			array(
+				'Age' => array( '9-12 חודשים', '0-3 חודשים', '18-24 חודשים', '3-6 חודשים', '12-18 חודשים' ),
+			),
+			$this->bare_product(),
+			array()
+		);
+		$this->assertSame(
+			array( '0-3 חודשים', '3-6 חודשים', '9-12 חודשים', '12-18 חודשים', '18-24 חודשים' ),
+			$out['Age']
+		);
+	}
+
+	public function test_numeric_range_labels_sort_numerically(): void {
+		$out = Attribute_Order::reorder( array( 'Age' => array( '10-11', '6-7', '8-9' ) ), $this->bare_product(), array() );
+		$this->assertSame( array( '6-7', '8-9', '10-11' ), $out['Age'] );
+	}
 }

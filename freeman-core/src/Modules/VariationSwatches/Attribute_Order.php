@@ -157,6 +157,11 @@ final class Attribute_Order {
 	 *   X-Large / Extra Large / XX-Large -> XL / XL / XXL
 	 *   One Size / OS / Free Size / TU   -> sorts first
 	 *
+	 * As a last resort, a value that merely contains a number — "9-10 חודשים"
+	 * (months), "12-18 months", "Size 36", "32A" — sorts by that first number.
+	 * (Reading-order first: for a left-to-right "9-10 …" that's 9; for a
+	 * right-to-left value stored number-first it's likewise the leading digits.)
+	 *
 	 * @param string $value Raw attribute value.
 	 * @return float|null Sort key, or null when $value isn't a recognised size.
 	 */
@@ -166,41 +171,54 @@ final class Attribute_Order {
 			return $number;
 		}
 
-		// Upper-case, drop spaces and common separators: "X-Large" -> "XLARGE",
-		// "2 XL" -> "2XL", "x.s" -> "XS".
+		// Upper-case and strip spaces / common separators so spelled-out and
+		// hyphenated forms normalise (Extra-Large becomes EXTRALARGE, 2 XL
+		// becomes 2XL).
 		$token = preg_replace( '/[\s._\-]+/', '', strtoupper( trim( $value ) ) );
-		if ( null === $token || '' === $token ) {
-			return null;
+
+		if ( null !== $token && '' !== $token ) {
+			if ( in_array( $token, array( 'OS', 'OSFA', 'ONESIZE', 'ONESIZEFITSALL', 'FREESIZE', 'FREE', 'TU', 'UNI' ), true ) ) {
+				return -1000.0;
+			}
+
+			// Fold spelled-out words onto letter codes. EXTRA goes first so a
+			// doubled "Extra Extra Large" collapses through XX before the
+			// trailing MEDIUM / SMALL / LARGE fold runs.
+			$token = preg_replace( '/EXTRA/', 'X', $token );
+			$token = preg_replace( '/(MEDIUM|MED)$/', 'M', $token );
+			$token = preg_replace( '/SMALL$/', 'S', $token );
+			$token = preg_replace( '/LARGE$/', 'L', $token );
+
+			// An optional X-multiplier (a leading number, or repeated literal
+			// X characters) followed by a base letter S, M or L.
+			if ( preg_match( '/^(?:(\d+)X|X*)(S|M|L)$/', (string) $token, $m ) ) {
+				$base = $m[2];
+				if ( '' !== $m[1] ) {
+					$x = (int) $m[1];
+				} else {
+					// Count the X characters before the base letter.
+					$x = substr_count( substr( (string) $token, 0, -1 ), 'X' );
+				}
+				if ( 'M' === $base ) {
+					// "M" with no multiplier is 1; "XM" etc. is not a size.
+					return 0 === $x ? 1.0 : null;
+				}
+				if ( 'L' === $base ) {
+					// L is 2, then one rank larger per X.
+					return 2.0 + $x;
+				}
+				// S is 0, then one rank smaller per X.
+				return 0.0 - $x;
+			}
 		}
 
-		if ( in_array( $token, array( 'OS', 'OSFA', 'ONESIZE', 'ONESIZEFITSALL', 'FREESIZE', 'FREE', 'TU', 'UNI' ), true ) ) {
-			return -1000.0;
+		// Last resort: sort by the first number found anywhere in the value,
+		// e.g. a baby-clothing age range like "9-10 חודשים" sorts as 9.
+		if ( preg_match( '/(\d+(?:[.,]\d+)?)/', $value, $m ) ) {
+			return (float) str_replace( ',', '.', $m[1] );
 		}
 
-		// Spelled-out words -> letter codes. EXTRA first so "EXTRAEXTRALARGE"
-		// collapses to "XXL"; MEDIUM/MED/SMALL/LARGE only at the tail.
-		$token = preg_replace( '/EXTRA/', 'X', $token );
-		$token = preg_replace( '/(MEDIUM|MED)$/', 'M', $token );
-		$token = preg_replace( '/SMALL$/', 'S', $token );
-		$token = preg_replace( '/LARGE$/', 'L', $token );
-
-		// Optional "<n>X" multiplier or repeated literal X's, then a base S|M|L.
-		if ( ! preg_match( '/^(?:(\d+)X|X*)(S|M|L)$/', (string) $token, $m ) ) {
-			return null;
-		}
-		$base = $m[2];
-		if ( '' !== $m[1] ) {
-			$x = (int) $m[1];                                       // "2XL" -> 2
-		} else {
-			$x = substr_count( substr( (string) $token, 0, -1 ), 'X' ); // "XXL" -> 2, "XL" -> 1, "L" -> 0
-		}
-		if ( 'M' === $base ) {
-			return 0 === $x ? 1.0 : null;                           // "XM" isn't a size
-		}
-		if ( 'L' === $base ) {
-			return 2.0 + $x;                                        // L=2, XL=3, XXL=4, 3XL=5 …
-		}
-		return 0.0 - $x;                                            // S=0, XS=-1, XXS=-2 …
+		return null;
 	}
 
 	/**

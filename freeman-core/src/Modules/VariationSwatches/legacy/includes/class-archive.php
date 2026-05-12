@@ -301,6 +301,14 @@ class Etucart_VS_Archive {
 			);
 		}
 
+		// Re-order each attribute's option list by size (numbers / fractions /
+		// recognised size tokens ascending; otherwise the WooCommerce-configured
+		// order), with out-of-stock values demoted to the end — same helper and
+		// rules as the single-product buy box. Hard Rule #3 micro-exception:
+		// the logic lives in the non-legacy Attribute_Order class; this one line
+		// is the only legacy touch in this file. See class-frontend.php.
+		$attributes = \Freeman\Core\Modules\VariationSwatches\Attribute_Order::reorder( $attributes, $variable, $available_variations );
+
 		// --- Single-variation override (1.7.6) ---------------------------
 		// If the product has exactly ONE purchasable variation in stock at this
 		// point, the customer has no real choice — showing them an empty picker

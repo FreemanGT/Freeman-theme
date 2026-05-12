@@ -133,4 +133,26 @@ final class VariationSwatchesAttributeOrderTest extends TestCase {
 		$out = Attribute_Order::reorder( array( 'Size' => array( 'OneSize' ) ), $this->bare_product(), array() );
 		$this->assertSame( array( 'OneSize' ), $out['Size'] );
 	}
+
+	public function test_fractional_and_plain_sizes_sort_numerically(): void {
+		// French/EU shoe sizing: plain ints and "N M/D" fractions intermixed.
+		$out = Attribute_Order::reorder(
+			array( 'EU' => array( '38 2/3', '33', '37 1/3', '36 2/3', '28', '30' ) ),
+			$this->bare_product(),
+			array()
+		);
+		$this->assertSame( array( '28', '30', '33', '36 2/3', '37 1/3', '38 2/3' ), $out['EU'] );
+	}
+
+	public function test_comma_decimal_is_treated_as_numeric(): void {
+		$out = Attribute_Order::reorder( array( 'EU' => array( '37', '36,5', '35' ) ), $this->bare_product(), array() );
+		$this->assertSame( array( '35', '36,5', '37' ), $out['EU'] );
+	}
+
+	public function test_non_numeric_value_disables_numeric_sort(): void {
+		// One non-numeric value -> the attribute is no longer "all numeric",
+		// so it falls back to the configured order (none here) i.e. input order.
+		$out = Attribute_Order::reorder( array( 'EU' => array( '38 2/3', 'TBD', '33' ) ), $this->bare_product(), array() );
+		$this->assertSame( array( '38 2/3', 'TBD', '33' ), $out['EU'] );
+	}
 }

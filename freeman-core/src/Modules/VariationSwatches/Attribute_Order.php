@@ -80,8 +80,10 @@ final class Attribute_Order {
 	}
 
 	/**
-	 * Steps 1-2: numeric ascending if every value parses as a number,
-	 * otherwise the merchant-configured order with unknowns appended.
+	 * Steps 1-2: numeric ascending when every value reads as a number — plain
+	 * ("33", "36.5", "36,5") or a mixed/simple fraction ("38 2/3", "37 1/3",
+	 * "1/2"), the latter covering French/EU shoe sizing — otherwise the
+	 * merchant-configured order with unknowns appended.
 	 *
 	 * @param string $attribute_name Raw variation-attribute name (taxonomy slug or label).
 	 * @param array  $options        Option values for the attribute, list<string>.
@@ -91,8 +93,7 @@ final class Attribute_Order {
 	private static function base_order( string $attribute_name, array $options, $product ): array {
 		$all_numeric = true;
 		foreach ( $options as $value ) {
-			$trimmed = trim( $value );
-			if ( '' === $trimmed || ! is_numeric( $trimmed ) ) {
+			if ( null === self::parse_number( $value ) ) {
 				$all_numeric = false;
 				break;
 			}
@@ -101,7 +102,7 @@ final class Attribute_Order {
 			usort(
 				$options,
 				static function ( $a, $b ) {
-					return (float) $a <=> (float) $b;
+					return self::parse_number( $a ) <=> self::parse_number( $b );
 				}
 			);
 			return $options;
@@ -137,6 +138,40 @@ final class Attribute_Order {
 		);
 
 		return array_merge( $known, $unknown );
+	}
+
+	/**
+	 * Parse a size-like value to a number, or null if it isn't one.
+	 *
+	 * Accepts plain numerics ("33", "36.5"), a comma decimal separator
+	 * ("36,5") and mixed / simple fractions ("38 2/3", "37 1/3", "1/2").
+	 *
+	 * @param string $value Raw attribute value.
+	 * @return float|null Numeric value, or null when $value isn't number-like.
+	 */
+	private static function parse_number( string $value ): ?float {
+		$value = trim( $value );
+		if ( '' === $value ) {
+			return null;
+		}
+
+		// Plain number, tolerating a comma decimal separator.
+		$plain = str_replace( ',', '.', $value );
+		if ( is_numeric( $plain ) ) {
+			return (float) $plain;
+		}
+
+		// "<whole> <numerator>/<denominator>" or "<numerator>/<denominator>".
+		if ( preg_match( '#^(?:(\d+)\s+)?(\d+)\s*/\s*(\d+)$#', $value, $m ) ) {
+			$denominator = (float) $m[3];
+			if ( 0.0 === $denominator ) {
+				return null;
+			}
+			$whole = ( isset( $m[1] ) && '' !== $m[1] ) ? (float) $m[1] : 0.0;
+			return $whole + ( (float) $m[2] / $denominator );
+		}
+
+		return null;
 	}
 
 	/**

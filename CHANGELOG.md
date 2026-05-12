@@ -2,9 +2,13 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.11.24] — 2026-05-12
+
+- freeman-theme: defensive grid-template-columns floor (minmax(0,1fr)) on Elementor archive product grid so a wide grid item cannot inflate one column and push cards off-page
+
 ## [freeman-core 1.11.50] — 2026-05-12
 
-- VariationSwatches — PDP swatch picker orders variation-attribute values sensibly: numeric values ascending, otherwise the order configured in WooCommerce (taxonomy term order / typed custom-attribute order), with out-of-stock values demoted to the end of the row. `WC_Product_Variable::get_variation_attributes()` returns values in raw DB row order (its data store SELECTs `meta_value` with no `ORDER BY`), which is why S/M/L and numeric size pickers came out scrambled on the product page. New non-legacy `Attribute_Order` helper does the sort; `Etucart_VS_Frontend::render_variable()` calls it after the existing optional out-of-stock-hide filter — one line in `legacy/includes/class-frontend.php`, a Hard Rule #3 single-line exception of the same shape as 1.11.40's `do_action` addition. Archive picker shares the same root cause — follow-up. No new hooks / options; `tests/baseline-hooks.txt` shifts one line number only.
+- VariationSwatches — PDP swatch picker orders variation-attribute values sensibly: numeric values ascending (including comma decimals and mixed/simple fractions such as `38 2/3` / `37 1/3` — French/EU shoe sizing), otherwise the order configured in WooCommerce (taxonomy term order / typed custom-attribute order), with out-of-stock values demoted to the end of the row. `WC_Product_Variable::get_variation_attributes()` returns values in raw DB row order (its data store SELECTs `meta_value` with no `ORDER BY`), which is why S/M/L and numeric size pickers came out scrambled on the product page. New non-legacy `Attribute_Order` helper does the sort; `Etucart_VS_Frontend::render_variable()` calls it after the existing optional out-of-stock-hide filter — one line in `legacy/includes/class-frontend.php`, a Hard Rule #3 single-line exception of the same shape as 1.11.40's `do_action` addition. Archive picker shares the same root cause — follow-up. No new hooks / options; `tests/baseline-hooks.txt` shifts one line number only.
 
 ## [freeman-core 1.11.49] — 2026-05-11
 

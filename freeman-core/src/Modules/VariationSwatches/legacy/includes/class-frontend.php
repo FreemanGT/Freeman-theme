@@ -218,6 +218,19 @@ class Etucart_VS_Frontend {
 			);
 		}
 
+		// Variation values arrive from WC_Product_Variable::get_variation_attributes()
+		// in raw DB row order (the data store SELECTs meta_value with no ORDER BY),
+		// which is why sizes / numeric values render scrambled. Re-sort each
+		// attribute's option list to a sensible, merchant-controllable order —
+		// numeric values ascending, otherwise the order configured in WooCommerce
+		// (taxonomy term order / typed custom-attribute order) — and demote
+		// out-of-stock values to the end. Runs after the optional OOS-hide filter
+		// above so the two agree. (Archive picker shares the same root cause —
+		// follow-up.) Hard Rule #3 micro-exception: the logic lives in the
+		// non-legacy Attribute_Order class; this one line is the only legacy
+		// touch, approved with the 1.11.50 plan (mirrors the 1.11.40 precedent).
+		$attributes = \Freeman\Core\Modules\VariationSwatches\Attribute_Order::reorder( $attributes, $product, $available_variations );
+
 		$template_vars = [
 			'product'              => $product,
 			'attributes'           => $attributes,

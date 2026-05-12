@@ -125,6 +125,24 @@ if ( ! function_exists( 'sanitize_email' ) ) {
 if ( ! function_exists( 'sanitize_key' ) ) {
 	function sanitize_key( $v ) { return preg_replace( '/[^a-z0-9_\-]/i', '', (string) $v ); }
 }
+if ( ! function_exists( 'sanitize_title' ) ) {
+	// Close enough to WP's slugifier for the cases the test suite exercises:
+	// lowercase, non-alphanumerics -> '-', trim dashes, fall back to $fallback.
+	function sanitize_title( $title, $fallback = '', $context = 'save' ) {
+		$title = strtolower( (string) $title );
+		$title = preg_replace( '/[^a-z0-9_\-]+/', '-', $title );
+		$title = trim( (string) $title, '-' );
+		return '' !== $title ? $title : (string) $fallback;
+	}
+}
+if ( ! function_exists( 'wc_get_product_terms' ) ) {
+	// Tests seed $GLOBALS['fr_product_terms'][ $taxonomy ] with the slug list
+	// in the merchant-configured order; real WC applies the attribute's
+	// orderby setting here. $args (e.g. fields=>slugs) is irrelevant to the stub.
+	function wc_get_product_terms( $product_id, $taxonomy, $args = array() ) {
+		return $GLOBALS['fr_product_terms'][ $taxonomy ] ?? array();
+	}
+}
 if ( ! function_exists( 'wp_unslash' ) ) {
 	function wp_unslash( $v ) { return is_string( $v ) ? stripslashes( $v ) : $v; }
 }

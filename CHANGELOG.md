@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [freeman-core 1.11.50] — 2026-05-12
+
+- VariationSwatches — PDP swatch picker orders variation-attribute values sensibly: numeric values ascending, otherwise the order configured in WooCommerce (taxonomy term order / typed custom-attribute order), with out-of-stock values demoted to the end of the row. `WC_Product_Variable::get_variation_attributes()` returns values in raw DB row order (its data store SELECTs `meta_value` with no `ORDER BY`), which is why S/M/L and numeric size pickers came out scrambled on the product page. New non-legacy `Attribute_Order` helper does the sort; `Etucart_VS_Frontend::render_variable()` calls it after the existing optional out-of-stock-hide filter — one line in `legacy/includes/class-frontend.php`, a Hard Rule #3 single-line exception of the same shape as 1.11.40's `do_action` addition. Archive picker shares the same root cause — follow-up. No new hooks / options; `tests/baseline-hooks.txt` shifts one line number only.
+
 ## [freeman-core 1.11.49] — 2026-05-11
 
 - VariationSwatches: the buy box, the shop / archive picker, the PDP price line and the toast notifications now read the kit body font from Elementor's `--e-global-typography-sk_type_12-font-family` variable (with `inherit` as fallback) instead of bare `font-family: inherit`. Bare `inherit` picked up the *wrapping element's* font when the buy box / picker is AJAX-injected into a foreign-styled container — e.g. WooSQ (Woo Smart Quick View)'s `.woosq-sidebar { font-family: "Open Sans", … }` — so the quick-view buy box wasn't matching the site's Style Kits typeface. A CSS custom property cascades through such wrappers untouched, so the kit font reaches it regardless. No regression: without Style Kits the `inherit` fallback applies as before. CSS-only.

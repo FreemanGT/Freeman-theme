@@ -36,7 +36,7 @@ freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:636
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:726:		$gate = apply_filters( 'freeman_core_variation_swatches_shop_add_to_cart_gate', null, $product_id, $variation_id, $variation );
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:793:		$passed = apply_filters(
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-archive.php:861:		do_action(
-freeman-core/src/Modules/VariationSwatches/legacy/includes/class-frontend.php:269:		$checkout_url = (string) apply_filters( 'etucart_vs_checkout_url', $checkout_url );
+freeman-core/src/Modules/VariationSwatches/legacy/includes/class-frontend.php:282:		$checkout_url = (string) apply_filters( 'etucart_vs_checkout_url', $checkout_url );
 freeman-core/src/Modules/VariationSwatches/legacy/includes/class-plugin.php:236:		return (string) apply_filters( 'freeman_core/variation_swatches/term_image_url', $url, $term_id, $size );
 freeman-core/src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:128:	<?php do_action( 'woocommerce_after_add_to_cart_button' ); ?>
 freeman-core/src/Modules/VariationSwatches/legacy/templates/simple-buy-box.php:131:<?php do_action( 'woocommerce_after_add_to_cart_form' ); ?>

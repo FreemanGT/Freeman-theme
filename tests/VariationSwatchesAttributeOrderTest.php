@@ -150,9 +150,45 @@ final class VariationSwatchesAttributeOrderTest extends TestCase {
 	}
 
 	public function test_non_numeric_value_disables_numeric_sort(): void {
-		// One non-numeric value -> the attribute is no longer "all numeric",
+		// One unrankable value -> the attribute is no longer fully rankable,
 		// so it falls back to the configured order (none here) i.e. input order.
 		$out = Attribute_Order::reorder( array( 'EU' => array( '38 2/3', 'TBD', '33' ) ), $this->bare_product(), array() );
 		$this->assertSame( array( '38 2/3', 'TBD', '33' ), $out['EU'] );
+	}
+
+	public function test_letter_sizes_sort_by_size_not_alphabetically(): void {
+		$out = Attribute_Order::reorder(
+			array( 'Size' => array( 'XL', 'S', 'M', 'XXL', 'L', 'XS' ) ),
+			$this->bare_product(),
+			array()
+		);
+		$this->assertSame( array( 'XS', 'S', 'M', 'L', 'XL', 'XXL' ), $out['Size'] );
+	}
+
+	public function test_numeric_prefixed_x_sizes_sort(): void {
+		$out = Attribute_Order::reorder(
+			array( 'Size' => array( '2XL', 'XL', '3XL', 'L', 'M' ) ),
+			$this->bare_product(),
+			array()
+		);
+		$this->assertSame( array( 'M', 'L', 'XL', '2XL', '3XL' ), $out['Size'] );
+	}
+
+	public function test_spelled_out_sizes_sort(): void {
+		$out = Attribute_Order::reorder(
+			array( 'Size' => array( 'Large', 'Small', 'X-Large', 'Medium', 'XX-Large' ) ),
+			$this->bare_product(),
+			array()
+		);
+		$this->assertSame( array( 'Small', 'Medium', 'Large', 'X-Large', 'XX-Large' ), $out['Size'] );
+	}
+
+	public function test_one_size_sorts_first(): void {
+		$out = Attribute_Order::reorder(
+			array( 'Size' => array( 'M', 'One Size', 'S', 'L' ) ),
+			$this->bare_product(),
+			array()
+		);
+		$this->assertSame( array( 'One Size', 'S', 'M', 'L' ), $out['Size'] );
 	}
 }

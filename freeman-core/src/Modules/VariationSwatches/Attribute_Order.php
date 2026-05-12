@@ -80,10 +80,11 @@ final class Attribute_Order {
 	}
 
 	/**
-	 * Steps 1-2: numeric ascending when every value reads as a number — plain
-	 * ("33", "36.5", "36,5") or a mixed/simple fraction ("38 2/3", "37 1/3",
-	 * "1/2"), the latter covering French/EU shoe sizing — otherwise the
-	 * merchant-configured order with unknowns appended.
+	 * Steps 1-2: if every value is something we can rank — a number ("33",
+	 * "36.5", "36,5"), a mixed/simple fraction ("38 2/3", "37 1/3"; French/EU
+	 * shoe sizing), or a recognised clothing size token ("S"/"M"/"L"/"XL",
+	 * "2XL"/"XXL", "Small"/"Large"/"X-Large", "One Size", …) — sort ascending
+	 * by that. Otherwise the merchant-configured order with unknowns appended.
 	 *
 	 * @param string $attribute_name Raw variation-attribute name (taxonomy slug or label).
 	 * @param array  $options        Option values for the attribute, list<string>.
@@ -91,18 +92,18 @@ final class Attribute_Order {
 	 * @return array Re-ordered list<string>.
 	 */
 	private static function base_order( string $attribute_name, array $options, $product ): array {
-		$all_numeric = true;
+		$all_rankable = true;
 		foreach ( $options as $value ) {
-			if ( null === self::parse_number( $value ) ) {
-				$all_numeric = false;
+			if ( null === self::size_rank( $value ) ) {
+				$all_rankable = false;
 				break;
 			}
 		}
-		if ( $all_numeric ) {
+		if ( $all_rankable ) {
 			usort(
 				$options,
 				static function ( $a, $b ) {
-					return self::parse_number( $a ) <=> self::parse_number( $b );
+					return self::size_rank( $a ) <=> self::size_rank( $b );
 				}
 			);
 			return $options;
@@ -138,6 +139,68 @@ final class Attribute_Order {
 		);
 
 		return array_merge( $known, $unknown );
+	}
+
+	/**
+	 * Map a value onto a sortable scalar, or null when it isn't a recognised
+	 * size. Numbers and fractions keep their numeric value; clothing size
+	 * tokens map onto a small integer scale where S < M < L < XL < XXL …
+	 * (and XS < S, XXS < XS), so a mixed-numeric/letter attribute would
+	 * interleave oddly — which is fine, nobody mixes "S" and "38" in one
+	 * attribute. "One size" sorts first.
+	 *
+	 * Recognised letter forms (case-insensitive, separators ignored):
+	 *   S / M / L                       -> 0 / 1 / 2
+	 *   XS / XXS / 2XS / 3XS …           -> -1 / -2 / -2 / -3
+	 *   XL / XXL / 2XL / XXXL / 4XL …    ->  3 /  4 /  4 /  5  / 6
+	 *   Small / Medium / Med / Large     -> S / M / M / L
+	 *   X-Large / Extra Large / XX-Large -> XL / XL / XXL
+	 *   One Size / OS / Free Size / TU   -> sorts first
+	 *
+	 * @param string $value Raw attribute value.
+	 * @return float|null Sort key, or null when $value isn't a recognised size.
+	 */
+	private static function size_rank( string $value ): ?float {
+		$number = self::parse_number( $value );
+		if ( null !== $number ) {
+			return $number;
+		}
+
+		// Upper-case, drop spaces and common separators: "X-Large" -> "XLARGE",
+		// "2 XL" -> "2XL", "x.s" -> "XS".
+		$token = preg_replace( '/[\s._\-]+/', '', strtoupper( trim( $value ) ) );
+		if ( null === $token || '' === $token ) {
+			return null;
+		}
+
+		if ( in_array( $token, array( 'OS', 'OSFA', 'ONESIZE', 'ONESIZEFITSALL', 'FREESIZE', 'FREE', 'TU', 'UNI' ), true ) ) {
+			return -1000.0;
+		}
+
+		// Spelled-out words -> letter codes. EXTRA first so "EXTRAEXTRALARGE"
+		// collapses to "XXL"; MEDIUM/MED/SMALL/LARGE only at the tail.
+		$token = preg_replace( '/EXTRA/', 'X', $token );
+		$token = preg_replace( '/(MEDIUM|MED)$/', 'M', $token );
+		$token = preg_replace( '/SMALL$/', 'S', $token );
+		$token = preg_replace( '/LARGE$/', 'L', $token );
+
+		// Optional "<n>X" multiplier or repeated literal X's, then a base S|M|L.
+		if ( ! preg_match( '/^(?:(\d+)X|X*)(S|M|L)$/', (string) $token, $m ) ) {
+			return null;
+		}
+		$base = $m[2];
+		if ( '' !== $m[1] ) {
+			$x = (int) $m[1];                                       // "2XL" -> 2
+		} else {
+			$x = substr_count( substr( (string) $token, 0, -1 ), 'X' ); // "XXL" -> 2, "XL" -> 1, "L" -> 0
+		}
+		if ( 'M' === $base ) {
+			return 0 === $x ? 1.0 : null;                           // "XM" isn't a size
+		}
+		if ( 'L' === $base ) {
+			return 2.0 + $x;                                        // L=2, XL=3, XXL=4, 3XL=5 …
+		}
+		return 0.0 - $x;                                            // S=0, XS=-1, XXS=-2 …
 	}
 
 	/**

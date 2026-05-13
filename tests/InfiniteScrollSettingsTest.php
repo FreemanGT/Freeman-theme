@@ -95,4 +95,17 @@ final class InfiniteScrollSettingsTest extends TestCase {
 		unset( $off['triggerModesEnabled'], $on['triggerModesEnabled'] );
 		$this->assertSame( $off, $on );
 	}
+
+	public function test_manual_trigger_asset_renders_load_more_button(): void {
+		$js  = file_get_contents( __DIR__ . '/../freeman-core/src/Modules/InfiniteScroll/assets/js/infinite-scroll.js' );
+		$css = file_get_contents( __DIR__ . '/../freeman-core/src/Modules/InfiniteScroll/assets/css/infinite-scroll.css' );
+
+		$this->assertIsString( $js );
+		$this->assertIsString( $css );
+		$this->assertStringContainsString( 'syncManualTrigger();', $js );
+		$this->assertStringContainsString( 'function renderLoadMoreButton()', $js );
+		$this->assertStringContainsString( "wrap.className = 'bookomers-load-more';", $js );
+		$this->assertStringContainsString( 'state.manualTriggerActive || state.isLoading', $js );
+		$this->assertStringContainsString( '.bookomers-load-more', $css );
+	}
 }

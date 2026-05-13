@@ -518,6 +518,18 @@
 			return '/?wc-ajax=add_to_cart';
 		}
 
+		function setAjaxField(data, name, value) {
+			if (Array.isArray(data)) {
+				data = data.filter(function (field) {
+					return field.name !== name;
+				});
+				data.push({ name: name, value: value });
+				return data;
+			}
+			data[name] = value;
+			return data;
+		}
+
 		function handleEtucartAdd($form, $btn) {
 			// Simple-product form: no hidden variation_id input, no attribute_*
 			// inputs. We post product_id directly to WC's add_to_cart AJAX
@@ -555,10 +567,8 @@
 				// more resilient than a whitelist against new bundle plugins
 				// or future plugin field additions.
 				var DENY = { '_wpnonce': 1, '_wp_http_referer': 1, 'woocommerce-process-checkout-nonce': 1 };
-				data = {};
-				$form.serializeArray().forEach(function (field) {
-					if (DENY[field.name]) return;
-					data[field.name] = field.value;
+				data = $form.serializeArray().filter(function (field) {
+					return !DENY[field.name];
 				});
 			} else {
 				data = { product_id: (isSimple ? productId : variationId), quantity: qty };
@@ -571,8 +581,8 @@
 			// product_id / quantity overrides apply to both branches: WC's
 			// endpoint requires variation_id in the product_id slot for
 			// variable products, and the form's quantity field name varies.
-			data.product_id = (isSimple ? productId : variationId);
-			data.quantity   = qty;
+			data = setAjaxField(data, 'product_id', (isSimple ? productId : variationId));
+			data = setAjaxField(data, 'quantity', qty);
 
 			$btn.addClass('loading');
 

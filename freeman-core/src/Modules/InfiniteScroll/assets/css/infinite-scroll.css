@@ -64,7 +64,8 @@
 }
 
 .bookomers-end-message,
-.bookomers-error-message {
+.bookomers-error-message,
+.bookomers-load-more {
     width: 100%;
     text-align: center;
     padding: 28px 16px;
@@ -83,7 +84,8 @@
     opacity: .35;
 }
 
-.bookomers-error-message button {
+.bookomers-error-message button,
+.bookomers-load-more button {
     margin-left: 6px;
     background: transparent;
     border: 1px solid currentColor;
@@ -94,7 +96,8 @@
     font: inherit;
 }
 
-.bookomers-error-message button:hover { opacity: .75; }
+.bookomers-error-message button:hover,
+.bookomers-load-more button:hover { opacity: .75; }
 
 @media (prefers-reduced-motion: reduce) {
     .bookomers-skel-image,

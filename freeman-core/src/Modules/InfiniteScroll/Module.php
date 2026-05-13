@@ -90,11 +90,11 @@ final class Module extends Module_Base {
 				'type'        => 'select',
 				'choices'     => array(
 					'auto'   => __( 'Auto — load on scroll / observer (current behavior)', 'freeman-core' ),
-					'button' => __( 'Button — halt auto-loading (button UI deferred — see roadmap)', 'freeman-core' ),
-					'hybrid' => __( 'Hybrid — auto for first N pages, then halt (button UI deferred — see roadmap)', 'freeman-core' ),
+					'button' => __( 'Button — load when the shopper clicks Load more', 'freeman-core' ),
+					'hybrid' => __( 'Hybrid — auto for first N pages, then show Load more', 'freeman-core' ),
 				),
 				'default'     => 'auto',
-				'description' => __( 'Which mechanism advances pages. Only takes effect when the Trigger Modes feature flag is on. Auto is fully functional. Button halts auto-loading after the first page (functionally max_pages=1). Hybrid auto-loads up to the threshold then halts. The user-facing "Load more" button UI is deferred to a future wave.', 'freeman-core' ),
+				'description' => __( 'Which mechanism advances pages. Only takes effect when the Trigger Modes feature flag is on. Auto preserves current behavior. Button loads the next page only after a shopper clicks Load more. Hybrid auto-loads up to the threshold, then switches to Load more.', 'freeman-core' ),
 			),
 			'history_mode'      => array(
 				'label'       => __( 'URL update on page advance', 'freeman-core' ),

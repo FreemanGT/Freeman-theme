@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-11 (Active items block pruned: 7 shipped items removed, #11 narrowed to ProductSlider variant — see Wave-section ship markers for shipped record)
+**Last updated**: 2026-05-13 (Wave 3.1 known limitation note updated for 1.11.41 manual-trigger bugfix; Active items block remains pruned)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -176,7 +176,7 @@ Each item is its own PR with its own feature flag. Order within wave doesn't mat
 - Flag: `freeman_core_infinite_scroll_trigger_modes_enabled` (shared by 3.1a + 3.1b — precedent: 3.2a/b). Default off.
 - **3.1a** ✅ shipped 1.11.33 (#38, 2026-05-04) — JS-only + settings: trigger_mode / history_mode / hybrid_threshold settings, JS dispatcher gates at `attachObserver` entry + post-`loadNext` threshold check, `applyHistoryMode` wrapper around the existing pushState call. No new hooks (those land in 3.1b). Flag introduced. Behind `freeman_core_infinite_scroll_trigger_modes_enabled` (default off); flag-OFF + flag-ON-default both byte-identical to pre-3.1a.
 - **3.1b** ✅ shipped 1.11.35 (#TBD, 2026-05-10) — PHP wrapper render path + 4 deferred hooks + container_selector setting/filter + JS-side selector read.
-- **Wave 3.1 known limitation**: Button-mode UI and hybrid post-threshold UI deferred — pick mode='auto' for full functionality. Button mode is functionally equivalent to max_pages=1; hybrid mode auto-loads up to threshold then halts. A future sub-PR or wave can add JS-side button render if a client need surfaces.
+- **Wave 3.1 known limitation**: Originally button-mode UI and hybrid post-threshold UI were deferred, making button mode functionally equivalent to max_pages=1 and making hybrid halt at the threshold. Fixed in 1.11.41: both modes now render a JS-side Load more button when manual advancement is required.
 - **Folds in 3 hooks deferred from Wave 1.1**:
   - `freeman_core/infinite_scroll/selector` (filter) — replaces the hardcoded `.products` selector. Lands together with the JS-side read so the hook actually controls behavior.
   - `freeman_core/infinite_scroll/before_render` (action) — fires before the PHP-side render that this wave introduces (the module is JS-only today).

@@ -86,4 +86,14 @@ final class VariationSwatchesBundleCompatTest extends TestCase {
 		}
 		$this->assertTrue( $found, 'inject_feature_flags must be wired to wp_enqueue_scripts at priority 10001' );
 	}
+
+	public function test_bundle_compat_js_preserves_repeated_form_fields(): void {
+		$js = file_get_contents( __DIR__ . '/../freeman-core/src/Modules/VariationSwatches/assets/js/etucart-swatches.js' );
+
+		$this->assertIsString( $js );
+		$this->assertStringContainsString( 'data = $form.serializeArray().filter', $js );
+		$this->assertStringContainsString( 'Array.isArray(data)', $js );
+		$this->assertStringContainsString( 'data.push({ name: name, value: value });', $js );
+		$this->assertStringNotContainsString( 'data[field.name] = field.value;', $js );
+	}
 }

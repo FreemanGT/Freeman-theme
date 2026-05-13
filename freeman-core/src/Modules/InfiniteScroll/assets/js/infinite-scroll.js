@@ -127,6 +127,8 @@
         isLoading: false, nextUrl: null, observer: null, sentinel: null,
         container: null, itemSelector: null, stopped: false,
         mainObserver: null, abortController: null,
+        loadMoreWrap: null,
+        manualTriggerActive: false,
         seenIds: Object.create(null), fetchedUrls: Object.create(null),
         pagesLoaded: 0
     };
@@ -288,13 +290,13 @@
     //   'skip-auto-attach' — 'button' mode; attachObserver uses this to
     //                       suppress IO + scroll fallback + iOS poll so
     //                       they don't do wasted work / skeleton-flash.
-    //                       The user-visible 'Load more' button ships
-    //                       in 3.1b; in 3.1a 'button' mode just halts
-    //                       auto-loading until 3.1b lands.
+    //                       syncManualTrigger() renders the user-visible
+    //                       'Load more' button so pagination isn't stranded
+    //                       after the native links are hidden.
     //   'stop'             — 'hybrid' mode once state.pagesLoaded crosses
     //                       OPTS.hybridThreshold; loadNext uses this to
-    //                       halt further fetches. The user-facing button
-    //                       takes over in 3.1b.
+    //                       halt further automatic fetches. The user-facing
+    //                       button then advances additional pages manually.
     //   null               — caller proceeds with auto-trigger behavior.
     //
     // Flag-OFF returns null unconditionally — callers route to the legacy
@@ -307,7 +309,11 @@
     }
 
     function attachObserver() {
-        if (applyTriggerMode(OPTS.triggerMode || 'auto') === 'skip-auto-attach') return;
+        if (applyTriggerMode(OPTS.triggerMode || 'auto') === 'skip-auto-attach') {
+            syncManualTrigger();
+            return;
+        }
+        removeLoadMoreButton();
         attachScrollFallback();
         if (IS_IOS) attachIosPoll();
         if (!('IntersectionObserver' in window)) return;
@@ -316,8 +322,23 @@
         state.observer.observe(state.sentinel);
     }
 
+    function syncManualTrigger() {
+        var manual = OPTS.triggerModesEnabled && (
+            OPTS.triggerMode === 'button'
+            || (OPTS.triggerMode === 'hybrid' && state.pagesLoaded >= OPTS.hybridThreshold)
+        );
+        if (!manual) {
+            state.manualTriggerActive = false;
+            removeLoadMoreButton();
+            return;
+        }
+        state.manualTriggerActive = true;
+        disconnectAutoTriggers();
+        renderLoadMoreButton();
+    }
+
     function maybeTriggerFromScroll() {
-        if (state.stopped || state.isLoading) return;
+        if (state.stopped || state.manualTriggerActive || state.isLoading) return;
         if (!state.nextUrl || !state.sentinel) return;
         var rect = state.sentinel.getBoundingClientRect();
         var vh = window.innerHeight || document.documentElement.clientHeight;
@@ -353,7 +374,7 @@
     }
 
     function onIntersect(entries) {
-        if (state.stopped || state.isLoading || !state.nextUrl) return;
+        if (state.stopped || state.manualTriggerActive || state.isLoading || !state.nextUrl) return;
         if (entries[0].isIntersecting) loadNext();
     }
 
@@ -406,8 +427,8 @@
         }
         hidePagination(scope);
         var nextMatch = firstMatchIn(scope, NEXT_LINK_SELECTORS);
-        if (nextMatch) { state.nextUrl = buildFetchUrl(nextMatch.el.href); }
-        else { state.nextUrl = null; state.stopped = true; }
+        if (nextMatch) { state.nextUrl = buildFetchUrl(nextMatch.el.href); syncManualTrigger(); }
+        else { state.nextUrl = null; state.stopped = true; state.manualTriggerActive = false; removeLoadMoreButton(); }
     }
 
     function loadNext() {
@@ -467,7 +488,8 @@
                 state.pagesLoaded++;
 
                 if (applyTriggerMode(OPTS.triggerMode || 'auto') === 'stop') {
-                    stop('hybrid threshold reached');
+                    disconnectAutoTriggers();
+                    log('manual trigger:', 'hybrid threshold reached');
                 }
 
                 var nextMatch = firstMatchIn(docScope, NEXT_LINK_SELECTORS);
@@ -478,6 +500,7 @@
                     stop('next URL did not advance'); showEndMessage(); return;
                 }
                 state.nextUrl = candidate;
+                syncManualTrigger();
             })
             .catch(function (err) {
                 if (err && err.name === 'AbortError') { removeSkeletons(); return; }
@@ -519,10 +542,16 @@
         state.isLoading = false;
     }
 
-    function stop(reason) {
-        state.stopped = true; state.nextUrl = null;
+    function disconnectAutoTriggers() {
         if (state.observer) state.observer.disconnect();
         if (_iosPollTimer) { clearInterval(_iosPollTimer); _iosPollTimer = null; }
+    }
+
+    function stop(reason) {
+        state.stopped = true; state.nextUrl = null;
+        state.manualTriggerActive = false;
+        disconnectAutoTriggers();
+        removeLoadMoreButton();
         log('stopped:', reason);
     }
 
@@ -531,7 +560,7 @@
         if (state.observer) { state.observer.disconnect(); state.observer = null; }
         if (state.sentinel && state.sentinel.parentNode) state.sentinel.parentNode.removeChild(state.sentinel);
         state.sentinel = null; state.container = null; state.itemSelector = null;
-        state.nextUrl = null; state.stopped = false; state.isLoading = false;
+        state.nextUrl = null; state.stopped = false; state.isLoading = false; state.manualTriggerActive = false;
     }
 
     function makeSkeletonCard() {
@@ -554,7 +583,8 @@
     }
 
     function removeAuxMessages() {
-        document.querySelectorAll('.bookomers-end-message, .bookomers-error-message').forEach(function (el) { el.remove(); });
+        document.querySelectorAll('.bookomers-end-message, .bookomers-error-message, .bookomers-load-more').forEach(function (el) { el.remove(); });
+        state.loadMoreWrap = null;
     }
 
     // A11y: aria-live region for announcing newly loaded products to screen
@@ -597,6 +627,34 @@
         btn.addEventListener('click', function () { wrap.remove(); loadNext(); });
         wrap.appendChild(document.createTextNode(OPTS.errorMessage + ' '));
         wrap.appendChild(btn);
+        state.sentinel.parentNode.insertBefore(wrap, state.sentinel);
+    }
+
+    function removeLoadMoreButton() {
+        if (state.loadMoreWrap && state.loadMoreWrap.parentNode) {
+            state.loadMoreWrap.parentNode.removeChild(state.loadMoreWrap);
+        }
+        state.loadMoreWrap = null;
+    }
+
+    function renderLoadMoreButton() {
+        if (!state.sentinel || !state.nextUrl || state.stopped) {
+            removeLoadMoreButton();
+            return;
+        }
+        if (state.loadMoreWrap && state.loadMoreWrap.parentNode) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'bookomers-load-more';
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = OPTS.loadMoreLabel;
+        btn.addEventListener('click', function () {
+            removeLoadMoreButton();
+            state.manualTriggerActive = false;
+            loadNext();
+        });
+        wrap.appendChild(btn);
+        state.loadMoreWrap = wrap;
         state.sentinel.parentNode.insertBefore(wrap, state.sentinel);
     }
 

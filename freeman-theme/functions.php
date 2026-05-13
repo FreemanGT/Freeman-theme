@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'FREEMAN_THEME_VERSION',   '1.11.23' );
+define( 'FREEMAN_THEME_VERSION',   '1.11.24' );
 define( 'FREEMAN_THEME_PATH',      get_stylesheet_directory() );
 define( 'FREEMAN_THEME_URL',       get_stylesheet_directory_uri() );
 define( 'FREEMAN_THEME_ASSETS',    FREEMAN_THEME_URL . '/assets' );

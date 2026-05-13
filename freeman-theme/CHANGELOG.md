@@ -1,5 +1,9 @@
 # Freeman Theme — Changelog
 
+## [1.11.24] — 2026-05-12
+
+- freeman-theme: defensive grid-template-columns floor (minmax(0,1fr)) on Elementor archive product grid so a wide grid item cannot inflate one column and push cards off-page
+
 ## [1.11.23] — 2026-05-11
 
 - Typography: `--fm-font-body` and `--fm-font-display` now resolve from Elementor's global typography (`var(--e-global-typography-sk_type_12-font-family, …)` / `…sk_type_2…`, which the Style Kits for Elementor addon writes), with the previous hardcoded `'Heebo'` / `'Assistant'` stacks as fallback. The theme no longer overrides Style Kits' fonts; `--fm-font-mono` (used for `<code>` / `<pre>`) is unchanged. Since `freeman.css`'s `body` / heading rules read those tokens — and `freeman-core`'s My Account reads `--fm-font-body` — they all follow automatically.

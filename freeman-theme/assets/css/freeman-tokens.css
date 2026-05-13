@@ -53,9 +53,15 @@
     --fm-color-info:         var(--fm-palette-info);
     --fm-color-info-soft:    #dce9f3;
 
-    /* --- Typography ---------------------------------------------------- */
-    --fm-font-body:    'Heebo', 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --fm-font-display: 'Assistant', var(--fm-font-body);
+    /* --- Typography ----------------------------------------------------
+     * Body / display follow Elementor's global typography (so the Style
+     * Kits for Elementor addon, which writes those `--e-global-typography-*`
+     * vars, is authoritative). The hardcoded stacks are the fallback for
+     * when Elementor / Style Kits isn't configured. `sk_type_12` is the
+     * Style Kits "Body" slot; `sk_type_2` is "Heading 1". Mono stays a
+     * fixed monospace stack — code / preformatted text isn't "body text". */
+    --fm-font-body:    var(--e-global-typography-sk_type_12-font-family, 'Heebo', 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+    --fm-font-display: var(--e-global-typography-sk_type_2-font-family, 'Assistant', var(--fm-font-body));
     --fm-font-mono:    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
     /* Fluid type scale (clamped between min screen and 1600px). */

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.11.51] — 2026-05-13
+
+- VariationSwatches: respect wp_terms.term_order column for swatch ordering (honors Custom Taxonomy Order plugin et al). Falls back to wc_get_product_terms when the column is absent.
+
 ## [1.11.50] — 2026-05-13
 
 - VariationSwatches: reorder swatch options to match taxonomy term order (matches WC native dropdown). PDP buy-box + shop archive picker.

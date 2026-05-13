@@ -471,6 +471,20 @@ final class Etucart_VS_Plugin {
 		if ( '' === $taxonomy || 0 !== strpos( $taxonomy, 'pa_' ) ) {
 			return $options;
 		}
+
+		// Precedence: CTO data wins when available. WC owns the wc_get_product_terms
+		// pipeline for pa_* attributes and overrides orderby with wc_attribute_orderby(),
+		// so generic term-order plugins (Custom Taxonomy Order et al) that hook
+		// get_terms_orderby never get their say. When the term_order column is
+		// present on wp_terms (which CTO and similar plugins add via schema
+		// migration), read it directly — bypasses WC's override entirely.
+		if ( self::term_order_column_available() ) {
+			$cto_slugs = self::fetch_term_order_slugs( $taxonomy, $options );
+			if ( ! empty( $cto_slugs ) ) {
+				return self::apply_term_order( $options, $cto_slugs );
+			}
+		}
+
 		if ( ! function_exists( 'wc_get_product_terms' ) ) {
 			return $options;
 		}
@@ -479,6 +493,52 @@ final class Etucart_VS_Plugin {
 			return $options;
 		}
 		return self::apply_term_order( $options, (array) $term_slugs );
+	}
+
+	/**
+	 * Whether wp_terms.term_order exists. Custom Taxonomy Order and similar
+	 * plugins add this column via dbDelta; core WordPress does not have it.
+	 * Cached per-request — one DB call per page load.
+	 */
+	private static function term_order_column_available(): bool {
+		static $cache = null;
+		if ( null !== $cache ) {
+			return $cache;
+		}
+		global $wpdb;
+		if ( ! isset( $wpdb ) || ! is_object( $wpdb ) ) {
+			$cache = false;
+			return $cache;
+		}
+		$col   = $wpdb->get_var(
+			$wpdb->prepare(
+				"SHOW COLUMNS FROM {$wpdb->terms} LIKE %s",
+				'term_order'
+			)
+		);
+		$cache = ! empty( $col );
+		return $cache;
+	}
+
+	/**
+	 * Direct SQL fetch of term slugs ordered by wp_terms.term_order. Filter to
+	 * the slugs in $options so we don't return the whole attribute's term list.
+	 * Tie-break on name to make all-zero / all-equal term_order values stable.
+	 */
+	private static function fetch_term_order_slugs( string $taxonomy, array $options ): array {
+		global $wpdb;
+		if ( empty( $options ) ) {
+			return array();
+		}
+		$slugs             = array_values( array_map( 'strval', $options ) );
+		$slug_placeholders = implode( ',', array_fill( 0, count( $slugs ), '%s' ) );
+		$sql               = "SELECT t.slug FROM {$wpdb->terms} t
+			INNER JOIN {$wpdb->term_taxonomy} tt ON t.term_id = tt.term_id
+			WHERE tt.taxonomy = %s AND t.slug IN ({$slug_placeholders})
+			ORDER BY t.term_order ASC, t.name ASC";
+		$params            = array_merge( array( $taxonomy ), $slugs );
+		$result            = $wpdb->get_col( $wpdb->prepare( $sql, $params ) );
+		return is_array( $result ) ? $result : array();
 	}
 
 	/**

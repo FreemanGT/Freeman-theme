@@ -21,3 +21,31 @@ add_action(
 		}
 	}
 );
+
+// Mobile-columns override for product archives. Emission is gated on the
+// Customizer setting being explicitly 1/2/3/4 — the 'default' sentinel
+// skips entirely, preserving existing behaviour. `!important` is acceptable
+// because the rule only ships when the admin has opted in; `display: grid`
+// is forced because some loops render as flex/block which would make
+// grid-template-columns a no-op.
+add_action(
+	'wp_head',
+	static function () {
+		if ( ! function_exists( 'is_post_type_archive' ) ) {
+			return;
+		}
+		$is_product_archive = is_post_type_archive( 'product' )
+			|| ( function_exists( 'is_product_taxonomy' ) && is_product_taxonomy() );
+		if ( ! $is_product_archive ) {
+			return;
+		}
+		$cols = get_theme_mod( 'freeman_shop_cols_mobile', 'default' );
+		if ( ! in_array( $cols, array( '1', '2', '3', '4' ), true ) ) {
+			return;
+		}
+		printf(
+			'<style id="freeman-shop-cols-mobile">@media (max-width:767px){.woocommerce ul.products,.woocommerce ul.products.elementor-grid{display:grid !important;grid-template-columns:repeat(%d,minmax(0,1fr)) !important;}}</style>' . "\n",
+			(int) $cols
+		);
+	}
+);

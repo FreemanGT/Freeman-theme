@@ -1,5 +1,9 @@
 # Freeman Theme — Changelog
 
+## [1.11.25] — 2026-05-13
+
+- Customizer → WooCommerce → Product Catalog: new "Mobile columns" select (1/2/3/4, defaults to "Don't override"). When set, prints an inline `@media (max-width:767px)` rule on product archive pages (shop, product category/tag, product search) that pins `.woocommerce ul.products` `grid-template-columns` to the chosen count with `!important` and forces `display: grid` so the rule lands regardless of whether the underlying loop renders as grid/flex/block. Opt-in: with the sentinel "default" value (the shipped default), nothing is emitted and existing behaviour is preserved.
+
 ## [1.11.24] — 2026-05-12
 
 - freeman-theme: defensive grid-template-columns floor (minmax(0,1fr)) on Elementor archive product grid so a wide grid item cannot inflate one column and push cards off-page

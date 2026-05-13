@@ -452,6 +452,60 @@ final class Etucart_VS_Plugin {
 			? mb_convert_case( $pretty, MB_CASE_TITLE, 'UTF-8' )
 			: ucwords( $pretty );
 	}
+
+	/**
+	 * Reorder a variation attribute's option slug list to match the order
+	 * wc_get_product_terms() returns for the same taxonomy.
+	 *
+	 * WC_Product_Variable::get_variation_attributes() returns each attribute's
+	 * $options keyed by variation-insertion order — which diverges from what
+	 * WC's own native variation dropdown renders (which iterates the result of
+	 * wc_get_product_terms instead). Without this reorder, sites that configure
+	 * a per-attribute "Default sort order" under Products → Attributes (any of
+	 * menu_order / name / name_num / id) see that ordering ignored in swatches.
+	 *
+	 * Dispatches to apply_term_order() for the pure reorder. Split so the pure
+	 * half can be unit-tested without bootstrapping WC.
+	 */
+	public static function reorder_options_to_match_terms( int $product_id, string $taxonomy, array $options ): array {
+		if ( '' === $taxonomy || 0 !== strpos( $taxonomy, 'pa_' ) ) {
+			return $options;
+		}
+		if ( ! function_exists( 'wc_get_product_terms' ) ) {
+			return $options;
+		}
+		$term_slugs = wc_get_product_terms( $product_id, $taxonomy, array( 'fields' => 'slugs' ) );
+		if ( is_wp_error( $term_slugs ) || empty( $term_slugs ) ) {
+			return $options;
+		}
+		return self::apply_term_order( $options, (array) $term_slugs );
+	}
+
+	/**
+	 * Pure: reorder $options so its slugs appear in $term_slugs order. Any
+	 * slug in $options not present in $term_slugs is appended at the tail,
+	 * preserving its original relative order — never drop a value we were
+	 * handed.
+	 */
+	public static function apply_term_order( array $options, array $term_slugs ): array {
+		$option_values = array_values( array_map( 'strval', $options ) );
+		$consumed      = array();
+		$ordered       = array();
+		foreach ( $term_slugs as $slug ) {
+			$slug = (string) $slug;
+			if ( in_array( $slug, $option_values, true ) && ! in_array( $slug, $consumed, true ) ) {
+				$ordered[]  = $slug;
+				$consumed[] = $slug;
+			}
+		}
+		foreach ( $option_values as $option ) {
+			if ( ! in_array( $option, $consumed, true ) ) {
+				$ordered[]  = $option;
+				$consumed[] = $option;
+			}
+		}
+		return $ordered;
+	}
 }
 
 endif; // class_exists Etucart_VS_Plugin

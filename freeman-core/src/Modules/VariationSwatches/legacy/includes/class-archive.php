@@ -332,6 +332,7 @@ class Etucart_VS_Archive {
 			$sanitized  = sanitize_title( $attribute_name );
 			$input_name = 'attribute_' . $sanitized;
 			$taxonomy   = 0 === strpos( $attribute_name, 'pa_' ) ? $attribute_name : '';
+			$options    = Etucart_VS_Plugin::reorder_options_to_match_terms( (int) $pid, $taxonomy, (array) $options );
 			$is_color   = $taxonomy && Etucart_VS_Plugin::attribute_is_color( $taxonomy );
 			$has_images = $image_swatches_on && $taxonomy && Etucart_VS_Plugin::attribute_has_images( $taxonomy );
 

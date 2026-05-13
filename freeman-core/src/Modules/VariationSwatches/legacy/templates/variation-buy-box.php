@@ -52,6 +52,7 @@ $variations_attr = function_exists( 'wc_esc_json' )
 $prepared = [];
 foreach ( $attributes as $attribute_name => $options ) {
 	$taxonomy       = 0 === strpos( $attribute_name, 'pa_' ) ? $attribute_name : '';
+	$options        = Etucart_VS_Plugin::reorder_options_to_match_terms( (int) $product_id, $taxonomy, (array) $options );
 	$sanitized_name = sanitize_title( $attribute_name );
 	$input_name     = 'attribute_' . $sanitized_name;
 	$selected = isset( $_REQUEST[ $input_name ] )

@@ -127,6 +127,7 @@ final class Plugin {
 		$this->load_textdomain();
 
 		$this->migrations->maybe_run();
+		$this->register_platform_privacy_hooks();
 
 		// Discover + boot enabled modules. Any thrown exception gets logged
 		// *and* stashed in a transient so the dashboard can surface it —
@@ -195,6 +196,13 @@ final class Plugin {
 	 */
 	private function load_textdomain() {
 		load_plugin_textdomain( 'freeman-core', false, dirname( FREEMAN_CORE_BASENAME ) . '/languages' );
+	}
+
+	/**
+	 * Register privacy hooks for retained data even when its module is disabled.
+	 */
+	private function register_platform_privacy_hooks() {
+		( new \Freeman\Core\Modules\RestockNotify\Privacy() )->register();
 	}
 
 	/**

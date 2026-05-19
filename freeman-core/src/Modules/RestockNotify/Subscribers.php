@@ -94,8 +94,7 @@ final class Subscribers {
 	 * blocks extending the legacy class.
 	 *
 	 * Empty-string guard: returns `[]` early when `$email === ''` so that
-	 * a stray empty input cannot match the population of erased rows
-	 * (whose `customer_email` was set to '' by `erase_pii_by_email`).
+	 * a stray empty input cannot match any already-erased rows.
 	 *
 	 * @since 1.11.37
 	 *
@@ -122,13 +121,19 @@ final class Subscribers {
 	 * Erase PII for all subscriptions matching an exact email address.
 	 * Used by the Wave 4.1a Privacy eraser.
 	 *
-	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
-	 * via a single `UPDATE`. The legacy schema declares these columns as
-	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 * Sets `customer_name=''`, replaces `customer_email` with a row-scoped
+	 * non-PII marker, and sets `status='unsubscribed'`. The legacy schema
+	 * declares these columns as NOT NULL, so empty string is used instead of
+	 * SQL NULL for the name.
 	 *
 	 * The row is preserved (not DELETEd) so the stock monitor's audit
-	 * trail stays intact; the empty `customer_email` prevents future
-	 * email matches.
+	 * trail stays intact; removing the original `customer_email` prevents
+	 * future email matches.
+	 *
+	 * Each erased email marker includes the subscription id so multiple
+	 * rows for the same product/variation can be erased without colliding
+	 * with the legacy `unique_sub` index on `(customer_email, product_id,
+	 * variation_id, status)`.
 	 *
 	 * Empty-string guard: returns `0` early when `$email === ''` so a
 	 * stray empty input cannot "erase" rows that were already erased.
@@ -145,18 +150,26 @@ final class Subscribers {
 		}
 		global $wpdb;
 		$table   = $wpdb->prefix . 'rsn_subscribers';
-		$updated = $wpdb->update(
-			$table,
-			array(
-				'customer_name'  => '',
-				'customer_email' => '',
-				'status'         => 'unsubscribed',
-			),
-			array( 'customer_email' => $email ),
-			array( '%s', '%s', '%s' ),
-			array( '%s' )
-		);
-		return (int) $updated;
+		$rows    = self::find_by_email( $email );
+		$updated = 0;
+		foreach ( $rows as $row ) {
+			$id     = (int) $row->id;
+			$result = $wpdb->update(
+				$table,
+				array(
+					'customer_name'  => '',
+					'customer_email' => 'erased-restock-' . $id . '@freeman.invalid',
+					'status'         => 'unsubscribed',
+				),
+				array( 'id' => $id ),
+				array( '%s', '%s', '%s' ),
+				array( '%d' )
+			);
+			if ( false !== $result ) {
+				$updated += (int) $result;
+			}
+		}
+		return $updated;
 	}
 
 	/**

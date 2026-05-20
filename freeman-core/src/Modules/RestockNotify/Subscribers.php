@@ -122,13 +122,14 @@ final class Subscribers {
 	 * Erase PII for all subscriptions matching an exact email address.
 	 * Used by the Wave 4.1a Privacy eraser.
 	 *
-	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
-	 * via a single `UPDATE`. The legacy schema declares these columns as
-	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 * Sets `customer_name=''`, `customer_email` to a per-row non-PII tombstone,
+	 * and `status='unsubscribed'`. The legacy schema declares `customer_email`
+	 * NOT NULL and uniquely indexes (email, product, variation, status), so a
+	 * unique tombstone avoids collisions when several rows share a product.
 	 *
 	 * The row is preserved (not DELETEd) so the stock monitor's audit
-	 * trail stays intact; the empty `customer_email` prevents future
-	 * email matches.
+	 * trail stays intact; the tombstoned `customer_email` prevents future
+	 * matches on the original email.
 	 *
 	 * Empty-string guard: returns `0` early when `$email === ''` so a
 	 * stray empty input cannot "erase" rows that were already erased.
@@ -144,19 +145,37 @@ final class Subscribers {
 			return 0;
 		}
 		global $wpdb;
-		$table   = $wpdb->prefix . 'rsn_subscribers';
-		$updated = $wpdb->update(
-			$table,
-			array(
-				'customer_name'  => '',
-				'customer_email' => '',
-				'status'         => 'unsubscribed',
-			),
-			array( 'customer_email' => $email ),
-			array( '%s', '%s', '%s' ),
-			array( '%s' )
+		$table = $wpdb->prefix . 'rsn_subscribers';
+		$rows  = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id FROM {$table} WHERE customer_email = %s",
+				$email
+			)
 		);
-		return (int) $updated;
+		if ( ! is_array( $rows ) ) {
+			return 0;
+		}
+
+		$updated = 0;
+		foreach ( $rows as $row ) {
+			$id     = (int) $row->id;
+			$result = $wpdb->update(
+				$table,
+				array(
+					'customer_name'  => '',
+					'customer_email' => 'erased-' . $id . '@freeman.invalid',
+					'status'         => 'unsubscribed',
+				),
+				array( 'id' => $id ),
+				array( '%s', '%s', '%s' ),
+				array( '%d' )
+			);
+			if ( false !== $result ) {
+				$updated += (int) $result;
+			}
+		}
+
+		return $updated;
 	}
 
 	/**

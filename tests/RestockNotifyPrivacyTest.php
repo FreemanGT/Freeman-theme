@@ -9,8 +9,8 @@ use PHPUnit\Framework\TestCase;
  * Wave 4.1a — RestockNotify WP_Privacy exporter + eraser.
  *
  * Verifies filter attachment, exporter payload shape, eraser semantics
- * (NULL PII columns via empty-string + flip status to 'unsubscribed'),
- * the no-match paths, and the empty-string guards on the two new
+ * (clear name, replace email with non-PII tombstone, flip status to
+ * 'unsubscribed'), the no-match paths, and the empty-string guards on the two new
  * Subscribers methods.
  *
  * @covers \Freeman\Core\Modules\RestockNotify\Privacy
@@ -32,7 +32,7 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		// Self-contained — does not leak into other tests (tearDown restores
 		// the prior global). Only supports the methods Wave 4.1a needs:
 		// prefix, prepare (best-effort %s/%d substitution), get_results,
-		// update (matches by 'customer_email' WHERE and mutates the store).
+		// update (matches by WHERE fields and mutates the store).
 		$GLOBALS['wpdb'] = new class {
 			public $prefix = 'wp_';
 			public array $rows = array();
@@ -183,7 +183,7 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		$this->assertTrue( $result['done'] );
 	}
 
-	public function test_eraser_nulls_name_and_email_and_sets_status_unsubscribed(): void {
+	public function test_eraser_clears_name_tombstones_email_and_sets_status_unsubscribed(): void {
 		$row = $this->seed_row( array(
 			'customer_name'  => 'Alice',
 			'customer_email' => 'alice@example.test',
@@ -193,8 +193,32 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		( new Privacy() )->eraser( 'alice@example.test' );
 
 		$this->assertSame( '', $row->customer_name );
-		$this->assertSame( '', $row->customer_email );
+		$this->assertSame( 'erased-' . $row->id . '@freeman.invalid', $row->customer_email );
 		$this->assertSame( 'unsubscribed', $row->status );
+	}
+
+	public function test_eraser_uses_unique_email_tombstones_for_rows_sharing_product_tuple(): void {
+		$waiting = $this->seed_row( array(
+			'customer_email' => 'alice@example.test',
+			'product_id'     => 100,
+			'variation_id'   => 0,
+			'status'         => 'waiting',
+		) );
+		$notified = $this->seed_row( array(
+			'customer_email' => 'alice@example.test',
+			'product_id'     => 100,
+			'variation_id'   => 0,
+			'status'         => 'notified',
+		) );
+
+		$result = ( new Privacy() )->eraser( 'alice@example.test' );
+
+		$this->assertSame( 2, $result['items_removed'] );
+		$this->assertSame( 'erased-' . $waiting->id . '@freeman.invalid', $waiting->customer_email );
+		$this->assertSame( 'erased-' . $notified->id . '@freeman.invalid', $notified->customer_email );
+		$this->assertNotSame( $waiting->customer_email, $notified->customer_email );
+		$this->assertSame( 'unsubscribed', $waiting->status );
+		$this->assertSame( 'unsubscribed', $notified->status );
 	}
 
 	public function test_eraser_returns_items_removed_count(): void {
@@ -219,17 +243,17 @@ final class RestockNotifyPrivacyTest extends TestCase {
 	}
 
 	public function test_find_by_email_returns_empty_for_empty_input(): void {
-		// Seed an already-erased row (customer_email='') and verify that
-		// the empty-string guard prevents '' from matching the universe of
-		// erased rows. Without the guard this would return $row.
+		// Seed a pre-1.11.42 already-erased row (customer_email='') and verify
+		// that the empty-string guard prevents '' from matching erased rows.
+		// Without the guard this would return $row.
 		$this->seed_row( array( 'customer_email' => '' ) );
 
 		$this->assertSame( array(), Subscribers::find_by_email( '' ) );
 	}
 
 	public function test_eraser_returns_zero_for_empty_input(): void {
-		// Seed an already-erased row. The eraser must NOT touch it on an
-		// empty-string call — accidental no-op-but-suspicious "erase
+		// Seed a pre-1.11.42 already-erased row. The eraser must NOT touch it
+		// on an empty-string call — accidental no-op-but-suspicious "erase
 		// already-erased" path is the bug the guard prevents.
 		$this->seed_row( array( 'customer_email' => '', 'status' => 'unsubscribed' ) );
 

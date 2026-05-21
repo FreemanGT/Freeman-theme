@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.18] — 2026-05-20
+
+- Shop Filters: enforce the active filters on search-results grids supplied by a search plugin (Advanced Woo Search) via a the_posts safety net, so a product whose only in-stock size is outside the selection no longer slips through on search
+
 ## [1.12.17] — 2026-05-20
 
 - Shop Filters now scope to search results: on a product-search page the panel facets, counts, category tree and price bands reflect the products matching the query (was showing whole-catalogue facets); resolves the 6.3a.1 search-facet deferral

@@ -93,4 +93,24 @@ final class ShopFiltersQueryBridgeTest extends TestCase {
 	public function test_intersect_id_sets_no_facets_is_empty(): void {
 		$this->assertSame( array(), Query::intersect_id_sets( array() ) );
 	}
+
+	public function test_filter_posts_to_ids_keeps_allowed_in_order(): void {
+		$posts = array(
+			(object) array( 'ID' => 10 ),
+			(object) array( 'ID' => 11 ),
+			(object) array( 'ID' => 12 ),
+		);
+
+		$kept = Query::filter_posts_to_ids( $posts, array( 12, 10 ) );
+
+		$this->assertCount( 2, $kept );
+		$this->assertSame( 10, $kept[0]->ID ); // original order preserved.
+		$this->assertSame( 12, $kept[1]->ID );
+	}
+
+	public function test_filter_posts_to_ids_empty_allowlist_drops_all(): void {
+		$posts = array( (object) array( 'ID' => 10 ) );
+
+		$this->assertSame( array(), Query::filter_posts_to_ids( $posts, array() ) );
+	}
 }

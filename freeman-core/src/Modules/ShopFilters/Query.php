@@ -54,6 +54,7 @@ final class Query {
 		add_action( 'pre_get_posts', array( $this, 'apply_instock_post_in' ), 20 );
 		add_filter( 'posts_clauses', array( $this, 'filter_price_clauses' ), 20, 2 );
 		add_filter( 'woocommerce_default_catalog_orderby', array( $this, 'default_catalog_orderby' ) );
+		add_filter( 'the_posts', array( $this, 'enforce_filters_on_search' ), 10, 2 );
 	}
 
 	/**
@@ -198,6 +199,60 @@ final class Query {
 			}
 		}
 		$q->set( 'post__in', $ids );
+	}
+
+	/**
+	 * Safety net for search-results pages whose grid is supplied by a search plugin
+	 * (e.g. Advanced Woo Search) that bypasses our query-level constraints: enforce
+	 * the active attribute selection on the FINAL post list, dropping any product
+	 * that isn't in the index's in-stock set for the selection. Runs only on the
+	 * front-end main *search* query, only when filters are active and the index has
+	 * data — so a normal archive (already constrained by post__in) is untouched.
+	 *
+	 * @param array     $posts Posts from the query.
+	 * @param \WP_Query $query Query.
+	 * @return array
+	 */
+	public function enforce_filters_on_search( $posts, $query ) {
+		if ( is_admin() || ! $query instanceof \WP_Query || ! $query->is_main_query() || ! $query->is_search() ) {
+			return $posts;
+		}
+		if ( empty( $posts ) ) {
+			return $posts;
+		}
+		$post_type  = $query->get( 'post_type' );
+		$is_product = ( 'product' === $post_type ) || ( is_array( $post_type ) && in_array( 'product', $post_type, true ) );
+		if ( ! $is_product ) {
+			return $posts;
+		}
+		$filters = $this->current_filters();
+		if ( empty( $filters ) || ! $this->index_has_data() ) {
+			return $posts;
+		}
+		return self::filter_posts_to_ids( $posts, $this->instock_product_ids( $filters ) );
+	}
+
+	/**
+	 * Keep only the posts whose ID is in the allowed set, preserving order. An
+	 * empty allow-list means nothing matches. Pure.
+	 *
+	 * @param array $posts       Post objects (or ids).
+	 * @param int[] $allowed_ids Allowed product ids.
+	 * @return array
+	 */
+	public static function filter_posts_to_ids( array $posts, array $allowed_ids ) {
+		if ( empty( $allowed_ids ) ) {
+			return array();
+		}
+		$allow = array_flip( array_map( 'intval', $allowed_ids ) );
+		$kept  = array();
+		foreach ( $posts as $post ) {
+			$pid = is_object( $post ) ? (int) ( $post->ID ?? 0 ) : (int) $post;
+			if ( isset( $allow[ $pid ] ) ) {
+				$kept[] = $post;
+			}
+		}
+		return $kept;
 	}
 
 	/**

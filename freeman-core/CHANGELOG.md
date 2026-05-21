@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.4] — 2026-05-20
+
+- Shop Filters bug-fix found in QA: the recurring reconcile sweep now schedules correctly. ensure_scheduled was running on plugins_loaded before Action Scheduler is ready (silent no-op); deferred to init. Event-driven on-save indexing was unaffected.
+
 ## [1.12.3] — 2026-05-20
 
 - Shop Filters admin control surface (by request): Freeman -> Shop Filters page now has the background-indexing toggle, live index status (products/rows/last sweep/scheduled) and the reindex tool, all manageable from wp-admin without WP-CLI. Toggle writes the same option the feature flag reads.

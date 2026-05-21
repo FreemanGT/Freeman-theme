@@ -51,6 +51,8 @@ final class ShopFiltersModuleTest extends TestCase {
 
 		$this->assertNotFalse( has_action( 'woocommerce_update_product' ) );
 		$this->assertNotFalse( has_action( 'woocommerce_variation_set_stock' ) );
+		// Scheduling is deferred to init (Action Scheduler isn't ready at plugins_loaded).
+		$this->assertNotFalse( has_action( 'init' ) );
 	}
 
 	public function test_settings_schema_exposes_indexer_toggle_mapped_to_the_flag(): void {

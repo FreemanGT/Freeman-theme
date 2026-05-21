@@ -86,7 +86,11 @@ final class Module extends Module_Base {
 
 		if ( Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) ) {
 			$indexer->register_hooks();
-			$indexer->ensure_scheduled();
+			// Defer scheduling to `init`: Action Scheduler's store isn't ready at
+			// plugins_loaded, so as_schedule_recurring_action() there silently
+			// no-ops. Running at `init` (after AS initialises) makes both the
+			// schedule call and the status check use the same, ready scheduler.
+			add_action( 'init', array( $indexer, 'ensure_scheduled' ) );
 		}
 
 		if ( is_admin() ) {

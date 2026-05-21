@@ -117,6 +117,13 @@ final class Shortcode {
 	private function initial_request( $context_id ) {
 		$request               = is_array( $_GET ) ? wp_unslash( $_GET ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$request['context_id'] = (int) $context_id;
+
+		// On a search-results page, scope the facets to the products matching the
+		// query (Query_Builder uses this as the base universe).
+		if ( function_exists( 'is_search' ) && is_search() ) {
+			$request['search'] = get_search_query();
+		}
+
 		return $request;
 	}
 

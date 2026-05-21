@@ -158,6 +158,33 @@ final class Index_Repository {
 	}
 
 	/**
+	 * Restrict an arbitrary id set to those present in the index (optionally only
+	 * in-stock). Used to seed the base universe on a search-results page: the
+	 * search supplies candidate product ids, this intersects them with the indexed
+	 * (and, when the store hides out-of-stock items, in-stock) set so the facets
+	 * mirror the visible grid.
+	 *
+	 * @param int[] $product_ids   Candidate ids.
+	 * @param bool  $in_stock_only Restrict to products with an in-stock row.
+	 * @return int[]
+	 */
+	public function filter_indexed( array $product_ids, $in_stock_only = false ) {
+		global $wpdb;
+		$product_ids = array_values( array_unique( array_filter( array_map( 'intval', $product_ids ) ) ) );
+		if ( empty( $product_ids ) ) {
+			return array();
+		}
+		$table        = Database::table_name();
+		$placeholders = implode( ', ', array_fill( 0, count( $product_ids ), '%d' ) );
+		$where        = "product_id IN ({$placeholders})";
+		if ( $in_stock_only ) {
+			$where .= ' AND in_stock = 1';
+		}
+		$rows = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT product_id FROM {$table} WHERE {$where}", $product_ids ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		return array_map( 'intval', (array) $rows );
+	}
+
+	/**
 	 * Build the inverted index slice for a set of products: taxonomy => term_id
 	 * => product ids. When $in_stock_only is true only rows flagged in_stock=1
 	 * are returned, so an out-of-stock-only value disappears under the

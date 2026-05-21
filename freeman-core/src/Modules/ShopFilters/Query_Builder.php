@@ -412,10 +412,16 @@ final class Query_Builder {
 		// filtered grid is empty.
 		$hide_oos = ( 'yes' === get_option( 'woocommerce_hide_out_of_stock_items' ) );
 
-		// Base universe: a category page expands to the queried term + all its
-		// descendants (the index stores only directly-assigned product_cat rows);
-		// the shop page is every indexed product.
-		if ( $context_id > 0 ) {
+		// Base universe:
+		//  - a search results page facets over the products matching the query
+		//    (so the panel shows only what's in the results, not the whole store);
+		//  - a category page expands to the queried term + all its descendants
+		//    (the index stores only directly-assigned product_cat rows);
+		//  - the shop page is every indexed product.
+		$search = isset( $request['search'] ) ? trim( (string) $request['search'] ) : '';
+		if ( '' !== $search ) {
+			$base = $this->repo->filter_indexed( $this->search_product_ids( $search ), $hide_oos );
+		} elseif ( $context_id > 0 ) {
 			$term_ids = array_merge( array( $context_id ), $this->descendant_category_ids( $context_id ) );
 			$base     = $this->repo->product_ids_in_terms( 'product_cat', $term_ids, $hide_oos );
 		} else {
@@ -505,6 +511,31 @@ final class Query_Builder {
 	/* -----------------------------------------------------------------
 	 * Integration helpers
 	 * ----------------------------------------------------------------- */
+
+	/**
+	 * Product ids matching a search term — the base universe on a search-results
+	 * page. Runs an unpaginated product search so the facets cover the whole
+	 * result set, not just the current page. (A search plugin that filters generic
+	 * product-search WP_Query runs will refine these; otherwise it's WooCommerce's
+	 * native title/content search.)
+	 *
+	 * @param string $term Search term.
+	 * @return int[]
+	 */
+	private function search_product_ids( $term ) {
+		$query = new \WP_Query(
+			array(
+				'post_type'           => 'product',
+				'post_status'         => 'publish',
+				's'                   => (string) $term,
+				'fields'              => 'ids',
+				'posts_per_page'      => -1,
+				'no_found_rows'       => true,
+				'ignore_sticky_posts' => true,
+			)
+		);
+		return array_map( 'intval', (array) $query->posts );
+	}
 
 	/**
 	 * Descendant product_cat term ids (cached by WP core's term-children cache).

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.17] — 2026-05-20
+
+- Shop Filters now scope to search results: on a product-search page the panel facets, counts, category tree and price bands reflect the products matching the query (was showing whole-catalogue facets); resolves the 6.3a.1 search-facet deferral
+
 ## [1.12.16] — 2026-05-20
 
 - Shop Filters buttons now match the theme: the panel toggle, Apply, Clear and sort controls carry the themes own .fm-btn / .fm-select primitives so they render identically to the sites buttons (the 1.12.15 core styles were being overridden by the theme/Elementor); core styles remain as the no-theme fallback

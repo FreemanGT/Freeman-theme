@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.13] — 2026-05-20
+
+- freeman-core: Shop Filters 6.5b — price-band facet + sort (built ahead of 6.4/6.5a, so it takes the next sequential version). OR-checkbox price bands on top of the panel (from a price_bands setting, or auto-derived from the catalogue), counts + grid filtering via wc_product_meta_lookup overlap; a Sort by dropdown (sets ?orderby) and a default_sort setting applied via woocommerce_default_catalog_orderby. Reuses frontend_enabled.
+
 ## [1.12.12] — 2026-05-20
 
 - Shop Filters 6.3c: storefront string labels are now editable from the Shop Filters settings page (blank = English default), so the panel wording can be set to Hebrew without code

@@ -83,6 +83,23 @@
 	color: #767676;
 }
 
+/* ---- sort dropdown ---- */
+.freeman-sf__sort {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	margin: 0 0 1.25em;
+}
+
+.freeman-sf__sort-label {
+	font-weight: 600;
+}
+
+.freeman-sf__sort-select {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
 /* ---- category tree (navigation) ---- */
 .freeman-sf__categories {
 	margin: 0 0 1.25em;

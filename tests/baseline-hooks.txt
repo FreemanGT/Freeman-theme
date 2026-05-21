@@ -30,8 +30,8 @@ freeman-core/src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:75
 freeman-core/src/Modules/ShopFilters/Facet_Config.php:110:			$is_visible = (bool) apply_filters( 'freeman_core/shop_filters/is_facet_visible', $is_visible, (string) $def['taxonomy'], $context_category_id );
 freeman-core/src/Modules/ShopFilters/Facet_Config.php:83:		$defs = apply_filters( 'freeman_core/shop_filters/facet_config', $defs, $context_category_id, $available_taxonomies );
 freeman-core/src/Modules/ShopFilters/Shortcode.php:67:		do_action( 'freeman_core/shop_filters/before_render', $context_id );
-freeman-core/src/Modules/ShopFilters/Shortcode.php:81:		do_action( 'freeman_core/shop_filters/after_render', $context_id );
-freeman-core/src/Modules/ShopFilters/Shortcode.php:93:		return (string) apply_filters( 'freeman_core/shop_filters/panel_html', $html, $context_id );
+freeman-core/src/Modules/ShopFilters/Shortcode.php:83:		do_action( 'freeman_core/shop_filters/after_render', $context_id );
+freeman-core/src/Modules/ShopFilters/Shortcode.php:95:		return (string) apply_filters( 'freeman_core/shop_filters/panel_html', $html, $context_id );
 freeman-core/src/Modules/VariableStockFix/Module.php:294:		if ( ! apply_filters( 'freeman_core/variable_stock_fix/should_check', true, $product ) ) {
 freeman-core/src/Modules/VariationSwatches/Color_Sampler.php:197:		$value   = apply_filters(
 freeman-core/src/Modules/VariationSwatches/Sampler_Scheduler.php:192:		$batch_size = (int) apply_filters( self::BATCH_SIZE_FILTER, self::DEFAULT_BATCH_SIZE );

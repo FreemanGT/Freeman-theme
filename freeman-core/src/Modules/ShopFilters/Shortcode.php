@@ -68,7 +68,9 @@ final class Shortcode {
 
 		$facets        = $response['facets'];
 		$category_tree = $response['category_tree'];
+		$price         = isset( $response['price'] ) ? $response['price'] : array();
 		$count         = $response['count'];
+		$orderby       = Url_State::parse( $this->initial_request( $context_id ) )['orderby'];
 		include $this->template_path( 'filters.php' );
 
 		/**

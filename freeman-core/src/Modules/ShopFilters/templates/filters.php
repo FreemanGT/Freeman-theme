@@ -16,10 +16,17 @@
 defined( 'ABSPATH' ) || exit;
 
 use Freeman\Core\Modules\ShopFilters\Labels;
+use Freeman\Core\Modules\ShopFilters\Url_State;
+use Freeman\Core\Modules\ShopFilters\Module;
 
 /** @var array $facets */
 /** @var array $category_tree */
+/** @var array $price */
+/** @var string $orderby */
 /** @var int $count */
+
+// Effective sort selection: the URL's orderby, else the configured default.
+$sf_current_sort = '' !== (string) $orderby ? (string) $orderby : (string) get_option( 'freeman_core_shop_filters_default_sort', '' );
 ?>
 <div class="freeman-sf" data-freeman-sf>
 	<button type="button" class="freeman-sf__toggle" data-freeman-sf-toggle aria-expanded="false" aria-controls="freeman-sf-panel">
@@ -65,6 +72,17 @@ use Freeman\Core\Modules\ShopFilters\Labels;
 		<p class="freeman-sf__count" data-freeman-sf-count>
 			<?php echo esc_html( Labels::count_text( (int) $count ) ); ?>
 		</p>
+
+		<div class="freeman-sf__sort">
+			<label class="freeman-sf__sort-label" for="freeman-sf-sort"><?php echo esc_html( Labels::get( 'sort' ) ); ?></label>
+			<select id="freeman-sf-sort" class="freeman-sf__sort-select" data-freeman-sf-sort>
+				<?php foreach ( Url_State::orderby_whitelist() as $sf_orderby ) : ?>
+					<option value="<?php echo esc_attr( $sf_orderby ); ?>" <?php selected( $sf_current_sort, $sf_orderby ); ?>><?php echo esc_html( Module::orderby_label( $sf_orderby ) ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+
+		<?php include __DIR__ . '/facet-price.php'; ?>
 
 		<?php include __DIR__ . '/facet-category-tree.php'; ?>
 

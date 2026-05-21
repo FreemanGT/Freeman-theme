@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.13] — 2026-05-20
+
+- Shop Filters 6.5b price + sort (built ahead of 6.4 / 6.5a, so it takes the next sequential version): the panel gains a price facet and a sort dropdown, both reusing the frontend_enabled flag. Price renders as OR-checkbox bands at the top of the panel; bands come from a new price_bands setting (comma-separated upper bounds) or, when blank, are auto-derived (rounded to 1/2/5 decades) from the catalogue's price range in context. Band membership + counts read min/max from wc_product_meta_lookup (decisions §5.2 — price is never duplicated in our index); the storefront grid applies the selected bands via a posts_clauses join (price range overlap, OR within the facet). Bands carry a dedicated filter_price=min-max,min- URL param kept out of the taxonomy machinery. A Sort by dropdown sets ?orderby (WooCommerce honours it on reload); a new default_sort setting applies a site-wide default ordering via woocommerce_default_catalog_orderby until the shopper picks a sort. Known v1 approximation: term-facet counts don't subtract an active price selection (price lives outside the term engine); the grid count and band counts stay correct. Price heading + Sort heading labels are editable via the 6.3c labels editor.
+
 ## [1.12.12] — 2026-05-20
 
 - Shop Filters 6.3c: storefront string labels are now editable from the Shop Filters settings page (blank = English default), so the panel wording can be set to Hebrew without code

@@ -192,6 +192,205 @@ final class Query_Builder {
 		return $nodes;
 	}
 
+	/**
+	 * Turn a sorted list of upper bounds into contiguous price bands: the first
+	 * runs from 0 to the first bound, each subsequent from the previous bound to
+	 * the next, and the last is open-ended (max = null). Non-numeric / non-positive
+	 * bounds are dropped; bounds are deduped and sorted. Pure.
+	 *
+	 * @param float[] $bounds Upper bounds, e.g. [50, 100, 200].
+	 * @return array<int,array{min:float,max:?float}>
+	 */
+	public static function bands_from_bounds( array $bounds ) {
+		$clean = array();
+		foreach ( $bounds as $bound ) {
+			if ( is_numeric( $bound ) && (float) $bound > 0 ) {
+				$clean[ (string) ( (float) $bound ) ] = (float) $bound;
+			}
+		}
+		$clean = array_values( $clean );
+		sort( $clean );
+		if ( empty( $clean ) ) {
+			return array();
+		}
+
+		$bands = array();
+		$lo    = 0.0;
+		foreach ( $clean as $bound ) {
+			$bands[] = array(
+				'min' => $lo,
+				'max' => $bound,
+			);
+			$lo = $bound;
+		}
+		$bands[] = array(
+			'min' => $lo,
+			'max' => null,
+		);
+		return $bands;
+	}
+
+	/**
+	 * Auto-derive ~$count contiguous bands from 0 up to a rounded step, with the
+	 * last band open-ended. Used when no explicit bands are configured. Pure.
+	 *
+	 * @param float $max   Highest price in the candidate set.
+	 * @param int   $count Target band count.
+	 * @return array<int,array{min:float,max:?float}>
+	 */
+	public static function auto_bands( $max, $count = 4 ) {
+		$max   = (float) $max;
+		$count = max( 1, (int) $count );
+		if ( $max <= 0 ) {
+			return array( array( 'min' => 0.0, 'max' => null ) );
+		}
+
+		$step = self::nice_round( $max / $count );
+		$bounds = array();
+		for ( $i = 1; $i < $count; $i++ ) {
+			$bound = $step * $i;
+			if ( $bound >= $max ) {
+				break;
+			}
+			$bounds[] = $bound;
+		}
+		return self::bands_from_bounds( $bounds );
+	}
+
+	/**
+	 * Round a step up to a "nice" 1/2/5 × power-of-ten value (50, 100, 250, …) so
+	 * auto bands read cleanly. Pure.
+	 *
+	 * @param float $step Raw step.
+	 * @return float
+	 */
+	public static function nice_round( $step ) {
+		$step = (float) $step;
+		if ( $step <= 1 ) {
+			return 1.0;
+		}
+		$mag  = pow( 10, floor( log10( $step ) ) );
+		$frac = $step / $mag;
+		if ( $frac <= 1 ) {
+			$nice = 1;
+		} elseif ( $frac <= 2 ) {
+			$nice = 2;
+		} elseif ( $frac <= 5 ) {
+			$nice = 5;
+		} else {
+			$nice = 10;
+		}
+		return (float) ( $nice * $mag );
+	}
+
+	/**
+	 * Count how many products fall in each band (price range overlaps the band).
+	 * Pure. Parallel to $bands.
+	 *
+	 * @param array $prices product_id => ['min'=>float,'max'=>float].
+	 * @param array $bands  Bands.
+	 * @return int[] Count per band, same order as $bands.
+	 */
+	public static function count_in_bands( array $prices, array $bands ) {
+		$counts = array();
+		foreach ( $bands as $band ) {
+			$counts[] = count( self::ids_in_band( $prices, $band ) );
+		}
+		return $counts;
+	}
+
+	/**
+	 * Product ids whose price range overlaps ANY of the selected bands (OR within
+	 * the price facet). Pure.
+	 *
+	 * @param int[] $products Candidate product ids.
+	 * @param array $prices   product_id => ['min'=>float,'max'=>float].
+	 * @param array $selected Selected bands.
+	 * @return int[]
+	 */
+	public static function filter_by_bands( array $products, array $prices, array $selected ) {
+		if ( empty( $selected ) ) {
+			return array_values( $products );
+		}
+		$keep = array();
+		foreach ( $selected as $band ) {
+			foreach ( self::ids_in_band( $prices, $band ) as $id ) {
+				$keep[ $id ] = true;
+			}
+		}
+		$result = array();
+		foreach ( $products as $id ) {
+			if ( isset( $keep[ (int) $id ] ) ) {
+				$result[] = (int) $id;
+			}
+		}
+		return $result;
+	}
+
+	/**
+	 * Shape bands + counts into the wire price facet, dropping zero-count bands and
+	 * flagging the selected ones. Pure.
+	 *
+	 * @param array $bands    Bands.
+	 * @param int[] $counts   Count per band (parallel to $bands).
+	 * @param array $selected Selected bands.
+	 * @return array{bands:array<int,array<string,mixed>>}
+	 */
+	public static function shape_price_facet( array $bands, array $counts, array $selected ) {
+		$selected_sigs = array();
+		foreach ( $selected as $band ) {
+			$selected_sigs[ self::band_signature( $band ) ] = true;
+		}
+
+		$out = array();
+		foreach ( $bands as $i => $band ) {
+			$count = isset( $counts[ $i ] ) ? (int) $counts[ $i ] : 0;
+			if ( $count <= 0 ) {
+				continue;
+			}
+			$out[] = array(
+				'min'      => (float) $band['min'],
+				'max'      => isset( $band['max'] ) && null !== $band['max'] ? (float) $band['max'] : null,
+				'count'    => $count,
+				'selected' => isset( $selected_sigs[ self::band_signature( $band ) ] ),
+			);
+		}
+		return array( 'bands' => $out );
+	}
+
+	/**
+	 * Stable signature for a band, used to match selected against candidate bands.
+	 *
+	 * @param array $band Band.
+	 * @return string
+	 */
+	private static function band_signature( array $band ) {
+		$min = (float) ( $band['min'] ?? 0 );
+		$max = isset( $band['max'] ) && null !== $band['max'] ? (float) $band['max'] : null;
+		return ( $min + 0 ) . ':' . ( null === $max ? '' : ( $max + 0 ) );
+	}
+
+	/**
+	 * Ids whose price range overlaps a single band. Pure.
+	 *
+	 * @param array $prices product_id => ['min'=>float,'max'=>float].
+	 * @param array $band   Band.
+	 * @return int[]
+	 */
+	private static function ids_in_band( array $prices, array $band ) {
+		$min = (float) ( $band['min'] ?? 0 );
+		$max = isset( $band['max'] ) && null !== $band['max'] ? (float) $band['max'] : null;
+		$ids = array();
+		foreach ( $prices as $id => $range ) {
+			$p_min = (float) ( $range['min'] ?? 0 );
+			$p_max = (float) ( $range['max'] ?? $p_min );
+			if ( $p_max >= $min && ( null === $max || $p_min <= $max ) ) {
+				$ids[] = (int) $id;
+			}
+		}
+		return $ids;
+	}
+
 	/* -----------------------------------------------------------------
 	 * Integration entry point (live QA)
 	 * ----------------------------------------------------------------- */
@@ -266,13 +465,31 @@ final class Query_Builder {
 			$category_tree = Category_Tree::build( self::shape_category_nodes( $cat_counts, $cat_meta ) );
 		}
 
-		$count    = count( $computed['products'] );
+		// Price facet (numeric bands). Price isn't in the index (§5.2) — read it
+		// from wc_product_meta_lookup for the term-filtered set. Band counts are
+		// self-excluded w.r.t. the price selection (computed over the term-filtered
+		// set); the grid count below additionally applies the selected bands.
+		$selected_bands = isset( $state['price_bands'] ) && is_array( $state['price_bands'] ) ? $state['price_bands'] : array();
+		$prices         = $this->product_prices( $computed['products'] );
+		$price_facet    = array();
+		$grid_products  = $computed['products'];
+		if ( ! empty( $prices ) ) {
+			$bands       = $this->resolve_price_bands( $prices );
+			$band_counts = self::count_in_bands( $prices, $bands );
+			$price_facet = self::shape_price_facet( $bands, $band_counts, $selected_bands );
+			if ( ! empty( $selected_bands ) ) {
+				$grid_products = self::filter_by_bands( $computed['products'], $prices, $selected_bands );
+			}
+		}
+
+		$count    = count( $grid_products );
 		$per_page = $this->products_per_page();
 		$paged    = max( 1, (int) $state['paged'] );
 
 		return array(
 			'facets'        => $facets,
 			'category_tree' => $category_tree,
+			'price'         => $price_facet,
 			'count'         => $count,
 			'pagination'    => array(
 				'current'     => $paged,
@@ -412,6 +629,68 @@ final class Query_Builder {
 			);
 		}
 		return $meta;
+	}
+
+	/**
+	 * Read min/max price for a set of products from wc_product_meta_lookup (§5.2 —
+	 * price lives in WooCommerce's lookup, never duplicated in our index).
+	 *
+	 * @param int[] $product_ids Product ids.
+	 * @return array<int,array{min:float,max:float}>
+	 */
+	private function product_prices( array $product_ids ) {
+		$product_ids = array_values( array_unique( array_map( 'intval', $product_ids ) ) );
+		if ( empty( $product_ids ) ) {
+			return array();
+		}
+
+		global $wpdb;
+		$lookup       = $wpdb->prefix . 'wc_product_meta_lookup';
+		$placeholders = implode( ', ', array_fill( 0, count( $product_ids ), '%d' ) );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT product_id, min_price, max_price FROM {$lookup} WHERE product_id IN ({$placeholders})",
+				$product_ids
+			)
+		);
+		// phpcs:enable
+
+		$prices = array();
+		foreach ( (array) $rows as $row ) {
+			$prices[ (int) $row->product_id ] = array(
+				'min' => (float) $row->min_price,
+				'max' => (float) $row->max_price,
+			);
+		}
+		return $prices;
+	}
+
+	/**
+	 * Resolve the candidate price bands: the configured `price_bands` upper bounds
+	 * if set, otherwise auto-derived from the highest price in the candidate set.
+	 *
+	 * @param array $prices product_id => ['min'=>float,'max'=>float].
+	 * @return array<int,array{min:float,max:?float}>
+	 */
+	private function resolve_price_bands( array $prices ) {
+		$setting = (string) get_option( 'freeman_core_shop_filters_price_bands', '' );
+		$bounds  = array();
+		foreach ( explode( ',', $setting ) as $token ) {
+			$token = trim( $token );
+			if ( is_numeric( $token ) ) {
+				$bounds[] = (float) $token;
+			}
+		}
+		if ( ! empty( $bounds ) ) {
+			return self::bands_from_bounds( $bounds );
+		}
+
+		$max = 0.0;
+		foreach ( $prices as $range ) {
+			$max = max( $max, (float) ( $range['max'] ?? 0 ) );
+		}
+		return self::auto_bands( $max );
 	}
 
 	/**

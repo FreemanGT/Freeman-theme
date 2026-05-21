@@ -55,6 +55,14 @@ final class Labels {
 				'label'   => __( 'Categories heading', 'freeman-core' ),
 				'default' => __( 'Categories', 'freeman-core' ),
 			),
+			'price'          => array(
+				'label'   => __( 'Price heading', 'freeman-core' ),
+				'default' => __( 'Price', 'freeman-core' ),
+			),
+			'sort'           => array(
+				'label'   => __( 'Sort heading', 'freeman-core' ),
+				'default' => __( 'Sort by', 'freeman-core' ),
+			),
 			'categories_aria' => array(
 				'label'   => __( 'Categories accessible name', 'freeman-core' ),
 				'default' => __( 'Product categories', 'freeman-core' ),

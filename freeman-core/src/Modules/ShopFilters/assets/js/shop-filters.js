@@ -22,10 +22,8 @@
 	var panel = document.querySelector('[data-freeman-sf]');
 	if (!panel) { return; }
 
-	var facetsForm = panel.querySelector('[data-freeman-sf-facets]');
-	if (!facetsForm) { return; }
-
 	var chipsEl = panel.querySelector('[data-freeman-sf-chips]');
+	var sortSelect = panel.querySelector('[data-freeman-sf-sort]');
 	var drawer = panel.querySelector('[data-freeman-sf-panel]');
 	var toggle = panel.querySelector('[data-freeman-sf-toggle]');
 	var overlay = panel.querySelector('[data-freeman-sf-overlay]');
@@ -45,10 +43,11 @@
 		};
 	}
 
-	/** Current selection as { taxonomy: [slug, ...] }. */
+	/** Current selection as { taxonomy: [slug, ...] }. Panel-wide so the price
+	 * facet (rendered above the attribute form) is included alongside attributes. */
 	function readSelection() {
 		var selection = {};
-		var boxes = facetsForm.querySelectorAll('.freeman-sf__checkbox');
+		var boxes = panel.querySelectorAll('.freeman-sf__checkbox');
 		for (var i = 0; i < boxes.length; i++) {
 			var box = boxes[i];
 			if (!box.checked) { continue; }
@@ -76,6 +75,12 @@
 			var slugs = selection[tax];
 			if (slugs && slugs.length) { url.searchParams.set(FILTER_PREFIX + tax, slugs.join(',')); }
 		});
+
+		// Sort: carry the dropdown's current value (WooCommerce honours ?orderby).
+		if (sortSelect) {
+			var ob = sortSelect.value;
+			if (ob) { url.searchParams.set('orderby', ob); } else { url.searchParams.delete('orderby'); }
+		}
 		return url.href;
 	}
 
@@ -133,17 +138,20 @@
 	if (applyBtn) { applyBtn.addEventListener('click', navigate); }
 	if (clearMobileBtn) {
 		clearMobileBtn.addEventListener('click', function () {
-			facetsForm.querySelectorAll('.freeman-sf__checkbox:checked').forEach(function (b) { b.checked = false; });
+			panel.querySelectorAll('.freeman-sf__checkbox:checked').forEach(function (b) { b.checked = false; });
 			navigate();
 		});
 	}
 
-	/* ---- facet change: desktop auto-navigates; mobile defers to Apply ---- */
-	facetsForm.addEventListener('change', function (e) {
-		if (e.target && e.target.classList && e.target.classList.contains('freeman-sf__checkbox')) {
-			if (isMobile()) { return; }
-			debouncedNavigate();
-		}
+	/* ---- facet / sort change: desktop auto-navigates; mobile defers to Apply ---- */
+	panel.addEventListener('change', function (e) {
+		var t = e.target;
+		if (!t || !t.classList) { return; }
+		var isBox = t.classList.contains('freeman-sf__checkbox');
+		var isSort = t.hasAttribute && t.hasAttribute('data-freeman-sf-sort');
+		if (!isBox && !isSort) { return; }
+		if (isMobile()) { return; }
+		debouncedNavigate();
 	});
 
 	/* ---- chip remove + clear-all → uncheck then navigate immediately ---- */
@@ -151,7 +159,7 @@
 		chipsEl.addEventListener('click', function (e) {
 			var clear = e.target.closest && e.target.closest('[data-freeman-sf-clear]');
 			if (clear) {
-				facetsForm.querySelectorAll('.freeman-sf__checkbox:checked').forEach(function (b) { b.checked = false; });
+				panel.querySelectorAll('.freeman-sf__checkbox:checked').forEach(function (b) { b.checked = false; });
 				navigate();
 				return;
 			}
@@ -160,7 +168,7 @@
 				e.preventDefault();
 				var tax = chip.getAttribute('data-freeman-sf-taxonomy');
 				var slug = chip.getAttribute('data-freeman-sf-slug');
-				var box = facetsForm.querySelector('.freeman-sf__checkbox[data-freeman-sf-taxonomy="' + tax + '"][value="' + slug + '"]');
+				var box = panel.querySelector('.freeman-sf__checkbox[data-freeman-sf-taxonomy="' + tax + '"][value="' + slug + '"]');
 				if (box) { box.checked = false; }
 				navigate();
 			}

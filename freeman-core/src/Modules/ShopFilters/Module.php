@@ -90,7 +90,44 @@ final class Module extends Module_Base {
 			$first = false;
 		}
 
+		$schema['price_bands'] = array(
+			'label'       => __( 'Price bands', 'freeman-core' ),
+			'type'        => 'text',
+			'default'     => '',
+			'description' => __( 'Comma-separated upper price points for the price filter, e.g. 50, 100, 200, 500 (gives 0–50, 50–100, 100–200, 200–500, 500+). Leave blank to auto-derive bands from your catalogue prices.', 'freeman-core' ),
+		);
+
+		$choices = array( '' => __( '— WooCommerce default —', 'freeman-core' ) );
+		foreach ( Url_State::orderby_whitelist() as $orderby ) {
+			$choices[ $orderby ] = self::orderby_label( $orderby );
+		}
+		$schema['default_sort'] = array(
+			'label'       => __( 'Default sort', 'freeman-core' ),
+			'type'        => 'select',
+			'choices'     => $choices,
+			'default'     => '',
+			'description' => __( 'Default product ordering for shop and category pages (until the shopper picks a sort). Blank keeps the WooCommerce default.', 'freeman-core' ),
+		);
+
 		return $schema;
+	}
+
+	/**
+	 * Human label for a sort option (mirrors WooCommerce's catalog-ordering names).
+	 *
+	 * @param string $orderby Orderby key from Url_State::orderby_whitelist().
+	 * @return string
+	 */
+	public static function orderby_label( $orderby ) {
+		$labels = array(
+			'menu_order' => __( 'Default sorting', 'freeman-core' ),
+			'popularity' => __( 'Popularity', 'freeman-core' ),
+			'rating'     => __( 'Average rating', 'freeman-core' ),
+			'date'       => __( 'Latest', 'freeman-core' ),
+			'price'      => __( 'Price: low to high', 'freeman-core' ),
+			'price-desc' => __( 'Price: high to low', 'freeman-core' ),
+		);
+		return isset( $labels[ $orderby ] ) ? $labels[ $orderby ] : (string) $orderby;
 	}
 
 	/**

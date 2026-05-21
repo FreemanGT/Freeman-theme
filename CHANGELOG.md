@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.3] — 2026-05-20
+
+- Shop Filters admin control surface (by request): Freeman -> Shop Filters page now has the background-indexing toggle, live index status (products/rows/last sweep/scheduled) and the reindex tool, all manageable from wp-admin without WP-CLI. Toggle writes the same option the feature flag reads.
+
 ## [1.12.2] — 2026-05-20
 
 - Shop Filters 6.1 indexer bug-fix: non-variation global attributes on variable products now follow overall stock (were wrongly variation-gated, hiding them under in-stock-only filtering). Extracted Term_Helpers::resolve_in_stock + unit test; hardened ensure_scheduled Action Scheduler check.

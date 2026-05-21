@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Plugin {
 
-	const VERSION = '1.12.2';
+	const VERSION = '1.12.3';
 
 	/**
 	 * Singleton instance.

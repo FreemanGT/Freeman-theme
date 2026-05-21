@@ -52,4 +52,17 @@ final class ShopFiltersModuleTest extends TestCase {
 		$this->assertNotFalse( has_action( 'woocommerce_update_product' ) );
 		$this->assertNotFalse( has_action( 'woocommerce_variation_set_stock' ) );
 	}
+
+	public function test_settings_schema_exposes_indexer_toggle_mapped_to_the_flag(): void {
+		$module = new Module();
+		$schema = $module->settings_schema();
+
+		$this->assertArrayHasKey( 'indexer_enabled', $schema );
+		$this->assertSame( 'checkbox', $schema['indexer_enabled']['type'] );
+		// The page toggle writes the exact option the feature flag reads — one switch.
+		$this->assertSame(
+			Feature_Flags::option_name( 'shop_filters', 'indexer' ),
+			$module->option_name( 'indexer_enabled' )
+		);
+	}
 }

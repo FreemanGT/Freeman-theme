@@ -52,20 +52,42 @@ final class Module extends Module_Base {
 	}
 
 	/**
-	 * Boot. Registers the wp-cron fallback recurrence unconditionally, then —
-	 * only when the indexer flag is on — wires the background indexer and the
-	 * admin reindex tool. Flag off = nothing attaches (additive / reversible).
+	 * Settings schema. Exposes the background-indexing toggle on the
+	 * Freeman → Shop Filters page so it can be managed from wp-admin without
+	 * WP-CLI. The key `indexer_enabled` resolves to the very option the feature
+	 * flag reads (freeman_core_shop_filters_indexer_enabled), so this checkbox
+	 * and the Freeman → Feature Flags entry are the same switch.
+	 *
+	 * @return array
+	 */
+	public function settings_schema() {
+		return array(
+			'indexer_enabled' => array(
+				'label'          => __( 'Background indexing', 'freeman-core' ),
+				'type'           => 'checkbox',
+				'checkbox_label' => __( 'Build and keep a fresh product index (required for the filters). Indexes incrementally as products change, plus a sweep every few minutes.', 'freeman-core' ),
+				'description'    => __( 'Same switch as the "Shop Filters — background indexer" entry under Freeman → Feature Flags. Requires the module to be enabled.', 'freeman-core' ),
+				'default'        => 0,
+			),
+		);
+	}
+
+	/**
+	 * Boot. Always registers the wp-cron fallback recurrence and (in wp-admin)
+	 * the control surface — toggle, index status and the reindex tool — so the
+	 * module is fully manageable from Freeman → Shop Filters. The actual
+	 * auto-indexer (lifecycle hooks + reconcile sweep) only attaches when the
+	 * indexer toggle is on, so flag-off stays inert / reversible.
 	 */
 	public function boot() {
 		add_filter( 'cron_schedules', array( $this, 'register_cron_schedule' ) );
 
-		if ( ! Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) ) {
-			return;
-		}
-
 		$indexer = new Indexer();
-		$indexer->register_hooks();
-		$indexer->ensure_scheduled();
+
+		if ( Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) ) {
+			$indexer->register_hooks();
+			$indexer->ensure_scheduled();
+		}
 
 		if ( is_admin() ) {
 			( new Admin_Page( $indexer ) )->boot();

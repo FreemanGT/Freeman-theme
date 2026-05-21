@@ -1,5 +1,13 @@
 # Shop Filters — Changelog
 
+## [1.12.3] — 2026-05-20
+
+- Admin control surface (Phase 6.1 follow-up, by request) — manage everything from Freeman → Shop Filters without WP-CLI:
+  - **Background indexing** toggle — a `settings_schema` checkbox keyed `indexer_enabled` that writes the same option the feature flag reads, so it's the same switch as the Freeman → Feature Flags entry.
+  - Live **index status** — indexed products, total rows, last sweep time, and whether the reconcile sweep is scheduled.
+  - The **Reindex all products** tool is now always visible while the module is enabled (previously only after the flag was already on — a chicken-and-egg).
+- The admin surface loads whenever the module is enabled; the auto-indexer (lifecycle hooks + sweep) still only attaches when the toggle is on. Reindex AJAX handlers are guarded on the toggle (defence in depth).
+
 ## [1.12.2] — 2026-05-20
 
 - Bug-fix (Phase 6.1 indexer, caught in review before live QA): non-variation global attributes on a variable product (e.g. an informational "Brand" attribute that isn't a variation axis) now follow the product's overall stock instead of being treated as variation-stock-gated. Previously every value of such an attribute was marked out-of-stock (no matching variation), which would have hidden them under in-stock-only filtering. The decision is extracted to the pure, unit-tested `Term_Helpers::resolve_in_stock()`. Also hardened `Indexer::ensure_scheduled()`'s Action Scheduler check (`! as_next_scheduled_action()` rather than strict `false ===`).

@@ -173,6 +173,14 @@ final class Feature_Flags {
 				'since'       => '1.11.40',
 				'shared'      => false,
 			),
+			array(
+				'module'      => 'shop_filters',
+				'feature'     => 'indexer',
+				'label'       => __( 'Shop Filters — background indexer', 'freeman-core' ),
+				'description' => __( 'Builds and keeps fresh the product attribute / category index that powers Shop Filters (event-driven dirty queue + a 5-minute reconcile sweep) and enables the admin "Reindex now" tool. Off: no index is written and no scheduling occurs. The storefront filter UI is gated separately in a later phase.', 'freeman-core' ),
+				'since'       => '1.12.0',
+				'shared'      => false,
+			),
 		);
 	}
 }

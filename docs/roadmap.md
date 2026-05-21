@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-20 (Wave 6 — Shop Filters new module — epic added; Phase 6.1 targets 1.12.0. Prior: Wave 5.1 — Feature Flags admin page — ✅ shipped 1.11.44; Wave 2.2 / 4g — VariationSwatches settings surface graduated, `settings_hub` flag retired — ✅ shipped 1.11.45)
+**Last updated**: 2026-05-20 (Wave 6 — Shop Filters new module — Phase 6.1 foundation ✅ shipped 1.12.0. Prior: Wave 5.1 — Feature Flags admin page — ✅ shipped 1.11.44; Wave 2.2 / 4g — VariationSwatches settings surface graduated, `settings_hub` flag retired — ✅ shipped 1.11.45)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -270,7 +270,7 @@ New module `src/Modules/ShopFilters/` (namespace `Freeman\Core\Modules\ShopFilte
 Sub-PR phases (each ≤12 files, ≤3 modules, independently shippable, flag-gated; each code phase marks its own bullet `✅ shipped <version> (#PR, date)`, bumps the Last-updated line, and — when it adds tests — the CLAUDE.md PHPUnit count):
 
 - **6.0 — Roadmap + decision record** — docs only (this entry + the §5 decisions addendum). No code, no version bump. Kept separate from code per "decisions separate from code".
-- **6.1 — Foundations** (targets 1.12.0) — module skeleton + `Database` index table (the schema change) + event-driven `Indexer` (dirty-queue + reconcile sweep; Action-Scheduler-or-wp-cron) + `Term_Helpers` (duplicated pure swatch/in-stock helpers, decoupled from VariationSwatches) + admin "Reindex now" tool. No storefront output. Flag `freeman_core_shop_filters_indexer_enabled`.
+- **6.1 — Foundations** ✅ shipped 1.12.0 (2026-05-20) — module skeleton + `Database` index table (the schema change) + event-driven `Indexer` (dirty-queue + reconcile sweep; Action-Scheduler-or-wp-cron) + `Term_Helpers` (duplicated pure swatch/in-stock helpers, decoupled from VariationSwatches) + admin "Reindex now" tool. No storefront output. Flag `freeman_core_shop_filters_indexer_enabled`.
 - **6.2 — Facet engine** (targets 1.12.1) — pure `Facet_Config` / `Facet_Engine` / `Category_Tree` / `Url_State` / `Query_Builder`: AND-across / OR-within with self-exclusion, hide-zero (req #2), hide-empty-facet (req #1), category hierarchy (req #3). No flag (dormant helper classes — Hard Rule #1 additive exception). Hooks `freeman_core/shop_filters/{facet_config, is_facet_visible}`.
 - **6.3a — Frontend read path** (targets 1.12.2) — `[freeman_shop_filters]` shortcode + admin-AJAX query endpoint + JS grid-swap (reuses InfiniteScroll container detection; fetches the filtered front-end URL for Elementor markup parity) + checkbox facets. Flag `freeman_core_shop_filters_frontend_enabled`.
 - **6.3b — Facet UI** (targets 1.12.3) — styling + colour/image facets (term meta read directly) + category-tree facet + render hooks `freeman_core/shop_filters/{before_render, after_render, grid_html}`. Reuses `frontend_enabled`.

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.0] — 2026-05-20
+
+- Shop Filters new module - Wave 6 Phase 6.1 foundation: index table, background indexer, admin reindex tool. Behind freeman_core_shop_filters_indexer_enabled flag default off; module disabled by default. Storefront UI ships in later phases.
+
 ## [1.11.51] — 2026-05-13
 
 - VariationSwatches: respect wp_terms.term_order column for swatch ordering (honors Custom Taxonomy Order plugin et al). Falls back to wc_get_product_terms when the column is absent.

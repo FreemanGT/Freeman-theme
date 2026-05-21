@@ -122,13 +122,15 @@ final class Subscribers {
 	 * Erase PII for all subscriptions matching an exact email address.
 	 * Used by the Wave 4.1a Privacy eraser.
 	 *
-	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
-	 * via a single `UPDATE`. The legacy schema declares these columns as
-	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 * Sets `customer_name=''`, `customer_email='erased-<id>@freeman.invalid'`,
+	 * `status='unsubscribed'` one row at a time. The unique per-row tombstone
+	 * avoids collisions with the legacy `(customer_email, product_id,
+	 * variation_id, status)` unique index when one customer has multiple rows
+	 * for the same product/variation in different statuses.
 	 *
 	 * The row is preserved (not DELETEd) so the stock monitor's audit
-	 * trail stays intact; the empty `customer_email` prevents future
-	 * email matches.
+	 * trail stays intact; the tombstone `customer_email` prevents future
+	 * matches for the original email.
 	 *
 	 * Empty-string guard: returns `0` early when `$email === ''` so a
 	 * stray empty input cannot "erase" rows that were already erased.
@@ -144,19 +146,29 @@ final class Subscribers {
 			return 0;
 		}
 		global $wpdb;
-		$table   = $wpdb->prefix . 'rsn_subscribers';
-		$updated = $wpdb->update(
-			$table,
-			array(
-				'customer_name'  => '',
-				'customer_email' => '',
-				'status'         => 'unsubscribed',
-			),
-			array( 'customer_email' => $email ),
-			array( '%s', '%s', '%s' ),
-			array( '%s' )
-		);
-		return (int) $updated;
+		$table = $wpdb->prefix . 'rsn_subscribers';
+		$rows  = self::find_by_email( $email );
+		$count = 0;
+
+		foreach ( $rows as $row ) {
+			$id      = (int) $row->id;
+			$updated = $wpdb->update(
+				$table,
+				array(
+					'customer_name'  => '',
+					'customer_email' => 'erased-' . $id . '@freeman.invalid',
+					'status'         => 'unsubscribed',
+				),
+				array( 'id' => $id ),
+				array( '%s', '%s', '%s' ),
+				array( '%d' )
+			);
+			if ( false !== $updated ) {
+				$count += (int) $updated;
+			}
+		}
+
+		return $count;
 	}
 
 	/**

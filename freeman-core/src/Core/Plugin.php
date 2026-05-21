@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Plugin {
 
-	const VERSION = '1.11.41';
+	const VERSION = '1.11.42';
 
 	/**
 	 * Singleton instance.
@@ -127,6 +127,7 @@ final class Plugin {
 		$this->load_textdomain();
 
 		$this->migrations->maybe_run();
+		$this->register_platform_integrations();
 
 		// Discover + boot enabled modules. Any thrown exception gets logged
 		// *and* stashed in a transient so the dashboard can surface it —
@@ -170,6 +171,15 @@ final class Plugin {
 	public function boot_for_uninstall() {
 		$this->init_services();
 		$this->registry->discover();
+	}
+
+	/**
+	 * Register integrations that must survive module disabled state.
+	 *
+	 * Privacy hooks need to cover retained data even after a module is turned off.
+	 */
+	private function register_platform_integrations() {
+		( new \Freeman\Core\Modules\RestockNotify\Privacy() )->register();
 	}
 
 	/**

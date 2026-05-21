@@ -29,7 +29,7 @@ use Freeman\Core\Modules\ShopFilters\Module;
 $sf_current_sort = '' !== (string) $orderby ? (string) $orderby : (string) get_option( 'freeman_core_shop_filters_default_sort', '' );
 ?>
 <div class="freeman-sf" data-freeman-sf>
-	<button type="button" class="freeman-sf__toggle" data-freeman-sf-toggle aria-expanded="false" aria-controls="freeman-sf-panel">
+	<button type="button" class="freeman-sf__toggle fm-btn fm-btn--ghost fm-btn--block" data-freeman-sf-toggle aria-expanded="false" aria-controls="freeman-sf-panel">
 		<?php echo esc_html( Labels::get( 'toggle' ) ); ?>
 	</button>
 
@@ -65,7 +65,7 @@ $sf_current_sort = '' !== (string) $orderby ? (string) $orderby : (string) get_o
 				><?php echo esc_html( $sf_chip['label'] ); ?> &times;</button>
 			<?php endforeach; ?>
 			<?php if ( ! empty( $sf_chips ) ) : ?>
-				<button type="button" class="freeman-sf__clear" data-freeman-sf-clear><?php echo esc_html( Labels::get( 'clear_all' ) ); ?></button>
+				<button type="button" class="freeman-sf__clear fm-btn fm-btn--link" data-freeman-sf-clear><?php echo esc_html( Labels::get( 'clear_all' ) ); ?></button>
 			<?php endif; ?>
 		</div>
 
@@ -75,7 +75,7 @@ $sf_current_sort = '' !== (string) $orderby ? (string) $orderby : (string) get_o
 
 		<div class="freeman-sf__sort">
 			<label class="freeman-sf__sort-label" for="freeman-sf-sort"><?php echo esc_html( Labels::get( 'sort' ) ); ?></label>
-			<select id="freeman-sf-sort" class="freeman-sf__sort-select" data-freeman-sf-sort>
+			<select id="freeman-sf-sort" class="freeman-sf__sort-select fm-select" data-freeman-sf-sort>
 				<?php foreach ( Url_State::orderby_whitelist() as $sf_orderby ) : ?>
 					<option value="<?php echo esc_attr( $sf_orderby ); ?>" <?php selected( $sf_current_sort, $sf_orderby ); ?>><?php echo esc_html( Module::orderby_label( $sf_orderby ) ); ?></option>
 				<?php endforeach; ?>
@@ -99,8 +99,8 @@ $sf_current_sort = '' !== (string) $orderby ? (string) $orderby : (string) get_o
 		</form>
 
 		<div class="freeman-sf__actions">
-			<button type="button" class="freeman-sf__apply" data-freeman-sf-apply><?php echo esc_html( Labels::get( 'apply' ) ); ?></button>
-			<button type="button" class="freeman-sf__clear-mobile" data-freeman-sf-clear-mobile><?php echo esc_html( Labels::get( 'clear' ) ); ?></button>
+			<button type="button" class="freeman-sf__apply fm-btn" data-freeman-sf-apply><?php echo esc_html( Labels::get( 'apply' ) ); ?></button>
+			<button type="button" class="freeman-sf__clear-mobile fm-btn fm-btn--ghost" data-freeman-sf-clear-mobile><?php echo esc_html( Labels::get( 'clear' ) ); ?></button>
 		</div>
 	</div>
 </div>

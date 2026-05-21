@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.16] — 2026-05-20
+
+- Shop Filters buttons now match the theme: the panel toggle, Apply, Clear and sort controls carry the themes own .fm-btn / .fm-select primitives so they render identically to the sites buttons (the 1.12.15 core styles were being overridden by the theme/Elementor); core styles remain as the no-theme fallback
+
 ## [1.12.15] — 2026-05-20
 
 - Shop Filters UI polish: filter panel buttons (mobile toggle, chips, clear, apply, sort) are now more minimal and rounded, pulling the themes --fm-* radius/weight/tracking design tokens with fallbacks

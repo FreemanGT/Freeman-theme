@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.11] — 2026-05-20
+
+- freeman-core: Shop Filters 6.3b Facet UI — the deferred storefront UI. Category-tree facet on top (pruned parent-to-child hierarchy; each node navigates to its category archive), colour/image swatch facets (term meta read directly, decoupled from VariationSwatches), a stylesheet that removes the default list bullets and adds a focus-trapped mobile bottom-sheet drawer (defer-until-Apply on mobile, prefers-reduced-motion), and render hooks before_render / after_render (actions) + panel_html (filter). Reuses the frontend_enabled flag.
+
 ## [1.12.10] — 2026-05-20
 
 - Shop Filters 6.3a.4 hyphen + pagination fix: filtering by a hyphenated attribute (pa_shoe-size, pa_clothing-size) returned no products. Url_State sanitize_taxonomy stripped hyphens, mangling the taxonomy (pa_shoe-size to pa_shoesize) so the tax_query matched nothing — every size filter came back blank. Hyphens are now allowed in attribute taxonomies. Also: applying a filter from a /page/N/ URL kept the pretty-pagination path and could 404 when the filtered result set had fewer pages; the front-end controller now resets the /page/N/ path segment to page 1, alongside the existing paged query-param reset.

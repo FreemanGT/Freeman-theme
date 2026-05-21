@@ -106,4 +106,58 @@ final class ShopFiltersQueryBuilderTest extends TestCase {
 		$this->assertCount( 1, $facets[0]['terms'] );
 		$this->assertSame( 'red', $facets[0]['terms'][0]['slug'] );
 	}
+
+	public function test_shape_facets_carries_swatch_data_and_flips_type_to_color(): void {
+		// A facet whose term-index entries carry colour/image becomes a 'color'
+		// facet (rendered as swatches), and the data rides through onto the terms.
+		$facets = Query_Builder::shape_facets(
+			array( array( 'taxonomy' => 'pa_color', 'type' => 'checkbox', 'label' => 'Colour' ) ),
+			array( 'pa_color' => array( 11 => 2, 12 => 1 ) ),
+			array(
+				'pa_color' => array(
+					11 => array( 'slug' => 'red', 'name' => 'Red', 'order' => 0, 'color' => '#ff0000' ),
+					12 => array( 'slug' => 'denim', 'name' => 'Denim', 'order' => 1, 'image' => 'https://example.test/denim.jpg' ),
+				),
+			),
+			array()
+		);
+
+		$this->assertSame( 'color', $facets[0]['type'] );
+		$terms = $facets[0]['terms'];
+		$this->assertSame( '#ff0000', $terms[0]['color'] );
+		$this->assertArrayNotHasKey( 'image', $terms[0] );
+		$this->assertSame( 'https://example.test/denim.jpg', $terms[1]['image'] );
+		$this->assertArrayNotHasKey( 'color', $terms[1] );
+	}
+
+	public function test_shape_facets_keeps_checkbox_type_without_swatch_data(): void {
+		$facets = Query_Builder::shape_facets(
+			array( array( 'taxonomy' => 'pa_size', 'type' => 'checkbox', 'label' => 'Size' ) ),
+			array( 'pa_size' => array( 21 => 4 ) ),
+			array( 'pa_size' => array( 21 => array( 'slug' => 'm', 'name' => 'M', 'order' => 0 ) ) ),
+			array()
+		);
+
+		$this->assertSame( 'checkbox', $facets[0]['type'] );
+		$this->assertArrayNotHasKey( 'color', $facets[0]['terms'][0] );
+	}
+
+	public function test_shape_category_nodes_maps_counts_with_meta_and_drops_unknown(): void {
+		$counts = array( 5 => 3, 6 => 1, 99 => 7 ); // 99 has no metadata.
+		$meta   = array(
+			5 => array( 'parent' => 0, 'name' => 'Clothing', 'slug' => 'clothing', 'order' => 2 ),
+			6 => array( 'parent' => 5, 'name' => 'Shirts', 'slug' => 'shirts', 'order' => 0 ),
+		);
+
+		$nodes = Query_Builder::shape_category_nodes( $counts, $meta );
+
+		$this->assertCount( 2, $nodes );
+		$this->assertSame( 5, $nodes[0]['term_id'] );
+		$this->assertSame( 0, $nodes[0]['parent'] );
+		$this->assertSame( 'Clothing', $nodes[0]['name'] );
+		$this->assertSame( 3, $nodes[0]['count'] );
+		$this->assertSame( 2, $nodes[0]['order'] );
+		$this->assertSame( 5, $nodes[1]['parent'] );
+		$this->assertSame( 'shirts', $nodes[1]['slug'] );
+	}
 }

@@ -100,8 +100,9 @@ final class Query_Builder {
 				$selected[ (string) $slug ] = true;
 			}
 
-			$meta  = isset( $term_index[ $taxonomy ] ) && is_array( $term_index[ $taxonomy ] ) ? $term_index[ $taxonomy ] : array();
-			$terms = array();
+			$meta       = isset( $term_index[ $taxonomy ] ) && is_array( $term_index[ $taxonomy ] ) ? $term_index[ $taxonomy ] : array();
+			$terms      = array();
+			$has_swatch = false;
 			foreach ( $engine_facets[ $taxonomy ] as $term_id => $count ) {
 				$term_id = (int) $term_id;
 				$info    = isset( $meta[ $term_id ] ) ? $meta[ $term_id ] : array();
@@ -109,13 +110,24 @@ final class Query_Builder {
 				if ( '' === $slug ) {
 					continue; // a term we can't address by slug can't be a checkbox.
 				}
-				$terms[] = array(
+				$term = array(
 					'slug'     => $slug,
 					'label'    => (string) ( $info['name'] ?? $slug ),
 					'count'    => (int) $count,
 					'selected' => isset( $selected[ $slug ] ),
 					'order'    => (int) ( $info['order'] ?? 0 ),
 				);
+				// Swatch data (read by build_term_index from term meta) makes this a
+				// colour/image facet rather than a plain checkbox list.
+				if ( ! empty( $info['color'] ) ) {
+					$term['color'] = (string) $info['color'];
+					$has_swatch    = true;
+				}
+				if ( ! empty( $info['image'] ) ) {
+					$term['image'] = (string) $info['image'];
+					$has_swatch    = true;
+				}
+				$terms[] = $term;
 			}
 
 			if ( empty( $terms ) ) {
@@ -140,13 +152,44 @@ final class Query_Builder {
 			$facets[] = array(
 				'taxonomy' => $taxonomy,
 				'label'    => (string) ( $def['label'] ?? $taxonomy ),
-				'type'     => (string) ( $def['type'] ?? 'checkbox' ),
+				'type'     => $has_swatch ? 'color' : (string) ( $def['type'] ?? 'checkbox' ),
 				'terms'    => $terms,
 				'hidden'   => false,
 			);
 		}
 
 		return $facets;
+	}
+
+	/**
+	 * Shape the engine's product_cat counts into the flat node list
+	 * Category_Tree::build() consumes. Counts come from the facet engine; the
+	 * display metadata (parent, name, slug, menu order) is looked up by the
+	 * caller and passed in. A term with no metadata (deleted between index and
+	 * read) is dropped. Pure.
+	 *
+	 * @param array $counts term_id => count.
+	 * @param array $meta   term_id => ['parent','name','slug','order'].
+	 * @return array<int,array<string,mixed>> flat nodes for Category_Tree::build().
+	 */
+	public static function shape_category_nodes( array $counts, array $meta ) {
+		$nodes = array();
+		foreach ( $counts as $term_id => $count ) {
+			$term_id = (int) $term_id;
+			if ( empty( $meta[ $term_id ] ) || ! is_array( $meta[ $term_id ] ) ) {
+				continue;
+			}
+			$info    = $meta[ $term_id ];
+			$nodes[] = array(
+				'term_id' => $term_id,
+				'parent'  => (int) ( $info['parent'] ?? 0 ),
+				'name'    => (string) ( $info['name'] ?? '' ),
+				'slug'    => (string) ( $info['slug'] ?? '' ),
+				'count'   => (int) $count,
+				'order'   => (int) ( $info['order'] ?? 0 ),
+			);
+		}
+		return $nodes;
 	}
 
 	/* -----------------------------------------------------------------
@@ -187,28 +230,41 @@ final class Query_Builder {
 		$available  = $this->repo->available_taxonomies();
 		$facet_defs = Facet_Config::resolve( $available, $context_id );
 
-		// Checkbox facets only in 6.3a — the category-tree facet renders in 6.3b.
-		$facet_defs = array_values(
-			array_filter(
-				$facet_defs,
-				static function ( $def ) {
-					return isset( $def['type'] ) && 'category' !== $def['type'];
-				}
-			)
-		);
+		// Attribute facets render in facets[] (checkbox or colour/image swatches);
+		// the product_cat facet renders separately as a navigable category tree.
+		$attr_defs        = array();
 		$facet_taxonomies = array();
-		foreach ( $facet_defs as &$def ) {
-			$def['label']       = $this->taxonomy_label( (string) $def['taxonomy'] );
-			$facet_taxonomies[] = (string) $def['taxonomy'];
+		$show_category    = false;
+		foreach ( $facet_defs as $def ) {
+			$taxonomy = isset( $def['taxonomy'] ) ? (string) $def['taxonomy'] : '';
+			if ( '' === $taxonomy ) {
+				continue;
+			}
+			if ( 'product_cat' === $taxonomy || 'category' === ( $def['type'] ?? '' ) ) {
+				$show_category      = true;
+				$facet_taxonomies[] = 'product_cat';
+				continue;
+			}
+			$def['label']       = $this->taxonomy_label( $taxonomy );
+			$attr_defs[]        = $def;
+			$facet_taxonomies[] = $taxonomy;
 		}
-		unset( $def );
 
 		$slug_to_term_id = $this->resolve_slug_map( $filters );
 		$active          = self::resolve_active( $filters, $slug_to_term_id );
 
 		$computed   = Facet_Engine::compute( $base, $postings, $active, $facet_taxonomies );
 		$term_index = $this->build_term_index( $computed['facets'] );
-		$facets     = self::shape_facets( $facet_defs, $computed['facets'], $term_index, $filters );
+		$facets     = self::shape_facets( $attr_defs, $computed['facets'], $term_index, $filters );
+
+		// Category tree (req #3): turn the engine's product_cat counts into a
+		// pruned, count-rolled-up parent → child hierarchy for the current context.
+		$category_tree = array();
+		if ( $show_category && ! empty( $computed['facets']['product_cat'] ) ) {
+			$cat_counts    = $computed['facets']['product_cat'];
+			$cat_meta      = $this->build_category_meta( array_keys( $cat_counts ) );
+			$category_tree = Category_Tree::build( self::shape_category_nodes( $cat_counts, $cat_meta ) );
+		}
 
 		$count    = count( $computed['products'] );
 		$per_page = $this->products_per_page();
@@ -216,7 +272,7 @@ final class Query_Builder {
 
 		return array(
 			'facets'        => $facets,
-			'category_tree' => array(), // populated in 6.3b.
+			'category_tree' => $category_tree,
 			'count'         => $count,
 			'pagination'    => array(
 				'current'     => $paged,
@@ -284,14 +340,78 @@ final class Query_Builder {
 				if ( ! $term || is_wp_error( $term ) ) {
 					continue;
 				}
-				$index[ $taxonomy ][ $term_id ] = array(
+				$entry = array(
 					'slug'  => (string) $term->slug,
 					'name'  => (string) $term->name,
 					'order' => (int) get_term_meta( $term_id, 'order', true ),
 				);
+				if ( 0 === strpos( $taxonomy, 'pa_' ) ) {
+					$swatch = $this->swatch_data( $term_id );
+					if ( '' !== $swatch['color'] ) {
+						$entry['color'] = $swatch['color'];
+					}
+					if ( '' !== $swatch['image'] ) {
+						$entry['image'] = $swatch['image'];
+					}
+				}
+				$index[ $taxonomy ][ $term_id ] = $entry;
 			}
 		}
 		return $index;
+	}
+
+	/**
+	 * Read the VariationSwatches term meta for an attribute term DIRECTLY (no call
+	 * into Etucart_VS_Plugin, which only loads when that module is enabled — see
+	 * decisions §5.7). Returns the hex colour and a resolved image URL, each '' when
+	 * unset.
+	 *
+	 * @param int $term_id Attribute term id.
+	 * @return array{color:string,image:string}
+	 */
+	private function swatch_data( $term_id ) {
+		$term_id = (int) $term_id;
+		$color   = (string) get_term_meta( $term_id, 'etucart_swatch_color', true );
+
+		$image    = '';
+		$image_id = (int) get_term_meta( $term_id, 'freeman_core_variation_swatches_term_image_id', true );
+		if ( $image_id > 0 && function_exists( 'wp_get_attachment_image_src' ) ) {
+			$src = wp_get_attachment_image_src( $image_id, 'thumbnail' );
+			if ( is_array( $src ) && ! empty( $src[0] ) ) {
+				$image = (string) $src[0];
+			}
+		}
+
+		return array(
+			'color' => $color,
+			'image' => $image,
+		);
+	}
+
+	/**
+	 * Display metadata (parent, name, slug, menu order) for the product_cat terms
+	 * the engine returned, so shape_category_nodes() can build the tree. Keeps the
+	 * pure seam free of WordPress.
+	 *
+	 * @param int[] $term_ids product_cat term ids.
+	 * @return array<int,array<string,mixed>>
+	 */
+	private function build_category_meta( array $term_ids ) {
+		$meta = array();
+		foreach ( $term_ids as $term_id ) {
+			$term_id = (int) $term_id;
+			$term    = get_term( $term_id, 'product_cat' );
+			if ( ! $term || is_wp_error( $term ) ) {
+				continue;
+			}
+			$meta[ $term_id ] = array(
+				'parent' => (int) $term->parent,
+				'name'   => (string) $term->name,
+				'slug'   => (string) $term->slug,
+				'order'  => (int) get_term_meta( $term_id, 'order', true ),
+			);
+		}
+		return $meta;
 	}
 
 	/**

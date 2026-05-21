@@ -28,6 +28,7 @@ final class Shortcode {
 
 	const TAG          = 'freeman_shop_filters';
 	const SCRIPT_HANDLE = 'freeman-core-shop-filters';
+	const STYLE_HANDLE  = 'freeman-core-shop-filters';
 
 	/**
 	 * Register the shortcode.
@@ -54,10 +55,42 @@ final class Shortcode {
 		$this->enqueue_assets( $context_id );
 
 		ob_start();
-		$facets = $response['facets'];
-		$count  = $response['count'];
+
+		/**
+		 * Fires before the Shop Filters panel markup is rendered. Captured inside
+		 * the shortcode output buffer, so any echo is contained in the panel.
+		 *
+		 * @since 1.12.11
+		 *
+		 * @param int $context_id Current product_cat term id (0 = shop).
+		 */
+		do_action( 'freeman_core/shop_filters/before_render', $context_id );
+
+		$facets        = $response['facets'];
+		$category_tree = $response['category_tree'];
+		$count         = $response['count'];
 		include $this->template_path( 'filters.php' );
-		return (string) ob_get_clean();
+
+		/**
+		 * Fires after the Shop Filters panel markup is rendered.
+		 *
+		 * @since 1.12.11
+		 *
+		 * @param int $context_id Current product_cat term id (0 = shop).
+		 */
+		do_action( 'freeman_core/shop_filters/after_render', $context_id );
+
+		$html = (string) ob_get_clean();
+
+		/**
+		 * Filter the rendered Shop Filters panel markup before it is returned.
+		 *
+		 * @since 1.12.11
+		 *
+		 * @param string $html       Panel HTML.
+		 * @param int    $context_id Current product_cat term id (0 = shop).
+		 */
+		return (string) apply_filters( 'freeman_core/shop_filters/panel_html', $html, $context_id );
 	}
 
 	/**
@@ -86,7 +119,7 @@ final class Shortcode {
 	}
 
 	/**
-	 * Enqueue (and localise) the front-end script. CSS lands in 6.3b.
+	 * Enqueue (and localise) the front-end script + the panel stylesheet.
 	 *
 	 * @param int $context_id Category context.
 	 */
@@ -94,7 +127,9 @@ final class Shortcode {
 		$fs_base  = FREEMAN_CORE_PATH . 'src/Modules/ShopFilters/assets/';
 		$url_base = FREEMAN_CORE_URL . 'src/Modules/ShopFilters/assets/';
 		$src      = Module_Base::pick_min_url( $fs_base, $url_base, 'js/shop-filters.js' );
+		$style    = Module_Base::pick_min_url( $fs_base, $url_base, 'css/shop-filters.css' );
 
+		wp_enqueue_style( self::STYLE_HANDLE, $style, array(), FREEMAN_CORE_VERSION );
 		wp_enqueue_script( self::SCRIPT_HANDLE, $src, array(), FREEMAN_CORE_VERSION, true );
 		wp_localize_script(
 			self::SCRIPT_HANDLE,

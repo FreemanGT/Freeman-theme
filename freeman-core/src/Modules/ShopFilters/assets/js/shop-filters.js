@@ -1,29 +1,40 @@
 /**
- * Freeman Shop Filters — front-end controller (reload transport).
+ * Freeman Shop Filters — front-end controller (reload transport + mobile drawer).
  *
- * On a debounced facet change it navigates to the filtered URL: the existing
- * non-filter query params (?s=, post_type, orderby, …) are preserved, the
- * filter_<taxonomy>=slug,slug params are rewritten, paged is reset, and the
- * page reloads. The server-side query bridge (Query.php) applies the selection
- * to the main product query, so the reloaded grid is genuinely filtered and the
- * selection persists in the URL. Active-filter chips are server-rendered; the
- * remove / clear-all controls just adjust the boxes and navigate.
+ * On desktop, a debounced facet change navigates to the filtered URL (existing
+ * non-filter params preserved, filter_<taxonomy>=slug,slug rewritten, paged
+ * reset). On mobile the same panel becomes an off-canvas drawer: ticking defers
+ * — the selection is collected and only "Apply" navigates once, the standard
+ * drawer pattern that avoids a reload per tick. The server-side query bridge
+ * (Query.php) applies the selection to the main product query, so the reloaded
+ * grid is genuinely filtered and the selection persists in the URL. Active-filter
+ * chips are server-rendered; category-tree links are plain navigation.
  *
- * Vanilla, no jQuery. Infinite Scroll is untouched and works normally on the
- * reloaded page.
+ * Vanilla, no jQuery. Infinite Scroll is untouched and works on the reloaded page.
  */
 (function () {
 	'use strict';
 
 	var FILTER_PREFIX = 'filter_';
 	var DEBOUNCE_MS = 400;
+	var MOBILE_QUERY = '(max-width: 768px)';
 
 	var panel = document.querySelector('[data-freeman-sf]');
 	if (!panel) { return; }
 
 	var facetsForm = panel.querySelector('[data-freeman-sf-facets]');
-	var chipsEl = panel.querySelector('[data-freeman-sf-chips]');
 	if (!facetsForm) { return; }
+
+	var chipsEl = panel.querySelector('[data-freeman-sf-chips]');
+	var drawer = panel.querySelector('[data-freeman-sf-panel]');
+	var toggle = panel.querySelector('[data-freeman-sf-toggle]');
+	var overlay = panel.querySelector('[data-freeman-sf-overlay]');
+	var closeBtn = panel.querySelector('[data-freeman-sf-close]');
+	var applyBtn = panel.querySelector('[data-freeman-sf-apply]');
+	var clearMobileBtn = panel.querySelector('[data-freeman-sf-clear-mobile]');
+	var mq = window.matchMedia ? window.matchMedia(MOBILE_QUERY) : { matches: false };
+
+	function isMobile() { return !!mq.matches; }
 
 	function debounce(fn, ms) {
 		var t;
@@ -75,14 +86,67 @@
 
 	var debouncedNavigate = debounce(navigate, DEBOUNCE_MS);
 
-	// Delegated change handler.
+	/* ---- mobile drawer: open / close + focus trap ---- */
+
+	var lastFocus = null;
+
+	function focusableIn(el) {
+		var nodes = el.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),[tabindex]:not([tabindex="-1"])');
+		return Array.prototype.slice.call(nodes).filter(function (n) { return n.offsetParent !== null; });
+	}
+
+	function openDrawer() {
+		if (!drawer) { return; }
+		lastFocus = document.activeElement;
+		panel.classList.add('freeman-sf--open');
+		if (toggle) { toggle.setAttribute('aria-expanded', 'true'); }
+		document.addEventListener('keydown', onKeydown);
+		var f = focusableIn(drawer);
+		if (f.length) { f[0].focus(); }
+	}
+
+	function closeDrawer() {
+		panel.classList.remove('freeman-sf--open');
+		if (toggle) { toggle.setAttribute('aria-expanded', 'false'); }
+		document.removeEventListener('keydown', onKeydown);
+		if (lastFocus && lastFocus.focus) { lastFocus.focus(); }
+	}
+
+	function onKeydown(e) {
+		if (e.key === 'Escape' || e.key === 'Esc') { closeDrawer(); return; }
+		if (e.key !== 'Tab' || !drawer) { return; }
+		var f = focusableIn(drawer);
+		if (!f.length) { return; }
+		var first = f[0], last = f[f.length - 1];
+		if (e.shiftKey && document.activeElement === first) {
+			e.preventDefault();
+			last.focus();
+		} else if (!e.shiftKey && document.activeElement === last) {
+			e.preventDefault();
+			first.focus();
+		}
+	}
+
+	if (toggle) { toggle.addEventListener('click', openDrawer); }
+	if (closeBtn) { closeBtn.addEventListener('click', closeDrawer); }
+	if (overlay) { overlay.addEventListener('click', closeDrawer); }
+	if (applyBtn) { applyBtn.addEventListener('click', navigate); }
+	if (clearMobileBtn) {
+		clearMobileBtn.addEventListener('click', function () {
+			facetsForm.querySelectorAll('.freeman-sf__checkbox:checked').forEach(function (b) { b.checked = false; });
+			navigate();
+		});
+	}
+
+	/* ---- facet change: desktop auto-navigates; mobile defers to Apply ---- */
 	facetsForm.addEventListener('change', function (e) {
 		if (e.target && e.target.classList && e.target.classList.contains('freeman-sf__checkbox')) {
+			if (isMobile()) { return; }
 			debouncedNavigate();
 		}
 	});
 
-	// Chip remove + clear-all → uncheck then navigate immediately.
+	/* ---- chip remove + clear-all → uncheck then navigate immediately ---- */
 	if (chipsEl) {
 		chipsEl.addEventListener('click', function (e) {
 			var clear = e.target.closest && e.target.closest('[data-freeman-sf-clear]');

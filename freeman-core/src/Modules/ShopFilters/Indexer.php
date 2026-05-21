@@ -29,6 +29,7 @@ final class Indexer {
 
 	const QUEUE_OPTION     = 'freeman_core_shop_filters_dirty_queue';
 	const WATERMARK_OPTION = 'freeman_core_shop_filters_last_sweep_gmt';
+	const LAST_RUN_OPTION  = 'freeman_core_shop_filters_last_run_gmt';
 	const DRAIN_HOOK       = 'freeman_core_shop_filters_drain_queue';
 	const RECONCILE_HOOK   = 'freeman_core_shop_filters_reconcile';
 	const CRON_SCHEDULE    = 'freeman_shop_filters_5min';
@@ -188,6 +189,11 @@ final class Indexer {
 			return;
 		}
 
+		// Record when the sweep actually ran — distinct from the resume watermark
+		// below, which tracks how far through the catalogue (by modified-date)
+		// the sweep has reached.
+		update_option( self::LAST_RUN_OPTION, gmdate( 'Y-m-d H:i:s' ), false );
+
 		$since = (string) get_option( self::WATERMARK_OPTION, '' );
 
 		$args = array(
@@ -229,8 +235,21 @@ final class Indexer {
 		$this->flush_runtime_cache();
 
 		if ( count( $query->posts ) === self::BATCH_SIZE ) {
-			wp_schedule_single_event( time() + MINUTE_IN_SECONDS, self::RECONCILE_HOOK );
+			$this->chain_reconcile();
 		}
+	}
+
+	/**
+	 * Queue an immediate follow-up sweep while batches keep coming. Uses Action
+	 * Scheduler's runner when available (the same path as the recurring sweep),
+	 * with a wp-cron single event as the fallback.
+	 */
+	private function chain_reconcile() {
+		if ( function_exists( 'as_enqueue_async_action' ) ) {
+			as_enqueue_async_action( self::RECONCILE_HOOK, array(), 'freeman-shop-filters' );
+			return;
+		}
+		wp_schedule_single_event( time() + MINUTE_IN_SECONDS, self::RECONCILE_HOOK );
 	}
 
 	/* -----------------------------------------------------------------
@@ -376,11 +395,22 @@ final class Indexer {
 				'no_found_rows'  => true,
 			)
 		);
+		$count = count( $query->posts );
 		foreach ( $query->posts as $product_id ) {
 			$this->reindex_product( (int) $product_id );
 		}
+
+		// An empty batch means the full reindex reached the end of the catalogue;
+		// park the watermark + last-run at "now" so the periodic sweep treats the
+		// index as current and doesn't re-process everything just rebuilt.
+		if ( 0 === $count ) {
+			$now = gmdate( 'Y-m-d H:i:s' );
+			update_option( self::WATERMARK_OPTION, $now, false );
+			update_option( self::LAST_RUN_OPTION, $now, false );
+		}
+
 		$this->flush_runtime_cache();
-		return count( $query->posts );
+		return $count;
 	}
 
 	/**

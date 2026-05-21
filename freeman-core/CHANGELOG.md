@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.5] — 2026-05-20
+
+- Shop Filters QA polish: status line shows actual last-refresh time (not the internal watermark); full reindex parks the watermark so the sweep does not re-churn; catch-up chain via Action Scheduler; DISABLE_WP_CRON note on the page.
+
 ## [1.12.4] — 2026-05-20
 
 - Shop Filters bug-fix found in QA: the recurring reconcile sweep now schedules correctly. ensure_scheduled was running on plugins_loaded before Action Scheduler is ready (silent no-op); deferred to init. Event-driven on-save indexing was unaffected.

@@ -104,16 +104,16 @@ final class Admin_Page {
 		}
 
 		$repo      = $this->indexer->repository();
-		$sweep     = (string) get_option( Indexer::WATERMARK_OPTION, '' );
+		$last_run  = (string) get_option( Indexer::LAST_RUN_OPTION, '' );
 		$scheduled = function_exists( 'as_next_scheduled_action' )
 			? (bool) as_next_scheduled_action( Indexer::RECONCILE_HOOK )
 			: (bool) wp_next_scheduled( Indexer::RECONCILE_HOOK );
 		$status    = sprintf(
-			/* translators: 1: indexed product count, 2: row count, 3: last sweep time, 4: scheduled state */
-			__( 'Indexed: %1$d products, %2$d rows. Last sweep: %3$s. Auto-reindex: %4$s.', 'freeman-core' ),
+			/* translators: 1: indexed product count, 2: row count, 3: last refresh time, 4: scheduled state */
+			__( 'Indexed: %1$d products, %2$d rows. Last refresh: %3$s. Auto-reindex: %4$s.', 'freeman-core' ),
 			(int) $repo->count_indexed_products(),
 			(int) $repo->count_rows(),
-			'' !== $sweep ? $sweep : __( 'never', 'freeman-core' ),
+			'' !== $last_run ? $last_run : __( 'never', 'freeman-core' ),
 			$scheduled ? __( 'scheduled', 'freeman-core' ) : __( 'not scheduled', 'freeman-core' )
 		);
 
@@ -121,6 +121,9 @@ final class Admin_Page {
 		?>
 		<h2><?php esc_html_e( 'Search index', 'freeman-core' ); ?></h2>
 		<p><?php echo esc_html( $status ); ?></p>
+		<?php if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) : ?>
+			<p class="description"><?php esc_html_e( 'WP-Cron is disabled on this site (DISABLE_WP_CRON), so the automatic refresh depends on a real server cron triggering Action Scheduler. Make sure that is configured, or rebuild on demand with the button below.', 'freeman-core' ); ?></p>
+		<?php endif; ?>
 		<p><?php esc_html_e( 'The index refreshes automatically as products change. Use this to rebuild from scratch (e.g. after a bulk import that bypassed the normal save hooks).', 'freeman-core' ); ?></p>
 		<p>
 			<button id="freeman-sf-start" class="button button-primary"><?php esc_html_e( 'Reindex all products', 'freeman-core' ); ?></button>

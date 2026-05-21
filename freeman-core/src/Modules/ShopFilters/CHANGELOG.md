@@ -1,5 +1,13 @@
 # Shop Filters — Changelog
 
+## [1.12.5] — 2026-05-20
+
+- Indexer status & sweep refinements (from QA feedback):
+  - The Freeman → Shop Filters status line now shows **"Last refresh"** — the actual time the sweep (or a full reindex) last ran — instead of the internal resume watermark, which during catch-up read as a confusing old product-modified date.
+  - A full **Reindex all products** now parks the sweep watermark at "now" on completion, so the periodic sweep treats the freshly-built index as current instead of re-processing the whole catalogue.
+  - The sweep's catch-up chain uses Action Scheduler's runner when available (same path as the recurring sweep), wp-cron fallback otherwise.
+  - When `DISABLE_WP_CRON` is set, the page notes that a real server cron must drive Action Scheduler (or use the Reindex button).
+
 ## [1.12.4] — 2026-05-20
 
 - Bug-fix: the recurring reconcile sweep now actually schedules. `Indexer::ensure_scheduled()` was called from `Module::boot()` on `plugins_loaded`, before Action Scheduler's store is ready — so `as_schedule_recurring_action()` silently no-op'd and the page showed "Auto-reindex: not scheduled". Scheduling is now deferred to the `init` hook (after AS initialises), so both the schedule call and the status check use the same ready scheduler. Event-driven (on-save) indexing was unaffected; only the periodic sweep.

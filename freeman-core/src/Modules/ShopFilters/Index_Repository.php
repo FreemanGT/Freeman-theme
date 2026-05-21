@@ -188,4 +188,29 @@ final class Index_Repository {
 		}
 		return $postings;
 	}
+
+	/**
+	 * Per-term index stats for the diagnostic: one row per (taxonomy, term_id)
+	 * with the indexed product count and the in-stock count. The composite PK is
+	 * (product_id, taxonomy, term_id), so COUNT(*) per group is the distinct
+	 * product count.
+	 *
+	 * @return array<int,array{taxonomy:string,term_id:int,products:int,in_stock:int}>
+	 */
+	public function term_stats() {
+		global $wpdb;
+		$table = Database::table_name();
+		$rows  = $wpdb->get_results( "SELECT taxonomy, term_id, COUNT(*) AS products, SUM(in_stock) AS in_stock FROM {$table} GROUP BY taxonomy, term_id ORDER BY taxonomy, term_id" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+
+		$stats = array();
+		foreach ( (array) $rows as $row ) {
+			$stats[] = array(
+				'taxonomy' => (string) $row->taxonomy,
+				'term_id'  => (int) $row->term_id,
+				'products' => (int) $row->products,
+				'in_stock' => (int) $row->in_stock,
+			);
+		}
+		return $stats;
+	}
 }

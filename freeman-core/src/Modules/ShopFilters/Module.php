@@ -101,6 +101,9 @@ final class Module extends Module_Base {
 
 		if ( is_admin() ) {
 			( new Admin_Page( $indexer ) )->boot();
+			if ( Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) ) {
+				( new Diagnostics() )->boot();
+			}
 		}
 	}
 

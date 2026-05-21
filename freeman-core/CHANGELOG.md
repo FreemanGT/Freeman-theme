@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.9] — 2026-05-20
+
+- Shop Filters 6.3a.3 index diagnostic: a read-only table on the Freeman Shop Filters admin page (gated by the existing indexer flag, alongside the reindex tool) listing, per attribute term, the slug, name and indexed product / in-stock counts straight from the index. Built to debug storefront-data problems where a facet value shows a count but the filtered URL returns nothing, or picking one size returns another — surfacing scrambled term name/slug pairs, terms present in the index that no longer resolve to a live term, and values whose only products are out of stock. Filters match by slug, so the slug column is highlighted as the source of truth. Read-only, no writes, no storefront effect.
+
 ## [1.12.8] — 2026-05-20
 
 - Shop Filters 6.3a.2 stock-visibility parity: facet counts now mirror the storefront grid. When the store hides out-of-stock items (woocommerce_hide_out_of_stock_items), the facet base universe and counts exclude out-of-stock products, so a value backed only by a hidden out-of-stock product no longer shows a phantom count while the filtered grid is empty. Attribute values are counted by product-level presence within the in-stock base, matching how WooCommerce matches a product to a term.

@@ -1,6 +1,6 @@
 # Freeman Plugin Suite — Roadmap
 
-**Last updated**: 2026-05-11 (Wave 5.1 — Feature Flags admin page — ✅ shipped 1.11.44; Wave 2.2 / 4g — VariationSwatches settings surface graduated, `settings_hub` flag retired — ✅ shipped 1.11.45)
+**Last updated**: 2026-05-20 (Wave 6 — Shop Filters new module — epic added; Phase 6.1 targets 1.12.0. Prior: Wave 5.1 — Feature Flags admin page — ✅ shipped 1.11.44; Wave 2.2 / 4g — VariationSwatches settings surface graduated, `settings_hub` flag retired — ✅ shipped 1.11.45)
 **Owner**: Yiftach
 **Reflects decisions in**: `/docs/decisions-2026-04-28.md`
 
@@ -29,6 +29,8 @@ The original 15-item roadmap was reduced to 9 after the strategic decisions (dro
 |---|---|---|---|
 | 3 | P0 | ProductFeed | Multi-channel feed support (only if a client needs it; otherwise P2) |
 | 11 | P2 | ProductSlider | Expose hardcoded design tokens as Elementor controls (CategorySlider variant shipped Wave 4.2 / 1.11.39) |
+
+**Net-new epic (2026-05-20):** Wave 6 — **Shop Filters** (new module, faceted AJAX product filters) — replaces the third-party Filter Everything Pro. Disabled by default, flag-gated per phase, fully reversible. Not an original-audit item. See Wave 6 below.
 
 ---
 
@@ -256,6 +258,25 @@ Not from the original 9-item audit list. Operability work surfaced from day-to-d
 - A flag whose effective state is forced by a `freeman_core/feature_flag/{module}/{feature}` filter renders its checkbox **disabled** with a "forced by code" note — the DB option can't override a filter, so the UI says so rather than lying. Such flags are also skipped by the save handler.
 - **No feature flag** — this is infra (a new admin submenu, writes only on user action), same class as the unflagged Dashboard / Tools pages; Hard Rule #1's additive exception applies. Also fixed the stale `/docs/feature-flags.md` "Active flags" table (added the missing 3.1 / 3.2 / 3.3 / 4.1b rows; corrected the auto-color "4e (pending)" marker to 1.11.28) and added an "Admin page" + registry-is-canonical note there — stated separately in the PR description per "decisions separate from code".
 - **Test coverage**: 8 new PHPUnit tests in `tests/FeatureFlagsAdminTest.php` (registry⇄source completeness both directions, registry-entry shape, no duplicates, `option_name()` format, `is_forced_by_filter()` true/false, hub registers the save handler); +8 reported tests / +239 reported assertions (the assertion count is loop-heavy — several tests iterate the 11-entry registry). Added a `has_filter` / `has_action` smart stub to `tests/bootstrap.php` backed by the existing hook registry.
+
+---
+
+## Wave 6 — Shop Filters (new module — faceted AJAX product filters)
+
+Net-new epic (not from the original audit). Replaces the third-party "Filter Everything Pro" plugin, which renders poorly on this Elementor store (the "shop grid blowout" the theme stopgaps in 1.11.24). Approved 2026-05-20 — see `/docs/decisions-2026-04-28.md` §5 (2026-05-20 addendum) for the schema-change sign-off, indexing approach, and filtered-URL SEO stance. Justified despite §4.1's competitor-parity caution because it serves a concrete internal need (the suite owner relies on shop filtering today and the current third-party tool is failing); internal-only, opinionated-by-default per §4.1.
+
+New module `src/Modules/ShopFilters/` (namespace `Freeman\Core\Modules\ShopFilters`), **disabled by default** and additionally gated per phase by `freeman_core_shop_filters_<feature>_enabled` flags (default off) — purely additive and reversible; touches no other module or theme core. Carries the suite's first module-owned index table (`{prefix}freeman_shop_filter_index`), auto-installed via `Migrations::run()` (dbDelta), dropped on uninstall. Admin-AJAX per §4.4 (no REST). Catalog scale: medium (~1k–10k). Versioning: **1.12.0** for Phase 6.1, then 1.12.x per phase (minor bump for a new module; not a major bump).
+
+Sub-PR phases (each ≤12 files, ≤3 modules, independently shippable, flag-gated; each code phase marks its own bullet `✅ shipped <version> (#PR, date)`, bumps the Last-updated line, and — when it adds tests — the CLAUDE.md PHPUnit count):
+
+- **6.0 — Roadmap + decision record** — docs only (this entry + the §5 decisions addendum). No code, no version bump. Kept separate from code per "decisions separate from code".
+- **6.1 — Foundations** (targets 1.12.0) — module skeleton + `Database` index table (the schema change) + event-driven `Indexer` (dirty-queue + reconcile sweep; Action-Scheduler-or-wp-cron) + `Term_Helpers` (duplicated pure swatch/in-stock helpers, decoupled from VariationSwatches) + admin "Reindex now" tool. No storefront output. Flag `freeman_core_shop_filters_indexer_enabled`.
+- **6.2 — Facet engine** (targets 1.12.1) — pure `Facet_Config` / `Facet_Engine` / `Category_Tree` / `Url_State` / `Query_Builder`: AND-across / OR-within with self-exclusion, hide-zero (req #2), hide-empty-facet (req #1), category hierarchy (req #3). No flag (dormant helper classes — Hard Rule #1 additive exception). Hooks `freeman_core/shop_filters/{facet_config, is_facet_visible}`.
+- **6.3a — Frontend read path** (targets 1.12.2) — `[freeman_shop_filters]` shortcode + admin-AJAX query endpoint + JS grid-swap (reuses InfiniteScroll container detection; fetches the filtered front-end URL for Elementor markup parity) + checkbox facets. Flag `freeman_core_shop_filters_frontend_enabled`.
+- **6.3b — Facet UI** (targets 1.12.3) — styling + colour/image facets (term meta read directly) + category-tree facet + render hooks `freeman_core/shop_filters/{before_render, after_render, grid_html}`. Reuses `frontend_enabled`.
+- **6.4 — Admin facet config** (targets 1.12.4) — per-attribute matrix (is-facet / type / order / hide-on-category) via `freeman_core/module_page/shop_filters`. Flag `freeman_core_shop_filters_admin_config_enabled`.
+- **6.5a — SEO policy** (targets 1.12.5) — filtered URLs get canonical → clean URL + `noindex,follow` (query-string params only; no rewrite rules). Flag `freeman_core_shop_filters_seo_policy_enabled`.
+- **6.5b — Numeric facets** (targets 1.12.6) — price / on-sale / in-stock facets sourced from `wc_product_meta_lookup`. Reuses `frontend_enabled`.
 
 ---
 

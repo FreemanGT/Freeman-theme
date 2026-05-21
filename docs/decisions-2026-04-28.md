@@ -130,3 +130,19 @@ Re-open these decisions if any of the following happen:
 - The product direction shifts to commercial / agency / standalone sale
 - A second engineer joins and needs the codebase to be more conventional
 - Maintenance cost of keeping freeman-core and freeman-digital separate becomes painful
+
+---
+
+## §5 Shop Filters module (added 2026-05-20)
+
+A net-new module replacing the third-party "Filter Everything Pro" plugin (faceted AJAX shop/category filters). Decisions taken at planning time so the Wave 6 phases execute without per-item re-litigation:
+
+- **§5.1 Build vs §4.1 competitor-parity caution.** Shop Filters is built despite §4.1's "drop competitor-parity unless a client asks" because it serves a concrete internal need — the suite owner relies on shop filtering today and the current third-party tool renders poorly on this Elementor store. Internal-only, opinionated-by-default (auto-derives filters from product attributes; explicit config is optional).
+- **§5.2 Dedicated index table — schema change APPROVED.** A new module-owned table `{prefix}freeman_shop_filter_index` (narrow term/category membership + per-variation in-stock flag) is approved (Hard Rule #6: dbDelta install + downgrade note). It deliberately stores only what WooCommerce's `wc_product_meta_lookup` can't (per-attribute-value in-stock truth + category membership); price/stock/rating are read from `wc_product_meta_lookup`, never duplicated. Dropped on uninstall; inert on a version downgrade.
+- **§5.3 Indexing approach.** Event-driven dirty-queue (WC product/stock/term hooks, ~30s debounce) + a ~5–10 min reconciliation sweep, batched. Action Scheduler when available (WooCommerce bundles it) behind a `function_exists` guard, with wp-cron as the zero-config fallback — never a hard dependency. (Existing modules use wp-cron; AS is adopted only for this rolling-reindex workload.)
+- **§5.4 Placement = shortcode.** `[freeman_shop_filters]` (drops into an Elementor HTML/shortcode element), per §4.3 Elementor-only. No Elementor widget in v1.
+- **§5.5 Transport = admin-AJAX.** Per §4.4, the filter endpoint is `wp_ajax_*` / `wc_ajax`, not REST.
+- **§5.6 Filtered-URL SEO.** Filtered URLs (query-string params only — no rewrite rules) get canonical → clean category/shop URL + `noindex,follow`, gated by a default-off flag so an SEO-plugin-governed site can opt out. Pretty/indexable filter URLs are an explicit non-goal.
+- **§5.7 Cross-module decoupling.** ShopFilters does NOT call VariationSwatches' `Etucart_VS_Plugin` (loaded only when that module is enabled); it duplicates the two pure helpers it needs and reads swatch term-meta directly — per §4.6's "duplicate, don't extract" leaning.
+
+These are scoped to the new module and change nothing about existing modules or prior decisions.

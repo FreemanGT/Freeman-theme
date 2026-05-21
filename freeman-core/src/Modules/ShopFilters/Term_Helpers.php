@@ -84,4 +84,26 @@ final class Term_Helpers {
 		}
 		return '' !== $value && ! empty( $map['values'][ $input_key ][ $value ] );
 	}
+
+	/**
+	 * Resolve the in_stock flag (1/0) for one attribute term row.
+	 *
+	 * Only variation-axis attributes are gated by their variations' stock; a
+	 * non-variation attribute (e.g. a "Brand" attribute on a variable product,
+	 * or any attribute of a simple product) follows the product's overall stock.
+	 * Pure.
+	 *
+	 * @param bool   $variation_gated  Whether this attribute is a variation axis.
+	 * @param array  $map              Map from in_stock_values_by_attribute().
+	 * @param string $input_key        Variation attribute input key.
+	 * @param string $slug             Term slug.
+	 * @param int    $overall_in_stock Product overall stock (1/0).
+	 * @return int
+	 */
+	public static function resolve_in_stock( $variation_gated, array $map, $input_key, $slug, $overall_in_stock ) {
+		if ( ! $variation_gated ) {
+			return $overall_in_stock ? 1 : 0;
+		}
+		return self::value_in_stock( $map, $input_key, $slug ) ? 1 : 0;
+	}
 }

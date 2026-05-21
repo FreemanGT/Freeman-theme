@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.2] — 2026-05-20
+
+- Shop Filters 6.1 indexer bug-fix: non-variation global attributes on variable products now follow overall stock (were wrongly variation-gated, hiding them under in-stock-only filtering). Extracted Term_Helpers::resolve_in_stock + unit test; hardened ensure_scheduled Action Scheduler check.
+
 ## [1.12.1] — 2026-05-20
 
 - Shop Filters facet engine - Wave 6 Phase 6.2: pure Facet_Engine, Category_Tree, Url_State, Facet_Config (AND/OR with self-exclusion, hide-zero, category hierarchy, URL state). No flag, no storefront output yet.

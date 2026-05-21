@@ -66,4 +66,17 @@ final class ShopFiltersTermHelpersTest extends TestCase {
 		$this->assertSame( array(), $map['values'] );
 		$this->assertSame( array(), $map['any'] );
 	}
+
+	public function test_resolve_in_stock_gates_only_variation_attributes(): void {
+		$map = Term_Helpers::in_stock_values_by_attribute( $this->variations() );
+
+		// A non-variation attribute (e.g. Brand) follows overall stock, ignoring the map.
+		$this->assertSame( 1, Term_Helpers::resolve_in_stock( false, $map, 'attribute_pa_brand', 'acme', 1 ) );
+		$this->assertSame( 0, Term_Helpers::resolve_in_stock( false, $map, 'attribute_pa_brand', 'acme', 0 ) );
+
+		// A variation-axis attribute is gated by its variations' stock.
+		$this->assertSame( 1, Term_Helpers::resolve_in_stock( true, $map, 'attribute_pa_size', 'm', 1 ) );
+		// 'l' is out of stock even though the product is overall in stock.
+		$this->assertSame( 0, Term_Helpers::resolve_in_stock( true, $map, 'attribute_pa_size', 'l', 1 ) );
+	}
 }

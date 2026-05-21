@@ -1,5 +1,9 @@
 # Shop Filters — Changelog
 
+## [1.12.2] — 2026-05-20
+
+- Bug-fix (Phase 6.1 indexer, caught in review before live QA): non-variation global attributes on a variable product (e.g. an informational "Brand" attribute that isn't a variation axis) now follow the product's overall stock instead of being treated as variation-stock-gated. Previously every value of such an attribute was marked out-of-stock (no matching variation), which would have hidden them under in-stock-only filtering. The decision is extracted to the pure, unit-tested `Term_Helpers::resolve_in_stock()`. Also hardened `Indexer::ensure_scheduled()`'s Action Scheduler check (`! as_next_scheduled_action()` rather than strict `false ===`).
+
 ## [1.12.1] — 2026-05-20
 
 - Facet engine (Wave 6, Phase 6.2). Pure, fully unit-tested computation core — still no storefront output:

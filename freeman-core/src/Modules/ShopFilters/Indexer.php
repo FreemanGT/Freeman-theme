@@ -78,7 +78,7 @@ final class Indexer {
 	 */
 	public function ensure_scheduled() {
 		if ( function_exists( 'as_schedule_recurring_action' ) && function_exists( 'as_next_scheduled_action' ) ) {
-			if ( false === as_next_scheduled_action( self::RECONCILE_HOOK ) ) {
+			if ( ! as_next_scheduled_action( self::RECONCILE_HOOK ) ) {
 				as_schedule_recurring_action( time() + self::SWEEP_INTERVAL, self::SWEEP_INTERVAL, self::RECONCILE_HOOK, array(), 'freeman-shop-filters' );
 			}
 			return;
@@ -308,22 +308,24 @@ final class Indexer {
 			}
 			$taxonomy  = $attribute->get_taxonomy();
 			$input_key = 'attribute_' . $taxonomy;
+			// Only variation-axis attributes are stock-gated by their variations;
+			// a non-variation global attribute (e.g. Brand) applies to the whole
+			// product, so it follows overall stock like a simple product would.
+			$variation_gated = $is_variable && $attribute->get_variation();
 
 			foreach ( (array) $attribute->get_options() as $term_id ) {
-				$term_id  = (int) $term_id;
-				$in_stock = $overall_in_stock;
-
-				if ( $is_variable ) {
-					$term     = get_term( $term_id, $taxonomy );
-					$slug     = ( $term && ! is_wp_error( $term ) ) ? $term->slug : '';
-					$in_stock = Term_Helpers::value_in_stock( $stock_map, $input_key, $slug ) ? 1 : 0;
+				$term_id = (int) $term_id;
+				$slug    = '';
+				if ( $variation_gated ) {
+					$term = get_term( $term_id, $taxonomy );
+					$slug = ( $term && ! is_wp_error( $term ) ) ? $term->slug : '';
 				}
 
 				$rows[] = array(
 					'product_id' => $pid,
 					'taxonomy'   => $taxonomy,
 					'term_id'    => $term_id,
-					'in_stock'   => $in_stock,
+					'in_stock'   => Term_Helpers::resolve_in_stock( $variation_gated, $stock_map, $input_key, $slug, $overall_in_stock ),
 				);
 			}
 		}

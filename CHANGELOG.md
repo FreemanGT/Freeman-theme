@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.14] — 2026-05-20
+
+- Shop Filters bug-fix: filtering an attribute (e.g. a size) now returns only products that have that value IN STOCK, matching the index per-variation truth; previously the grid matched WooCommerces parent-assigned terms and showed products whose selected size was sold out
+
 ## [1.12.13] — 2026-05-20
 
 - freeman-core: Shop Filters 6.5b — price-band facet + sort (built ahead of 6.4/6.5a, so it takes the next sequential version). OR-checkbox price bands on top of the panel (from a price_bands setting, or auto-derived from the catalogue), counts + grid filtering via wc_product_meta_lookup overlap; a Sort by dropdown (sets ?orderby) and a default_sort setting applied via woocommerce_default_catalog_orderby. Reuses frontend_enabled.

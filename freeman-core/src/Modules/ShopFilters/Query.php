@@ -31,12 +31,27 @@ defined( 'ABSPATH' ) || exit;
 final class Query {
 
 	/**
+	 * Index repository (lazy).
+	 *
+	 * @var Index_Repository|null
+	 */
+	private $repo = null;
+
+	/**
+	 * Cached "does the index have any rows" check.
+	 *
+	 * @var bool|null
+	 */
+	private $index_has_data = null;
+
+	/**
 	 * Wire the bridge. Only called from Module::boot() when the frontend flag
 	 * is on.
 	 */
 	public function register() {
 		add_filter( 'woocommerce_product_query_tax_query', array( $this, 'filter_wc_tax_query' ), 20, 2 );
 		add_action( 'pre_get_posts', array( $this, 'apply_to_search_query' ), 20 );
+		add_action( 'pre_get_posts', array( $this, 'apply_instock_post_in' ), 20 );
 		add_filter( 'posts_clauses', array( $this, 'filter_price_clauses' ), 20, 2 );
 		add_filter( 'woocommerce_default_catalog_orderby', array( $this, 'default_catalog_orderby' ) );
 	}
@@ -139,6 +154,122 @@ final class Query {
 			$merged[] = $clause;
 		}
 		$q->set( 'tax_query', $merged );
+	}
+
+	/**
+	 * Constrain the storefront grid to the index's IN-STOCK product set for the
+	 * active attribute selection, so a size whose variations are all sold out no
+	 * longer matches (WooCommerce's own tax_query matches the parent's assigned
+	 * terms, which include out-of-stock variation options — the bug this fixes).
+	 *
+	 * Resolves each facet's slugs to the index's in-stock product ids (OR within a
+	 * facet), intersects across facets (AND), and sets post__in. Only engages when
+	 * the index actually has rows — otherwise the woocommerce_product_query_tax_query
+	 * bridge remains the (product-level) fallback, so a site with indexing off is
+	 * not left with an empty grid.
+	 *
+	 * @param \WP_Query $q Query.
+	 */
+	public function apply_instock_post_in( $q ) {
+		if ( is_admin() || ! $q instanceof \WP_Query || ! $q->is_main_query() ) {
+			return;
+		}
+		if ( ! $this->is_product_listing( $q ) ) {
+			return;
+		}
+		$filters = $this->current_filters();
+		if ( empty( $filters ) ) {
+			return;
+		}
+		if ( ! $this->index_has_data() ) {
+			return; // Fall back to the tax_query bridge when the index is empty.
+		}
+
+		$ids = $this->instock_product_ids( $filters );
+		if ( empty( $ids ) ) {
+			$ids = array( 0 ); // WP_Query treats an empty post__in as "no constraint"; force zero results.
+		}
+
+		$existing = $q->get( 'post__in' );
+		if ( is_array( $existing ) && ! empty( $existing ) ) {
+			$ids = array_values( array_intersect( array_map( 'intval', $existing ), $ids ) );
+			if ( empty( $ids ) ) {
+				$ids = array( 0 );
+			}
+		}
+		$q->set( 'post__in', $ids );
+	}
+
+	/**
+	 * Intersect a list of id-sets (AND across facets); each set is the OR-union
+	 * within one facet. An empty set short-circuits to no matches. Pure.
+	 *
+	 * @param array<int,int[]> $sets Per-facet product-id sets.
+	 * @return int[]
+	 */
+	public static function intersect_id_sets( array $sets ) {
+		$result = null;
+		foreach ( $sets as $set ) {
+			$set = array_map( 'intval', (array) $set );
+			if ( null === $result ) {
+				$result = array_values( array_unique( $set ) );
+			} else {
+				$result = array_values( array_intersect( $result, $set ) );
+			}
+			if ( empty( $result ) ) {
+				return array();
+			}
+		}
+		return null === $result ? array() : $result;
+	}
+
+	/**
+	 * Resolve the active attribute selection to the index's in-stock product ids.
+	 *
+	 * @param array<string,string[]> $filters taxonomy => slugs.
+	 * @return int[]
+	 */
+	private function instock_product_ids( array $filters ) {
+		$in_stock_only = ( 'yes' === get_option( 'woocommerce_hide_out_of_stock_items' ) );
+		$repo          = $this->repo();
+		$sets          = array();
+		foreach ( $filters as $taxonomy => $slugs ) {
+			$taxonomy = (string) $taxonomy;
+			$term_ids = array();
+			foreach ( (array) $slugs as $slug ) {
+				$term = get_term_by( 'slug', (string) $slug, $taxonomy );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$term_ids[] = (int) $term->term_id;
+				}
+			}
+			$sets[] = empty( $term_ids ) ? array() : $repo->product_ids_in_terms( $taxonomy, $term_ids, $in_stock_only );
+		}
+		return self::intersect_id_sets( $sets );
+	}
+
+	/**
+	 * Whether the index has any rows (cached). When empty, in-stock post__in is
+	 * skipped in favour of the tax_query fallback.
+	 *
+	 * @return bool
+	 */
+	private function index_has_data() {
+		if ( null === $this->index_has_data ) {
+			$this->index_has_data = $this->repo()->count_rows() > 0;
+		}
+		return $this->index_has_data;
+	}
+
+	/**
+	 * Lazy index repository.
+	 *
+	 * @return Index_Repository
+	 */
+	private function repo() {
+		if ( null === $this->repo ) {
+			$this->repo = new Index_Repository();
+		}
+		return $this->repo;
 	}
 
 	/**

@@ -422,10 +422,12 @@ final class Query_Builder {
 			$base = $this->repo->all_product_ids( $hide_oos );
 		}
 
-		// Count attribute values by product-level presence within the base (the
-		// base already excludes hidden out-of-stock products), matching how
-		// WooCommerce's tax_query matches a product to a term.
-		$postings   = $this->repo->postings_for_products( $base, false );
+		// Count attribute values by IN-STOCK presence within the base (when the
+		// store hides out-of-stock items): a variation-axis term whose variations
+		// are all sold out carries in_stock=0 in the index, so an out-of-stock-only
+		// size drops out of both the counts and the grid (requirement #2). The grid
+		// is constrained to the same in-stock set in Query::apply_instock_post_in().
+		$postings   = $this->repo->postings_for_products( $base, $hide_oos );
 		$available  = $this->repo->available_taxonomies();
 		$facet_defs = Facet_Config::resolve( $available, $context_id );
 

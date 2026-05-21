@@ -60,4 +60,37 @@ final class ShopFiltersQueryBridgeTest extends TestCase {
 		$this->assertNotFalse( has_filter( 'woocommerce_product_query_tax_query' ) );
 		$this->assertNotFalse( has_action( 'pre_get_posts' ) );
 	}
+
+	public function test_intersect_id_sets_ands_across_facets(): void {
+		// AND across facets: only ids present in every set survive.
+		$ids = Query::intersect_id_sets(
+			array(
+				array( 1, 2, 3, 4 ),
+				array( 2, 3, 5 ),
+				array( 3, 2 ),
+			)
+		);
+		sort( $ids );
+
+		$this->assertSame( array( 2, 3 ), $ids );
+	}
+
+	public function test_intersect_id_sets_empty_facet_short_circuits(): void {
+		// A facet that resolved to no in-stock products yields no matches.
+		$this->assertSame(
+			array(),
+			Query::intersect_id_sets( array( array( 1, 2, 3 ), array() ) )
+		);
+	}
+
+	public function test_intersect_id_sets_single_facet_dedupes(): void {
+		$this->assertSame(
+			array( 1, 2 ),
+			Query::intersect_id_sets( array( array( 1, 2, 2, 1 ) ) )
+		);
+	}
+
+	public function test_intersect_id_sets_no_facets_is_empty(): void {
+		$this->assertSame( array(), Query::intersect_id_sets( array() ) );
+	}
 }

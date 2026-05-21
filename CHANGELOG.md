@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.12] — 2026-05-20
+
+- Shop Filters 6.3c: storefront string labels are now editable from the Shop Filters settings page (blank = English default), so the panel wording can be set to Hebrew without code
+
 ## [1.12.11] — 2026-05-20
 
 - freeman-core: Shop Filters 6.3b Facet UI — the deferred storefront UI. Category-tree facet on top (pruned parent-to-child hierarchy; each node navigates to its category archive), colour/image swatch facets (term meta read directly, decoupled from VariationSwatches), a stylesheet that removes the default list bullets and adds a focus-trapped mobile bottom-sheet drawer (defer-until-Apply on mobile, prefers-reduced-motion), and render hooks before_render / after_render (actions) + panel_html (filter). Reuses the frontend_enabled flag.

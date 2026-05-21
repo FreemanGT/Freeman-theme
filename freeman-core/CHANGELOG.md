@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.12] — 2026-05-20
+
+- Shop Filters 6.3c: storefront string labels are now editable from the Shop Filters settings page (blank = English default), so the panel wording can be set to Hebrew without code
+
 ## [1.12.11] — 2026-05-20
 
 - Shop Filters 6.3b Facet UI: the deferred storefront UI from 6.3a. The product_cat facet now renders on top of the panel as a pruned, count-rolled-up parent-to-child category hierarchy (Category_Tree wired into Query_Builder); each node links to that category's own archive (navigation, not a filter param). Attribute facets whose terms carry VariationSwatches term meta render as colour/image swatches (read directly via get_term_meta with the etucart_swatch_color / freeman_core_variation_swatches_term_image_id keys — no call into the VariationSwatches module, per decisions 5.7); the underlying checkbox is kept so the reload transport and selection logic are unchanged. New stylesheet (enqueued with FREEMAN_CORE_VERSION) styles the panel, removes the default list bullets, and adds a mobile drawer: a full-width toggle opens a bottom-sheet (focus-trapped, ESC/overlay to close, prefers-reduced-motion respected) where ticking defers — selection is collected and only Apply navigates once, with a Clear button. New render hooks freeman_core/shop_filters/before_render + after_render (actions) and panel_html (filter; the grid_html the original plan pencilled in has no grid to filter under the 6.3a.1 reload transport). Reuses the freeman_core_shop_filters_frontend_enabled flag — no new flag.

@@ -15,21 +15,23 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use Freeman\Core\Modules\ShopFilters\Labels;
+
 /** @var array $facets */
 /** @var array $category_tree */
 /** @var int $count */
 ?>
 <div class="freeman-sf" data-freeman-sf>
 	<button type="button" class="freeman-sf__toggle" data-freeman-sf-toggle aria-expanded="false" aria-controls="freeman-sf-panel">
-		<?php esc_html_e( 'Filter sizes &amp; prices', 'freeman-core' ); ?>
+		<?php echo esc_html( Labels::get( 'toggle' ) ); ?>
 	</button>
 
 	<div class="freeman-sf__overlay" data-freeman-sf-overlay></div>
 
-	<div class="freeman-sf__panel" id="freeman-sf-panel" data-freeman-sf-panel role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Filter products', 'freeman-core' ); ?>">
+	<div class="freeman-sf__panel" id="freeman-sf-panel" data-freeman-sf-panel role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( Labels::get( 'panel_aria' ) ); ?>">
 		<div class="freeman-sf__panel-head">
-			<span class="freeman-sf__panel-title"><?php esc_html_e( 'Filter', 'freeman-core' ); ?></span>
-			<button type="button" class="freeman-sf__close" data-freeman-sf-close aria-label="<?php esc_attr_e( 'Close', 'freeman-core' ); ?>">&times;</button>
+			<span class="freeman-sf__panel-title"><?php echo esc_html( Labels::get( 'panel_title' ) ); ?></span>
+			<button type="button" class="freeman-sf__close" data-freeman-sf-close aria-label="<?php echo esc_attr( Labels::get( 'close' ) ); ?>">&times;</button>
 		</div>
 
 		<?php
@@ -56,20 +58,12 @@ defined( 'ABSPATH' ) || exit;
 				><?php echo esc_html( $sf_chip['label'] ); ?> &times;</button>
 			<?php endforeach; ?>
 			<?php if ( ! empty( $sf_chips ) ) : ?>
-				<button type="button" class="freeman-sf__clear" data-freeman-sf-clear><?php esc_html_e( 'Clear all', 'freeman-core' ); ?></button>
+				<button type="button" class="freeman-sf__clear" data-freeman-sf-clear><?php echo esc_html( Labels::get( 'clear_all' ) ); ?></button>
 			<?php endif; ?>
 		</div>
 
 		<p class="freeman-sf__count" data-freeman-sf-count>
-			<?php
-			echo esc_html(
-				sprintf(
-					/* translators: %d: number of matching products. */
-					_n( '%d product', '%d products', (int) $count, 'freeman-core' ),
-					(int) $count
-				)
-			);
-			?>
+			<?php echo esc_html( Labels::count_text( (int) $count ) ); ?>
 		</p>
 
 		<?php include __DIR__ . '/facet-category-tree.php'; ?>
@@ -87,8 +81,8 @@ defined( 'ABSPATH' ) || exit;
 		</form>
 
 		<div class="freeman-sf__actions">
-			<button type="button" class="freeman-sf__apply" data-freeman-sf-apply><?php esc_html_e( 'Apply filters', 'freeman-core' ); ?></button>
-			<button type="button" class="freeman-sf__clear-mobile" data-freeman-sf-clear-mobile><?php esc_html_e( 'Clear', 'freeman-core' ); ?></button>
+			<button type="button" class="freeman-sf__apply" data-freeman-sf-apply><?php echo esc_html( Labels::get( 'apply' ) ); ?></button>
+			<button type="button" class="freeman-sf__clear-mobile" data-freeman-sf-clear-mobile><?php echo esc_html( Labels::get( 'clear' ) ); ?></button>
 		</div>
 	</div>
 </div>

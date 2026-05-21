@@ -61,7 +61,7 @@ final class Module extends Module_Base {
 	 * @return array
 	 */
 	public function settings_schema() {
-		return array(
+		$schema = array(
 			'indexer_enabled' => array(
 				'label'          => __( 'Background indexing', 'freeman-core' ),
 				'type'           => 'checkbox',
@@ -70,6 +70,27 @@ final class Module extends Module_Base {
 				'default'        => 0,
 			),
 		);
+
+		// Storefront label overrides: one text field per panel string. Blank = the
+		// English default (Labels::get() falls back), so leaving these empty keeps
+		// the current output. Lets the site set Hebrew wording without code.
+		$first = true;
+		foreach ( Labels::defaults() as $key => $def ) {
+			/* translators: %s: the English default wording for this field. */
+			$desc = sprintf( __( 'Default: %s', 'freeman-core' ), $def['default'] );
+			if ( $first ) {
+				$desc = __( 'Filter panel wording — leave a field blank to use its English default.', 'freeman-core' ) . ' ' . $desc;
+			}
+			$schema[ 'label_' . $key ] = array(
+				'label'       => $def['label'],
+				'type'        => 'text',
+				'default'     => '',
+				'description' => $desc,
+			);
+			$first = false;
+		}
+
+		return $schema;
 	}
 
 	/**

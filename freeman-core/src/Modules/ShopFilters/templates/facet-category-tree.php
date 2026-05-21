@@ -14,6 +14,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use Freeman\Core\Modules\ShopFilters\Labels;
+
 /** @var array $category_tree */
 if ( empty( $category_tree ) ) {
 	return;
@@ -48,7 +50,7 @@ $sf_render_cats = static function ( array $nodes ) use ( &$sf_render_cats ) {
 	echo '</ul>';
 };
 ?>
-<nav class="freeman-sf__categories" aria-label="<?php esc_attr_e( 'Product categories', 'freeman-core' ); ?>">
-	<h3 class="freeman-sf__categories-title"><?php esc_html_e( 'Categories', 'freeman-core' ); ?></h3>
+<nav class="freeman-sf__categories" aria-label="<?php echo esc_attr( Labels::get( 'categories_aria' ) ); ?>">
+	<h3 class="freeman-sf__categories-title"><?php echo esc_html( Labels::get( 'categories' ) ); ?></h3>
 	<?php $sf_render_cats( $category_tree ); ?>
 </nav>

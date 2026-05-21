@@ -94,6 +94,7 @@ final class Module extends Module_Base {
 		}
 
 		if ( Feature_Flags::is_enabled( 'shop_filters', 'frontend' ) ) {
+			( new Query() )->register();
 			( new Shortcode() )->register();
 			( new Ajax() )->register();
 		}

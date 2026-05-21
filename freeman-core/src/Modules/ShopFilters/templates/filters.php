@@ -17,7 +17,33 @@ defined( 'ABSPATH' ) || exit;
 /** @var int $count */
 ?>
 <div class="freeman-sf" data-freeman-sf>
-	<div class="freeman-sf__chips" data-freeman-sf-chips aria-live="polite"></div>
+	<?php
+	$sf_chips = array();
+	foreach ( (array) $facets as $sf_facet ) {
+		foreach ( (array) ( $sf_facet['terms'] ?? array() ) as $sf_term ) {
+			if ( ! empty( $sf_term['selected'] ) ) {
+				$sf_chips[] = array(
+					'taxonomy' => (string) $sf_facet['taxonomy'],
+					'slug'     => (string) $sf_term['slug'],
+					'label'    => (string) $sf_term['label'],
+				);
+			}
+		}
+	}
+	?>
+	<div class="freeman-sf__chips" data-freeman-sf-chips aria-live="polite">
+		<?php foreach ( $sf_chips as $sf_chip ) : ?>
+			<button
+				type="button"
+				class="freeman-sf__chip"
+				data-freeman-sf-taxonomy="<?php echo esc_attr( $sf_chip['taxonomy'] ); ?>"
+				data-freeman-sf-slug="<?php echo esc_attr( $sf_chip['slug'] ); ?>"
+			><?php echo esc_html( $sf_chip['label'] ); ?> &times;</button>
+		<?php endforeach; ?>
+		<?php if ( ! empty( $sf_chips ) ) : ?>
+			<button type="button" class="freeman-sf__clear" data-freeman-sf-clear><?php esc_html_e( 'Clear all', 'freeman-core' ); ?></button>
+		<?php endif; ?>
+	</div>
 
 	<p class="freeman-sf__count" data-freeman-sf-count>
 		<?php

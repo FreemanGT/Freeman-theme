@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.7] — 2026-05-20
+
+- Shop Filters 6.3a.1 read-path fix: storefront filters now actually filter the grid. New Query bridge applies the URL filter selection (filter_pa_*) to the main WooCommerce product query via woocommerce_product_query_tax_query (shop / category / attribute archives, preserving product_visibility) plus a scoped pre_get_posts for product search. The front-end controller now navigates (full reload) instead of swapping via AJAX, so the selection persists in the URL, sort keeps the filters, and product-search pages work; Infinite Scroll runs normally on the reloaded page. Active-filter chips are server-rendered. The public AJAX endpoint is retained but no longer called by the bundled JS. Checkbox facets only; reuses the freeman_core_shop_filters_frontend_enabled flag.
+
 ## [1.12.6] — 2026-05-20
 
 - Shop Filters 6.3a: storefront read path. Query_Builder glues the index to the facet engine and shapes the AJAX response; the freeman_shop_filters shortcode server-renders the initial facet tree and enqueues the front-end controller; a public admin-AJAX endpoint (freeman_core_shop_filters_query, nonce + rate-limited) recomputes facets and counts. JS swaps the product grid by fetching the filtered front-end URL so Elementor card markup and Infinite Scroll coexistence are preserved. Checkbox facets only; gated by the new default-off freeman_core_shop_filters_frontend_enabled flag.

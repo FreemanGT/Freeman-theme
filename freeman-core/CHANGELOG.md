@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.20] — 2026-05-20
+
+- Shop Filters: run the search-results filter enforcement last (priority 99999) so it wins against Advanced Woo Search re-asserting its own result list after us
+
 ## [1.12.19] — 2026-05-20
 
 - Shop Filters fix: the mobile Filter toggle button no longer appears on desktop (the theme .fm-btn display was overriding the hide rule)

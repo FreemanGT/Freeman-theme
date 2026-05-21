@@ -54,7 +54,10 @@ final class Query {
 		add_action( 'pre_get_posts', array( $this, 'apply_instock_post_in' ), 20 );
 		add_filter( 'posts_clauses', array( $this, 'filter_price_clauses' ), 20, 2 );
 		add_filter( 'woocommerce_default_catalog_orderby', array( $this, 'default_catalog_orderby' ) );
-		add_filter( 'the_posts', array( $this, 'enforce_filters_on_search' ), 10, 2 );
+		// Priority 99999: a search plugin (Advanced Woo Search) re-asserts its own
+		// result list on the_posts after us, so we must run LAST to have the final
+		// say on the displayed products.
+		add_filter( 'the_posts', array( $this, 'enforce_filters_on_search' ), 99999, 2 );
 	}
 
 	/**

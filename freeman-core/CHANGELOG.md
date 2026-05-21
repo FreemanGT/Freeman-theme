@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.15] — 2026-05-20
+
+- Shop Filters UI polish: filter panel buttons (mobile toggle, chips, clear, apply, sort) are now more minimal and rounded, pulling the themes --fm-* radius/weight/tracking design tokens with fallbacks
+
 ## [1.12.14] — 2026-05-20
 
 - Shop Filters bug-fix: filtering an attribute (e.g. a size) now returns only products that have that value IN STOCK, matching the index per-variation truth; previously the grid matched WooCommerces parent-assigned terms and showed products whose selected size was sold out

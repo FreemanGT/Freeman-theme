@@ -73,7 +73,7 @@ The guidelines above apply universally. The rules below are specific to this rep
 ## Repo state
 
 - Path: `/Users/freemansmain/Ai Projects/Freeman Theme/`
-- Packages: `freeman-core` (v1.12.18), `freeman-digital` (v1.7.3), `freeman-theme` (v1.11.23)
+- Packages: `freeman-core` (v1.12.19), `freeman-digital` (v1.7.3), `freeman-theme` (v1.11.23)
 - Audit: `/docs/audit-2026-04-28.md`
 - Decisions: `/docs/decisions-2026-04-28.md` — read this before any roadmap work
 - Roadmap: `/docs/roadmap.md`

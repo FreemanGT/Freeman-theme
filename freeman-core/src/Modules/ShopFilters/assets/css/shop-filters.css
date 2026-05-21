@@ -190,12 +190,17 @@
 }
 
 /* ---- mobile drawer machinery: hidden on desktop ---- */
-.freeman-sf__toggle,
 .freeman-sf__overlay,
 .freeman-sf__close,
 .freeman-sf__panel-head,
 .freeman-sf__actions {
 	display: none;
+}
+
+/* The toggle carries the theme's .fm-btn (display:inline-flex, specificity 0,2,0),
+   which would otherwise beat a plain display:none — so force it hidden on desktop. */
+.freeman-sf__toggle {
+	display: none !important;
 }
 
 .screen-reader-text {
@@ -212,7 +217,8 @@
 
 @media (max-width: 768px) {
 	.freeman-sf__toggle {
-		display: block;
+		display: flex !important; /* re-show on mobile, beating the desktop !important hide */
+		justify-content: center;
 		width: 100%;
 		padding: 0.8em 1.1em;
 		font-size: 1rem;

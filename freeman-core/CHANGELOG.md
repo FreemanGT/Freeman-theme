@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.19] — 2026-05-20
+
+- Shop Filters fix: the mobile Filter toggle button no longer appears on desktop (the theme .fm-btn display was overriding the hide rule)
+
 ## [1.12.18] — 2026-05-20
 
 - Shop Filters: enforce the active filters on search-results grids supplied by a search plugin (Advanced Woo Search) via a the_posts safety net, so a product whose only in-stock size is outside the selection no longer slips through on search

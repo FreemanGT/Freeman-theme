@@ -72,4 +72,15 @@ final class ShopFiltersUrlStateTest extends TestCase {
 		$reparsed = Url_State::parse( $params );
 		$this->assertSame( array( 'red', 'blue' ), $reparsed['filters']['pa_color'] );
 	}
+
+	public function test_preserves_hyphenated_attribute_taxonomy(): void {
+		// Regression: pa_shoe-size / pa_clothing-size are valid taxonomies; the
+		// hyphen must survive parse + serialize or the tax_query matches nothing.
+		$state = Url_State::parse( array( 'filter_pa_shoe-size' => '1-3-37,eu-40' ) );
+		$this->assertArrayHasKey( 'pa_shoe-size', $state['filters'] );
+		$this->assertSame( array( '1-3-37', 'eu-40' ), $state['filters']['pa_shoe-size'] );
+
+		$params = Url_State::serialize( array( 'filters' => array( 'pa_shoe-size' => array( '1-3-37' ) ) ) );
+		$this->assertSame( '1-3-37', $params['filter_pa_shoe-size'] );
+	}
 }

@@ -48,7 +48,7 @@
 		return selection;
 	}
 
-	/** Filtered URL: keep non-filter params, rewrite filter_*, reset paged. */
+	/** Filtered URL: keep non-filter params, rewrite filter_*, reset to page 1. */
 	function buildUrl(selection) {
 		var url = new URL(location.href);
 		var stale = [];
@@ -56,6 +56,10 @@
 			if (key.indexOf(FILTER_PREFIX) === 0 || key === 'paged') { stale.push(key); }
 		});
 		stale.forEach(function (key) { url.searchParams.delete(key); });
+
+		// Reset pretty pagination (/page/N/) too — filtering can shrink the
+		// result set below the current page, which would 404.
+		url.pathname = url.pathname.replace(/\/page\/\d+\/?$/, '/');
 
 		Object.keys(selection).forEach(function (tax) {
 			var slugs = selection[tax];

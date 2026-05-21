@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.10] — 2026-05-20
+
+- Shop Filters 6.3a.4 hyphen + pagination fix: filtering by a hyphenated attribute (pa_shoe-size, pa_clothing-size) returned no products. Url_State sanitize_taxonomy stripped hyphens, mangling the taxonomy (pa_shoe-size to pa_shoesize) so the tax_query matched nothing — every size filter came back blank. Hyphens are now allowed in attribute taxonomies. Also: applying a filter from a /page/N/ URL kept the pretty-pagination path and could 404 when the filtered result set had fewer pages; the front-end controller now resets the /page/N/ path segment to page 1, alongside the existing paged query-param reset.
+
 ## [1.12.9] — 2026-05-20
 
 - Shop Filters 6.3a.3 index diagnostic: a read-only table on the Freeman Shop Filters admin page (gated by the existing indexer flag, alongside the reindex tool) listing, per attribute term, the slug, name and indexed product / in-stock counts straight from the index. Built to debug storefront-data problems where a facet value shows a count but the filtered URL returns nothing, or picking one size returns another — surfacing scrambled term name/slug pairs, terms present in the index that no longer resolve to a live term, and values whose only products are out of stock. Filters match by slug, so the slug column is highlighted as the source of truth. Read-only, no writes, no storefront effect.

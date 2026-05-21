@@ -143,7 +143,10 @@ final class Url_State {
 	 */
 	private static function sanitize_taxonomy( $raw ) {
 		$tax = strtolower( trim( (string) $raw ) );
-		return (string) preg_replace( '/[^a-z0-9_]/', '', $tax );
+		// Hyphens are valid in attribute taxonomies (e.g. pa_shoe-size,
+		// pa_clothing-size); stripping them would mangle the taxonomy and the
+		// filter would match nothing.
+		return (string) preg_replace( '/[^a-z0-9_-]/', '', $tax );
 	}
 
 	/**

@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.1] — 2026-05-20
+
+- Shop Filters facet engine - Wave 6 Phase 6.2: pure Facet_Engine, Category_Tree, Url_State, Facet_Config (AND/OR with self-exclusion, hide-zero, category hierarchy, URL state). No flag, no storefront output yet.
+
 ## [1.12.0] — 2026-05-20
 
 - Shop Filters new module - Wave 6 Phase 6.1 foundation: index table, background indexer, admin reindex tool. Behind freeman_core_shop_filters_indexer_enabled flag default off; module disabled by default. Storefront UI ships in later phases.

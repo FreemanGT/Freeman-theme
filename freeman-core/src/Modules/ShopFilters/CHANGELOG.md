@@ -1,5 +1,14 @@
 # Shop Filters — Changelog
 
+## [1.12.1] — 2026-05-20
+
+- Facet engine (Wave 6, Phase 6.2). Pure, fully unit-tested computation core — still no storefront output:
+  - `Facet_Engine` — filtered product set + per-facet availability/counts with AND-across / OR-within and **self-exclusion** (a facet you're filtering on keeps its other values visible — the classic faceted-search bug guard), hide-zero values (req #2) and hide-empty-facet (req #1).
+  - `Category_Tree` — pruned, count-rolled-up, ordered parent→child tree (req #3).
+  - `Url_State` — parse / serialize `?filter_pa_*=slug,slug&min_price=…` filter state (query-string params; no rewrite rules).
+  - `Facet_Config` — auto-derives facets from the catalogue's attributes (every `pa_*` as a checkbox, `product_cat` as a tree); filters `freeman_core/shop_filters/{facet_config, is_facet_visible}` let code override.
+- No feature flag — dormant library classes with no runtime caller yet (Hard Rule #1 additive exception). `Query_Builder` (the index → engine `$wpdb` glue) is deferred to 6.3a where it's wired and integration-tested.
+
 ## [1.12.0] — 2026-05-20
 
 - New module (Wave 6, Phase 6.1 — foundation). Faceted, context-aware AJAX product filters for shop / category pages, backed by a lightweight background index. This version ships **only the foundation** — nothing renders on the storefront yet.

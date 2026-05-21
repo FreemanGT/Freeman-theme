@@ -27,6 +27,8 @@ freeman-core/src/Modules/RestockNotify/Email.php:292:		do_action( 'freeman_core/
 freeman-core/src/Modules/RestockNotify/Frontend.php:360:		if ( ! apply_filters( 'freeman_core/restock_notify/should_inject', true, $product, $context ) ) {
 freeman-core/src/Modules/RestockNotify/Frontend.php:92:		$should = (bool) apply_filters( 'rsn_should_enqueue', $should );
 freeman-core/src/Modules/RestockNotify/legacy/includes/class-rsn-frontend.php:75:        $should = (bool) apply_filters( 'rsn_should_enqueue', $should );
+freeman-core/src/Modules/ShopFilters/Facet_Config.php:110:			$is_visible = (bool) apply_filters( 'freeman_core/shop_filters/is_facet_visible', $is_visible, (string) $def['taxonomy'], $context_category_id );
+freeman-core/src/Modules/ShopFilters/Facet_Config.php:83:		$defs = apply_filters( 'freeman_core/shop_filters/facet_config', $defs, $context_category_id, $available_taxonomies );
 freeman-core/src/Modules/VariableStockFix/Module.php:294:		if ( ! apply_filters( 'freeman_core/variable_stock_fix/should_check', true, $product ) ) {
 freeman-core/src/Modules/VariationSwatches/Color_Sampler.php:197:		$value   = apply_filters(
 freeman-core/src/Modules/VariationSwatches/Sampler_Scheduler.php:192:		$batch_size = (int) apply_filters( self::BATCH_SIZE_FILTER, self::DEFAULT_BATCH_SIZE );

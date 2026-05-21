@@ -163,19 +163,27 @@ final class Query_Builder {
 		$state       = Url_State::parse( $request );
 		$context_id  = isset( $request['context_id'] ) ? (int) $request['context_id'] : 0;
 		$filters     = $state['filters'];
-		$in_stock    = ! empty( $state['in_stock'] );
+
+		// Mirror the storefront: when the store hides out-of-stock items, the
+		// grid excludes them, so the facet base + counts must too — otherwise a
+		// value backed only by a hidden out-of-stock product shows "(1)" but the
+		// filtered grid is empty.
+		$hide_oos = ( 'yes' === get_option( 'woocommerce_hide_out_of_stock_items' ) );
 
 		// Base universe: a category page expands to the queried term + all its
 		// descendants (the index stores only directly-assigned product_cat rows);
 		// the shop page is every indexed product.
 		if ( $context_id > 0 ) {
 			$term_ids = array_merge( array( $context_id ), $this->descendant_category_ids( $context_id ) );
-			$base     = $this->repo->product_ids_in_terms( 'product_cat', $term_ids );
+			$base     = $this->repo->product_ids_in_terms( 'product_cat', $term_ids, $hide_oos );
 		} else {
-			$base = $this->repo->all_product_ids();
+			$base = $this->repo->all_product_ids( $hide_oos );
 		}
 
-		$postings   = $this->repo->postings_for_products( $base, $in_stock );
+		// Count attribute values by product-level presence within the base (the
+		// base already excludes hidden out-of-stock products), matching how
+		// WooCommerce's tax_query matches a product to a term.
+		$postings   = $this->repo->postings_for_products( $base, false );
 		$available  = $this->repo->available_taxonomies();
 		$facet_defs = Facet_Config::resolve( $available, $context_id );
 

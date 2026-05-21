@@ -116,11 +116,14 @@ final class Index_Repository {
 	 * category plus its descendants, since the index stores only directly-
 	 * assigned product_cat rows).
 	 *
-	 * @param string $taxonomy Taxonomy.
-	 * @param int[]  $term_ids Term ids.
+	 * @param string $taxonomy      Taxonomy.
+	 * @param int[]  $term_ids      Term ids.
+	 * @param bool   $in_stock_only Restrict to in-stock products (the product_cat
+	 *                              rows carry overall product stock, so this
+	 *                              mirrors a store that hides out-of-stock items).
 	 * @return int[]
 	 */
-	public function product_ids_in_terms( $taxonomy, array $term_ids ) {
+	public function product_ids_in_terms( $taxonomy, array $term_ids, $in_stock_only = false ) {
 		global $wpdb;
 		$term_ids = array_values( array_unique( array_filter( array_map( 'intval', $term_ids ) ) ) );
 		if ( '' === (string) $taxonomy || empty( $term_ids ) ) {
@@ -129,20 +132,28 @@ final class Index_Repository {
 		$table        = Database::table_name();
 		$placeholders = implode( ', ', array_fill( 0, count( $term_ids ), '%d' ) );
 		$sql          = "SELECT DISTINCT product_id FROM {$table} WHERE taxonomy = %s AND term_id IN ({$placeholders})";
-		$args         = array_merge( array( (string) $taxonomy ), $term_ids );
-		$rows         = $wpdb->get_col( $wpdb->prepare( $sql, $args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		if ( $in_stock_only ) {
+			$sql .= ' AND in_stock = 1';
+		}
+		$args = array_merge( array( (string) $taxonomy ), $term_ids );
+		$rows = $wpdb->get_col( $wpdb->prepare( $sql, $args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
 		return array_map( 'intval', (array) $rows );
 	}
 
 	/**
 	 * All distinct product ids in the index (the shop-page base universe).
 	 *
+	 * @param bool $in_stock_only Restrict to products with an in-stock row
+	 *                            (a fully out-of-stock product has every row at
+	 *                            in_stock=0, so it is excluded — matching a store
+	 *                            that hides out-of-stock items).
 	 * @return int[]
 	 */
-	public function all_product_ids() {
+	public function all_product_ids( $in_stock_only = false ) {
 		global $wpdb;
 		$table = Database::table_name();
-		$rows  = $wpdb->get_col( "SELECT DISTINCT product_id FROM {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		$where = $in_stock_only ? ' WHERE in_stock = 1' : '';
+		$rows  = $wpdb->get_col( "SELECT DISTINCT product_id FROM {$table}{$where}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
 		return array_map( 'intval', (array) $rows );
 	}
 

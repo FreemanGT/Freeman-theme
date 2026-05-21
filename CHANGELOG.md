@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.8] — 2026-05-20
+
+- Shop Filters 6.3a.2 stock-visibility parity: facet counts now mirror the storefront grid. When the store hides out-of-stock items (woocommerce_hide_out_of_stock_items), the facet base universe and counts exclude out-of-stock products, so a value backed only by a hidden out-of-stock product no longer shows a phantom count while the filtered grid is empty. Attribute values are counted by product-level presence within the in-stock base, matching how WooCommerce matches a product to a term.
+
 ## [1.12.7] — 2026-05-20
 
 - Shop Filters 6.3a.1 read-path fix: storefront filters now actually filter the grid. New Query bridge applies the URL filter selection (filter_pa_*) to the main WooCommerce product query via woocommerce_product_query_tax_query (shop / category / attribute archives, preserving product_visibility) plus a scoped pre_get_posts for product search. The front-end controller now navigates (full reload) instead of swapping via AJAX, so the selection persists in the URL, sort keeps the filters, and product-search pages work; Infinite Scroll runs normally on the reloaded page. Active-filter chips are server-rendered. The public AJAX endpoint is retained but no longer called by the bundled JS. Checkbox facets only; reuses the freeman_core_shop_filters_frontend_enabled flag.

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.6] — 2026-05-20
+
+- Shop Filters 6.3a: storefront read path. Query_Builder glues the index to the facet engine and shapes the AJAX response; the freeman_shop_filters shortcode server-renders the initial facet tree and enqueues the front-end controller; a public admin-AJAX endpoint (freeman_core_shop_filters_query, nonce + rate-limited) recomputes facets and counts. JS swaps the product grid by fetching the filtered front-end URL so Elementor card markup and Infinite Scroll coexistence are preserved. Checkbox facets only; gated by the new default-off freeman_core_shop_filters_frontend_enabled flag.
+
 ## [1.12.5] — 2026-05-20
 
 - Shop Filters QA polish: status line shows actual last-refresh time (not the internal watermark); full reindex parks the watermark so the sweep does not re-churn; catch-up chain via Action Scheduler; DISABLE_WP_CRON note on the page.

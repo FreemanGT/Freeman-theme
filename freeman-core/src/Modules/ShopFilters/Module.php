@@ -3,11 +3,11 @@
  * Shop Filters module.
  *
  * Faceted AJAX product filters for shop / category pages, built on a background
- * index. Phase 6.1 (this version) ships only the foundation: the index table,
- * the background indexer, and an admin "Reindex now" tool. Nothing renders on
- * the storefront yet — the shortcode, facet engine and UI arrive in later
- * phases. The module is disabled by default and, when enabled, does nothing
- * until the indexer feature flag is turned on.
+ * index. The foundation (index table, background indexer, "Reindex now" tool)
+ * is gated by the `indexer` flag; the storefront read path (Phase 6.3a — the
+ * [freeman_shop_filters] shortcode + public query endpoint) is gated separately
+ * by the `frontend` flag. The module is disabled by default and each surface
+ * stays inert until its flag is turned on.
  *
  * @package FreemanCore
  */
@@ -91,6 +91,11 @@ final class Module extends Module_Base {
 			// no-ops. Running at `init` (after AS initialises) makes both the
 			// schedule call and the status check use the same, ready scheduler.
 			add_action( 'init', array( $indexer, 'ensure_scheduled' ) );
+		}
+
+		if ( Feature_Flags::is_enabled( 'shop_filters', 'frontend' ) ) {
+			( new Shortcode() )->register();
+			( new Ajax() )->register();
 		}
 
 		if ( is_admin() ) {

@@ -181,6 +181,14 @@ final class Feature_Flags {
 				'since'       => '1.12.0',
 				'shared'      => false,
 			),
+			array(
+				'module'      => 'shop_filters',
+				'feature'     => 'frontend',
+				'label'       => __( 'Shop Filters — storefront filters', 'freeman-core' ),
+				'description' => __( 'Activates the [freeman_shop_filters] shortcode and its public AJAX query endpoint — the faceted, context-aware filter panel on shop / category pages. Off: the shortcode renders nothing and no public endpoint is registered. Requires the module and the background indexer to be on.', 'freeman-core' ),
+				'since'       => '1.12.6',
+				'shared'      => true,
+			),
 		);
 	}
 }

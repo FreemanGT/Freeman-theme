@@ -92,4 +92,89 @@ final class Index_Repository {
 		$table = Database::table_name();
 		$wpdb->query( "TRUNCATE TABLE {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
 	}
+
+	/* -----------------------------------------------------------------
+	 * Read path (the facet engine — Phase 6.3a)
+	 * ----------------------------------------------------------------- */
+
+	/**
+	 * Distinct taxonomies present in the index (e.g. product_cat, pa_color).
+	 * Drives the auto-derived facet config.
+	 *
+	 * @return string[]
+	 */
+	public function available_taxonomies() {
+		global $wpdb;
+		$table = Database::table_name();
+		$rows  = $wpdb->get_col( "SELECT DISTINCT taxonomy FROM {$table} ORDER BY taxonomy" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		return array_map( 'strval', (array) $rows );
+	}
+
+	/**
+	 * Product ids assigned to any of the given terms of one taxonomy. Used to
+	 * seed the base universe on a category page (the caller passes the queried
+	 * category plus its descendants, since the index stores only directly-
+	 * assigned product_cat rows).
+	 *
+	 * @param string $taxonomy Taxonomy.
+	 * @param int[]  $term_ids Term ids.
+	 * @return int[]
+	 */
+	public function product_ids_in_terms( $taxonomy, array $term_ids ) {
+		global $wpdb;
+		$term_ids = array_values( array_unique( array_filter( array_map( 'intval', $term_ids ) ) ) );
+		if ( '' === (string) $taxonomy || empty( $term_ids ) ) {
+			return array();
+		}
+		$table        = Database::table_name();
+		$placeholders = implode( ', ', array_fill( 0, count( $term_ids ), '%d' ) );
+		$sql          = "SELECT DISTINCT product_id FROM {$table} WHERE taxonomy = %s AND term_id IN ({$placeholders})";
+		$args         = array_merge( array( (string) $taxonomy ), $term_ids );
+		$rows         = $wpdb->get_col( $wpdb->prepare( $sql, $args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		return array_map( 'intval', (array) $rows );
+	}
+
+	/**
+	 * All distinct product ids in the index (the shop-page base universe).
+	 *
+	 * @return int[]
+	 */
+	public function all_product_ids() {
+		global $wpdb;
+		$table = Database::table_name();
+		$rows  = $wpdb->get_col( "SELECT DISTINCT product_id FROM {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+		return array_map( 'intval', (array) $rows );
+	}
+
+	/**
+	 * Build the inverted index slice for a set of products: taxonomy => term_id
+	 * => product ids. When $in_stock_only is true only rows flagged in_stock=1
+	 * are returned, so an out-of-stock-only value disappears under the
+	 * in-stock-only filter (requirement #2).
+	 *
+	 * @param int[] $product_ids   Base product ids.
+	 * @param bool  $in_stock_only Restrict to in-stock rows.
+	 * @return array<string,array<int,int[]>>
+	 */
+	public function postings_for_products( array $product_ids, $in_stock_only = false ) {
+		global $wpdb;
+		$product_ids = array_values( array_unique( array_filter( array_map( 'intval', $product_ids ) ) ) );
+		if ( empty( $product_ids ) ) {
+			return array();
+		}
+		$table        = Database::table_name();
+		$placeholders = implode( ', ', array_fill( 0, count( $product_ids ), '%d' ) );
+		$where        = "product_id IN ({$placeholders})";
+		if ( $in_stock_only ) {
+			$where .= ' AND in_stock = 1';
+		}
+		$sql  = "SELECT taxonomy, term_id, product_id FROM {$table} WHERE {$where}";
+		$rows = $wpdb->get_results( $wpdb->prepare( $sql, $product_ids ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
+
+		$postings = array();
+		foreach ( (array) $rows as $row ) {
+			$postings[ (string) $row->taxonomy ][ (int) $row->term_id ][] = (int) $row->product_id;
+		}
+		return $postings;
+	}
 }

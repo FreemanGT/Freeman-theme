@@ -9,8 +9,8 @@ use PHPUnit\Framework\TestCase;
  * plumbing only: `Module::inject_feature_flags()` emits a `window.FreemanCoreVSFlags`
  * inline script before the `freeman-core` handle, gated by the
  * `freeman_core_variation_swatches_bundle_compat_enabled` flag. The
- * behavioral JS changes (full-form serialize + woobt bridge) are
- * staging-validated per PR #17 and not exercisable from PHPUnit.
+ * behavioral JS changes are guarded with source-level checks because the
+ * browser add-to-cart handler is not directly exercisable from PHPUnit.
  *
  * @covers \Freeman\Core\Modules\VariationSwatches\Module
  */
@@ -59,6 +59,18 @@ final class VariationSwatchesBundleCompatTest extends TestCase {
 		$payload = $GLOBALS['fr_scripts_inline']['freeman-core']['before'][0] ?? '';
 		$this->assertStringContainsString( '"bundleCompat":true', $payload );
 		$this->assertStringNotContainsString( '"bundleCompat":false', $payload );
+	}
+
+	public function test_bundle_compat_ajax_payload_preserves_repeated_form_fields(): void {
+		$src = file_get_contents( FREEMAN_CORE_PATH . 'src/Modules/VariationSwatches/assets/js/etucart-swatches.js' );
+
+		$this->assertIsString( $src );
+		$this->assertStringContainsString( 'data = [];', $src );
+		$this->assertStringContainsString( 'data.push(field);', $src );
+		$this->assertStringContainsString( "if (field.name === 'product_id' || field.name === 'quantity') return;", $src );
+		$this->assertStringContainsString( "data.push({ name: 'product_id', value: (isSimple ? productId : variationId) });", $src );
+		$this->assertStringContainsString( "data.push({ name: 'quantity', value: qty });", $src );
+		$this->assertStringNotContainsString( 'data[field.name] = field.value;', $src );
 	}
 
 	/**

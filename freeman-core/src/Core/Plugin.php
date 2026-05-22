@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Plugin {
 
-	const VERSION = '1.11.41';
+	const VERSION = '1.11.42';
 
 	/**
 	 * Singleton instance.
@@ -125,6 +125,9 @@ final class Plugin {
 
 		$this->init_services();
 		$this->load_textdomain();
+
+		// Privacy tools must cover retained module data even when the module is disabled.
+		( new \Freeman\Core\Modules\RestockNotify\Privacy() )->register();
 
 		$this->migrations->maybe_run();
 

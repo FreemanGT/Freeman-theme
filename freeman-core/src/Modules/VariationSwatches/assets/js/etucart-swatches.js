@@ -555,11 +555,16 @@
 				// more resilient than a whitelist against new bundle plugins
 				// or future plugin field additions.
 				var DENY = { '_wpnonce': 1, '_wp_http_referer': 1, 'woocommerce-process-checkout-nonce': 1 };
-				data = {};
+				data = [];
 				$form.serializeArray().forEach(function (field) {
 					if (DENY[field.name]) return;
-					data[field.name] = field.value;
+					if (field.name === 'product_id' || field.name === 'quantity') return;
+					data.push(field);
 				});
+				// Keep an ordered name/value payload so repeated plugin fields
+				// (for example `field[]=a&field[]=b`) survive jQuery.param().
+				data.push({ name: 'product_id', value: (isSimple ? productId : variationId) });
+				data.push({ name: 'quantity', value: qty });
 			} else {
 				data = { product_id: (isSimple ? productId : variationId), quantity: qty };
 				if (!isSimple) {
@@ -568,11 +573,6 @@
 					});
 				}
 			}
-			// product_id / quantity overrides apply to both branches: WC's
-			// endpoint requires variation_id in the product_id slot for
-			// variable products, and the form's quantity field name varies.
-			data.product_id = (isSimple ? productId : variationId);
-			data.quantity   = qty;
 
 			$btn.addClass('loading');
 

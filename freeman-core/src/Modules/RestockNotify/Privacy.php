@@ -8,10 +8,11 @@
  * WP Tools → Export/Erase Personal Data flow.
  *
  * Erasure semantics (OS-4 / decision call 2026-05-11): the eraser does NOT
- * hard-delete rows. It NULLs PII columns (`customer_name`, `customer_email`
- * → empty string, since the legacy schema declares them NOT NULL) and sets
- * `status='unsubscribed'`. The row stays as an audit trail and the stock
- * monitor can no longer match the email on future restocks.
+ * hard-delete rows. It clears the name, replaces the email with a per-row
+ * non-PII tombstone (`erased-<id>@freeman.invalid`) because the legacy schema
+ * declares the column NOT NULL, and sets `status='unsubscribed'`. The row stays
+ * as an audit trail and the stock monitor can no longer match the original
+ * email on future restocks.
  *
  * Flag-state (OS-5 / decision call 2026-05-11): registered unconditionally.
  * Privacy hooks are a platform contract — flag-gating them off by default
@@ -123,11 +124,18 @@ final class Privacy {
 	 * @return array{items_removed:int,items_retained:int,messages:array,done:bool}
 	 */
 	public function eraser( $email_address, $page = 1 ) {
-		$removed = Subscribers::erase_pii_by_email( (string) $email_address );
+		$email     = (string) $email_address;
+		$removed   = Subscribers::erase_pii_by_email( $email );
+		$retained  = count( Subscribers::find_by_email( $email ) );
+		$messages  = array();
+		if ( $retained > 0 ) {
+			$messages[] = __( 'Restock Notify could not erase all matching subscription rows. Please retry the erasure request or inspect the subscriber table.', 'freeman-core' );
+		}
+
 		return array(
 			'items_removed'  => $removed,
-			'items_retained' => 0,
-			'messages'       => array(),
+			'items_retained' => $retained,
+			'messages'       => $messages,
 			'done'           => true,
 		);
 	}

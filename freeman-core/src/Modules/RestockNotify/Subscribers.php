@@ -94,8 +94,7 @@ final class Subscribers {
 	 * blocks extending the legacy class.
 	 *
 	 * Empty-string guard: returns `[]` early when `$email === ''` so that
-	 * a stray empty input cannot match the population of erased rows
-	 * (whose `customer_email` was set to '' by `erase_pii_by_email`).
+	 * a stray empty input cannot match any legacy already-erased rows.
 	 *
 	 * @since 1.11.37
 	 *
@@ -122,9 +121,11 @@ final class Subscribers {
 	 * Erase PII for all subscriptions matching an exact email address.
 	 * Used by the Wave 4.1a Privacy eraser.
 	 *
-	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
-	 * via a single `UPDATE`. The legacy schema declares these columns as
-	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 * Sets `customer_name=''`, `customer_email='erased-<id>@freeman.invalid'`,
+	 * `status='unsubscribed'` row by row. The legacy schema declares these
+	 * columns as NOT NULL and also has a unique key across
+	 * `(customer_email, product_id, variation_id, status)`, so a per-row
+	 * non-PII tombstone is required instead of a shared empty email value.
 	 *
 	 * The row is preserved (not DELETEd) so the stock monitor's audit
 	 * trail stays intact; the empty `customer_email` prevents future
@@ -145,17 +146,30 @@ final class Subscribers {
 		}
 		global $wpdb;
 		$table   = $wpdb->prefix . 'rsn_subscribers';
-		$updated = $wpdb->update(
-			$table,
-			array(
-				'customer_name'  => '',
-				'customer_email' => '',
-				'status'         => 'unsubscribed',
-			),
-			array( 'customer_email' => $email ),
-			array( '%s', '%s', '%s' ),
-			array( '%s' )
-		);
+		$updated = 0;
+
+		foreach ( self::find_by_email( $email ) as $row ) {
+			$row_id = (int) $row->id;
+			if ( $row_id <= 0 ) {
+				continue;
+			}
+
+			$result = $wpdb->update(
+				$table,
+				array(
+					'customer_name'  => '',
+					'customer_email' => 'erased-' . $row_id . '@freeman.invalid',
+					'status'         => 'unsubscribed',
+				),
+				array( 'id' => $row_id ),
+				array( '%s', '%s', '%s' ),
+				array( '%d' )
+			);
+			if ( false !== $result ) {
+				$updated += (int) $result;
+			}
+		}
+
 		return (int) $updated;
 	}
 

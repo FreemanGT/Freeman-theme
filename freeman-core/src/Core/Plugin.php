@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Plugin {
 
-	const VERSION = '1.11.41';
+	const VERSION = '1.11.42';
 
 	/**
 	 * Singleton instance.
@@ -127,6 +127,10 @@ final class Plugin {
 		$this->load_textdomain();
 
 		$this->migrations->maybe_run();
+
+		// RestockNotify can leave persisted subscriber PII even when the module
+		// is disabled, so its WP_Privacy hooks must be registered from core.
+		( new \Freeman\Core\Modules\RestockNotify\Privacy() )->register();
 
 		// Discover + boot enabled modules. Any thrown exception gets logged
 		// *and* stashed in a transient so the dashboard can surface it —

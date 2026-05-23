@@ -236,11 +236,6 @@ final class Module extends Module_Base {
 		new \RSN_Ajax();
 		new \Freeman\Core\Modules\RestockNotify\Stock_Monitor();
 
-		// Wave 4.1a — register WP_Privacy exporter + eraser. Unconditional
-		// per OS-5(a): privacy hooks are a platform contract, not a feature
-		// to flag-gate off by default.
-		( new \Freeman\Core\Modules\RestockNotify\Privacy() )->register();
-
 		if ( is_admin() ) {
 			require_once $dir . 'class-rsn-admin.php';
 			new \RSN_Admin();

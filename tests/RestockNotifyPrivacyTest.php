@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use Freeman\Core\Core\Plugin;
 use Freeman\Core\Modules\RestockNotify\Privacy;
 use Freeman\Core\Modules\RestockNotify\Subscribers;
 use PHPUnit\Framework\TestCase;
@@ -9,9 +10,9 @@ use PHPUnit\Framework\TestCase;
  * Wave 4.1a — RestockNotify WP_Privacy exporter + eraser.
  *
  * Verifies filter attachment, exporter payload shape, eraser semantics
- * (NULL PII columns via empty-string + flip status to 'unsubscribed'),
- * the no-match paths, and the empty-string guards on the two new
- * Subscribers methods.
+ * (clear name, tombstone email, flip status to 'unsubscribed'), the
+ * no-match paths, and the empty-string guards on the two new Subscribers
+ * methods.
  *
  * @covers \Freeman\Core\Modules\RestockNotify\Privacy
  * @covers \Freeman\Core\Modules\RestockNotify\Subscribers::find_by_email
@@ -25,6 +26,7 @@ final class RestockNotifyPrivacyTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$GLOBALS['fr_hooks'] = array();
+		$GLOBALS['fr_opts']  = array();
 
 		$this->original_wpdb = $GLOBALS['wpdb'] ?? null;
 
@@ -85,7 +87,14 @@ final class RestockNotifyPrivacyTest extends TestCase {
 
 	protected function tearDown(): void {
 		$GLOBALS['wpdb'] = $this->original_wpdb;
+		$this->reset_plugin_singleton();
 		parent::tearDown();
+	}
+
+	private function reset_plugin_singleton(): void {
+		$property = new ReflectionProperty( Plugin::class, 'instance' );
+		$property->setAccessible( true );
+		$property->setValue( null, null );
 	}
 
 	/**
@@ -183,7 +192,7 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		$this->assertTrue( $result['done'] );
 	}
 
-	public function test_eraser_nulls_name_and_email_and_sets_status_unsubscribed(): void {
+	public function test_eraser_clears_name_tombstones_email_and_sets_status_unsubscribed(): void {
 		$row = $this->seed_row( array(
 			'customer_name'  => 'Alice',
 			'customer_email' => 'alice@example.test',
@@ -193,8 +202,30 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		( new Privacy() )->eraser( 'alice@example.test' );
 
 		$this->assertSame( '', $row->customer_name );
-		$this->assertSame( '', $row->customer_email );
+		$this->assertSame( 'erased-' . $row->id . '@freeman.invalid', $row->customer_email );
 		$this->assertSame( 'unsubscribed', $row->status );
+	}
+
+	public function test_eraser_uses_unique_tombstones_for_rows_that_share_product_and_variation(): void {
+		$waiting = $this->seed_row( array(
+			'customer_email' => 'alice@example.test',
+			'product_id'     => 100,
+			'variation_id'   => 7,
+			'status'         => 'waiting',
+		) );
+		$notified = $this->seed_row( array(
+			'customer_email' => 'alice@example.test',
+			'product_id'     => 100,
+			'variation_id'   => 7,
+			'status'         => 'notified',
+		) );
+
+		$result = ( new Privacy() )->eraser( 'alice@example.test' );
+
+		$this->assertSame( 2, $result['items_removed'] );
+		$this->assertSame( 'erased-' . $waiting->id . '@freeman.invalid', $waiting->customer_email );
+		$this->assertSame( 'erased-' . $notified->id . '@freeman.invalid', $notified->customer_email );
+		$this->assertNotSame( $waiting->customer_email, $notified->customer_email );
 	}
 
 	public function test_eraser_returns_items_removed_count(): void {
@@ -236,5 +267,15 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		$result = ( new Privacy() )->eraser( '' );
 
 		$this->assertSame( 0, $result['items_removed'] );
+	}
+
+	public function test_plugin_boot_registers_privacy_hooks_when_restock_notify_module_is_disabled(): void {
+		update_option( 'freeman_core_db_version', FREEMAN_CORE_VERSION );
+		update_option( 'freeman_core_modules', array( 'restock_notify' => false ) );
+
+		Plugin::instance()->boot();
+
+		$this->assertArrayHasKey( 'wp_privacy_personal_data_exporters', $GLOBALS['fr_hooks'] );
+		$this->assertArrayHasKey( 'wp_privacy_personal_data_erasers', $GLOBALS['fr_hooks'] );
 	}
 }

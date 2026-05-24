@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Plugin {
 
-	const VERSION = '1.11.41';
+	const VERSION = '1.11.42';
 
 	/**
 	 * Singleton instance.
@@ -127,6 +127,10 @@ final class Plugin {
 		$this->load_textdomain();
 
 		$this->migrations->maybe_run();
+
+		// Privacy integrations cover retained data and must remain available
+		// even when the owning module is disabled.
+		( new \Freeman\Core\Modules\RestockNotify\Privacy() )->register();
 
 		// Discover + boot enabled modules. Any thrown exception gets logged
 		// *and* stashed in a transient so the dashboard can surface it —

@@ -73,7 +73,7 @@ The guidelines above apply universally. The rules below are specific to this rep
 ## Repo state
 
 - Path: `/Users/freemansmain/Ai Projects/Freeman Theme/`
-- Packages: `freeman-core` (v1.11.41), `freeman-digital` (v1.7.3), `freeman-theme` (v1.11.22)
+- Packages: `freeman-core` (v1.11.42), `freeman-digital` (v1.7.3), `freeman-theme` (v1.11.25)
 - Audit: `/docs/audit-2026-04-28.md`
 - Decisions: `/docs/decisions-2026-04-28.md` — read this before any roadmap work
 - Roadmap: `/docs/roadmap.md`
@@ -81,9 +81,9 @@ The guidelines above apply universally. The rules below are specific to this rep
 
 ## Current infrastructure state
 
-*Last verified: 2026-05-11.*
+*Last verified: 2026-05-24.*
 
-- **PHPUnit**: configured for freeman-core (root `phpunit.xml.dist`, `tests/bootstrap.php`, **365 tests / 1051 assertions**, all green; Wave 3.2a (1.11.29) added 8 reported tests, +8 reported total; Wave 3.2b (1.11.30) added 10 reported tests, +37 reported assertions; Wave 3.3 (1.11.32) added 9 reported tests, +10 reported assertions; Wave 3.1a (1.11.33) added 8 reported tests, +23 reported assertions; Wave 3.1b (1.11.35) added 10 reported tests, +17 reported assertions; Wave 4.3 (1.11.36) added 6 reported tests, +35 reported assertions; Wave 4.1a (1.11.37) added 11 reported tests, +32 reported assertions; Wave 4.1b (1.11.38) added 10 reported tests, +16 reported assertions; Wave 4.2 (1.11.39) added 10 reported tests, +27 reported assertions; Wave 4.5 (1.11.40) added 4 reported tests, +8 reported assertions). The standing reporting unit going forward is `<reported tests> / <assertions>`. When updating this number, run `vendor/bin/phpunit` and copy the reported total verbatim. Runs in CI on PHP 8.0–8.3 lanes (PHP 7.4 dropped 2026-05-03 / 1.11.22 — shipped freeman-core already used PHP 8.0+ idioms baked in by Wave 2.3a–c, so the 7.4 PHPUnit lane was de-facto failing; aligning CI to reality rather than retrofitting polyfills, since no client site runs PHP 7.4). Locally: `composer install` once, then `PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test` (system `php` is 8.5, outside PHPUnit 10's supported range). freeman-digital has its own separate test config; freeman-theme has none.
+- **PHPUnit**: configured for freeman-core (root `phpunit.xml.dist`, `tests/bootstrap.php`, **367 tests / 1057 assertions**, all green; Wave 3.2a (1.11.29) added 8 reported tests, +8 reported total; Wave 3.2b (1.11.30) added 10 reported tests, +37 reported assertions; Wave 3.3 (1.11.32) added 9 reported tests, +10 reported assertions; Wave 3.1a (1.11.33) added 8 reported tests, +23 reported assertions; Wave 3.1b (1.11.35) added 10 reported tests, +17 reported assertions; Wave 4.3 (1.11.36) added 6 reported tests, +35 reported assertions; Wave 4.1a (1.11.37) added 11 reported tests, +32 reported assertions; Wave 4.1b (1.11.38) added 10 reported tests, +16 reported assertions; Wave 4.2 (1.11.39) added 10 reported tests, +27 reported assertions; Wave 4.5 (1.11.40) added 4 reported tests, +8 reported assertions). The standing reporting unit going forward is `<reported tests> / <assertions>`. When updating this number, run `vendor/bin/phpunit` and copy the reported total verbatim. Runs in CI on PHP 8.0–8.3 lanes (PHP 7.4 dropped 2026-05-03 / 1.11.22 — shipped freeman-core already used PHP 8.0+ idioms baked in by Wave 2.3a–c, so the 7.4 PHPUnit lane was de-facto failing; aligning CI to reality rather than retrofitting polyfills, since no client site runs PHP 7.4). Locally: `composer install` once, then `PATH="/opt/homebrew/opt/php@8.3/bin:$PATH" composer test` (system `php` is 8.5, outside PHPUnit 10's supported range). freeman-digital has its own separate test config; freeman-theme has none.
 - **Snapshot harness**: shipped in Wave 0.5. See `/tests/snapshots/` (`SnapshotTestCase` trait, `Scrubber`, three example tests with committed goldens) and `/tests/snapshots/README.md`.
 - **Staging**: not yet provisioned. Manual local testing on a separate WP install for now.
 - **WP-CLI**: not currently installed locally. Wave 0.4 needs it installed (or a substitute) before regression baselines can be captured.

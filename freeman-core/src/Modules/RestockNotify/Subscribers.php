@@ -37,6 +37,11 @@ defined( 'ABSPATH' ) || exit;
 final class Subscribers {
 
 	/**
+	 * Non-PII domain used when tombstoning erased subscriber emails.
+	 */
+	private const ERASED_EMAIL_DOMAIN = 'freeman.invalid';
+
+	/**
 	 * Subscriptions still in `'waiting'` status for a given product.
 	 *
 	 * @since 1.11.3
@@ -94,8 +99,8 @@ final class Subscribers {
 	 * blocks extending the legacy class.
 	 *
 	 * Empty-string guard: returns `[]` early when `$email === ''` so that
-	 * a stray empty input cannot match the population of erased rows
-	 * (whose `customer_email` was set to '' by `erase_pii_by_email`).
+	 * a stray empty input cannot match any historically-erased rows from
+	 * versions that used an empty-string tombstone.
 	 *
 	 * @since 1.11.37
 	 *
@@ -122,9 +127,12 @@ final class Subscribers {
 	 * Erase PII for all subscriptions matching an exact email address.
 	 * Used by the Wave 4.1a Privacy eraser.
 	 *
-	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
-	 * via a single `UPDATE`. The legacy schema declares these columns as
-	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 * Sets `customer_name=''`, `customer_email='erased-{id}@freeman.invalid'`,
+	 * and `status='unsubscribed'`. The legacy schema declares
+	 * `customer_email` as NOT NULL and has a unique key across
+	 * `(customer_email, product_id, variation_id, status)`, so each erased
+	 * row needs a unique non-PII tombstone value instead of a shared empty
+	 * string.
 	 *
 	 * The row is preserved (not DELETEd) so the stock monitor's audit
 	 * trail stays intact; the empty `customer_email` prevents future
@@ -136,7 +144,7 @@ final class Subscribers {
 	 * @since 1.11.37
 	 *
 	 * @param string $email Customer email (exact match).
-	 * @return int Rows affected.
+	 * @return int|false Rows affected, or false when any matched row fails to update.
 	 */
 	public static function erase_pii_by_email( $email ) {
 		$email = (string) $email;
@@ -144,19 +152,47 @@ final class Subscribers {
 			return 0;
 		}
 		global $wpdb;
-		$table   = $wpdb->prefix . 'rsn_subscribers';
-		$updated = $wpdb->update(
-			$table,
-			array(
-				'customer_name'  => '',
-				'customer_email' => '',
-				'status'         => 'unsubscribed',
-			),
-			array( 'customer_email' => $email ),
-			array( '%s', '%s', '%s' ),
-			array( '%s' )
-		);
-		return (int) $updated;
+		$table = $wpdb->prefix . 'rsn_subscribers';
+		$rows  = self::find_by_email( $email );
+		if ( empty( $rows ) ) {
+			return 0;
+		}
+
+		$updated = 0;
+		foreach ( $rows as $row ) {
+			$row_id = (int) ( $row->id ?? 0 );
+			if ( $row_id <= 0 ) {
+				return false;
+			}
+
+			$result = $wpdb->update(
+				$table,
+				array(
+					'customer_name'  => '',
+					'customer_email' => self::erased_email_for_id( $row_id ),
+					'status'         => 'unsubscribed',
+				),
+				array( 'id' => $row_id ),
+				array( '%s', '%s', '%s' ),
+				array( '%d' )
+			);
+			if ( false === $result || 1 !== (int) $result ) {
+				return false;
+			}
+			$updated += (int) $result;
+		}
+
+		return $updated;
+	}
+
+	/**
+	 * Build a stable non-PII tombstone email that cannot collide with another row.
+	 *
+	 * @param int $id Subscriber row id.
+	 * @return string
+	 */
+	private static function erased_email_for_id( $id ) {
+		return 'erased-' . (int) $id . '@' . self::ERASED_EMAIL_DOMAIN;
 	}
 
 	/**

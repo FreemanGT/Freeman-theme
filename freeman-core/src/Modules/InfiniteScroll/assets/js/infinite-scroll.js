@@ -163,7 +163,12 @@
 
     function firstMatchIn(scope, selectors) {
         for (var i = 0; i < selectors.length; i++) {
-            var candidates = scope.querySelectorAll(selectors[i]);
+            var candidates;
+            try {
+                candidates = scope.querySelectorAll(selectors[i]);
+            } catch (e) {
+                continue;
+            }
             for (var j = 0; j < candidates.length; j++) {
                 if (!isInsideExcluded(candidates[j])) {
                     return { el: candidates[j], selector: selectors[i] };

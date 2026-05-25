@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use Freeman\Core\Modules\RestockNotify\Privacy;
 use Freeman\Core\Modules\RestockNotify\Subscribers;
+use Freeman\Core\Core\Plugin;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -25,6 +26,7 @@ final class RestockNotifyPrivacyTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$GLOBALS['fr_hooks'] = array();
+		$GLOBALS['fr_opts']  = array();
 
 		$this->original_wpdb = $GLOBALS['wpdb'] ?? null;
 
@@ -36,6 +38,7 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		$GLOBALS['wpdb'] = new class {
 			public $prefix = 'wp_';
 			public array $rows = array();
+			public array $fail_update_ids = array();
 
 			public function prepare( $sql, ...$args ) {
 				if ( 1 === count( $args ) && is_array( $args[0] ) ) {
@@ -72,6 +75,9 @@ final class RestockNotifyPrivacyTest extends TestCase {
 					}
 					if ( ! $ok ) {
 						continue;
+					}
+					if ( isset( $where['id'] ) && in_array( (int) $where['id'], $this->fail_update_ids, true ) ) {
+						return false;
 					}
 					foreach ( $data as $k => $v ) {
 						$row->$k = $v;
@@ -123,6 +129,28 @@ final class RestockNotifyPrivacyTest extends TestCase {
 
 		$this->assertArrayHasKey( 'wp_privacy_personal_data_erasers', $GLOBALS['fr_hooks'] );
 		$this->assertNotEmpty( $GLOBALS['fr_hooks']['wp_privacy_personal_data_erasers'] );
+	}
+
+	public function test_plugin_boot_registers_privacy_hooks_when_restock_notify_is_disabled(): void {
+		$GLOBALS['fr_hooks'] = array();
+		update_option( 'freeman_core_db_version', FREEMAN_CORE_VERSION );
+		update_option( 'freeman_core_modules', array( 'restock_notify' => false ) );
+
+		$plugin = Plugin::instance();
+		$ref    = new ReflectionClass( $plugin );
+		$booted = $ref->getProperty( 'booted' );
+		$booted->setAccessible( true );
+		$was_booted = (bool) $booted->getValue( $plugin );
+
+		try {
+			$booted->setValue( $plugin, false );
+			$plugin->boot();
+		} finally {
+			$booted->setValue( $plugin, $was_booted );
+		}
+
+		$this->assertArrayHasKey( 'wp_privacy_personal_data_exporters', $GLOBALS['fr_hooks'] );
+		$this->assertArrayHasKey( 'wp_privacy_personal_data_erasers', $GLOBALS['fr_hooks'] );
 	}
 
 	public function test_exporter_registration_adds_callback_under_freeman_key(): void {
@@ -183,7 +211,7 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		$this->assertTrue( $result['done'] );
 	}
 
-	public function test_eraser_nulls_name_and_email_and_sets_status_unsubscribed(): void {
+	public function test_eraser_clears_name_tombstones_email_and_sets_status_unsubscribed(): void {
 		$row = $this->seed_row( array(
 			'customer_name'  => 'Alice',
 			'customer_email' => 'alice@example.test',
@@ -193,13 +221,13 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		( new Privacy() )->eraser( 'alice@example.test' );
 
 		$this->assertSame( '', $row->customer_name );
-		$this->assertSame( '', $row->customer_email );
+		$this->assertSame( 'erased-' . $row->id . '@freeman.invalid', $row->customer_email );
 		$this->assertSame( 'unsubscribed', $row->status );
 	}
 
 	public function test_eraser_returns_items_removed_count(): void {
-		$this->seed_row( array( 'customer_email' => 'alice@example.test' ) );
-		$this->seed_row( array( 'customer_email' => 'alice@example.test' ) );
+		$this->seed_row( array( 'customer_email' => 'alice@example.test', 'status' => 'waiting' ) );
+		$this->seed_row( array( 'customer_email' => 'alice@example.test', 'status' => 'notified' ) );
 		$this->seed_row( array( 'customer_email' => 'bob@example.test' ) );
 
 		$result = ( new Privacy() )->eraser( 'alice@example.test' );
@@ -207,6 +235,40 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		$this->assertSame( 2, $result['items_removed'] );
 		$this->assertSame( 0, $result['items_retained'] );
 		$this->assertTrue( $result['done'] );
+	}
+
+	public function test_eraser_uses_unique_non_pii_tombstones_for_same_product_rows(): void {
+		$first = $this->seed_row( array(
+			'customer_email' => 'alice@example.test',
+			'product_id'     => 100,
+			'variation_id'   => 0,
+			'status'         => 'waiting',
+		) );
+		$second = $this->seed_row( array(
+			'customer_email' => 'alice@example.test',
+			'product_id'     => 100,
+			'variation_id'   => 0,
+			'status'         => 'notified',
+		) );
+
+		$result = ( new Privacy() )->eraser( 'alice@example.test' );
+
+		$this->assertSame( 2, $result['items_removed'] );
+		$this->assertSame( 'erased-' . $first->id . '@freeman.invalid', $first->customer_email );
+		$this->assertSame( 'erased-' . $second->id . '@freeman.invalid', $second->customer_email );
+		$this->assertNotSame( $first->customer_email, $second->customer_email );
+		$this->assertSame( array(), Subscribers::find_by_email( 'alice@example.test' ) );
+	}
+
+	public function test_eraser_reports_not_done_when_a_matched_row_cannot_update(): void {
+		$row = $this->seed_row( array( 'customer_email' => 'alice@example.test' ) );
+		$GLOBALS['wpdb']->fail_update_ids = array( $row->id );
+
+		$result = ( new Privacy() )->eraser( 'alice@example.test' );
+
+		$this->assertSame( 0, $result['items_removed'] );
+		$this->assertSame( 1, $result['items_retained'] );
+		$this->assertFalse( $result['done'] );
 	}
 
 	public function test_eraser_no_match_returns_zero_removed_done_true(): void {

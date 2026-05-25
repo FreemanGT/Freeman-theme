@@ -128,6 +128,10 @@ final class Plugin {
 
 		$this->migrations->maybe_run();
 
+		// Privacy hooks are a platform contract for persisted PII and must stay
+		// available even if the owning module is disabled or cannot boot.
+		( new \Freeman\Core\Modules\RestockNotify\Privacy() )->register();
+
 		// Discover + boot enabled modules. Any thrown exception gets logged
 		// *and* stashed in a transient so the dashboard can surface it —
 		// otherwise a broken module silently disappears.

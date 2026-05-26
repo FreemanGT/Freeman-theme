@@ -9,9 +9,9 @@ use PHPUnit\Framework\TestCase;
  * Wave 4.1a — RestockNotify WP_Privacy exporter + eraser.
  *
  * Verifies filter attachment, exporter payload shape, eraser semantics
- * (NULL PII columns via empty-string + flip status to 'unsubscribed'),
- * the no-match paths, and the empty-string guards on the two new
- * Subscribers methods.
+ * (clear PII columns + tombstone identifiers + flip status to
+ * 'unsubscribed'), the no-match paths, and the empty-string guards on the
+ * two new Subscribers methods.
  *
  * @covers \Freeman\Core\Modules\RestockNotify\Privacy
  * @covers \Freeman\Core\Modules\RestockNotify\Subscribers::find_by_email
@@ -32,10 +32,11 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		// Self-contained — does not leak into other tests (tearDown restores
 		// the prior global). Only supports the methods Wave 4.1a needs:
 		// prefix, prepare (best-effort %s/%d substitution), get_results,
-		// update (matches by 'customer_email' WHERE and mutates the store).
+		// update (matches WHERE clauses and mutates the store).
 		$GLOBALS['wpdb'] = new class {
 			public $prefix = 'wp_';
 			public array $rows = array();
+			public bool $fail_next_update = false;
 
 			public function prepare( $sql, ...$args ) {
 				if ( 1 === count( $args ) && is_array( $args[0] ) ) {
@@ -61,6 +62,11 @@ final class RestockNotifyPrivacyTest extends TestCase {
 			}
 
 			public function update( $table, $data, $where, $format = null, $where_format = null ) {
+				if ( $this->fail_next_update ) {
+					$this->fail_next_update = false;
+					return false;
+				}
+
 				$matched = 0;
 				foreach ( $this->rows as $row ) {
 					$ok = true;
@@ -183,29 +189,69 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		$this->assertTrue( $result['done'] );
 	}
 
-	public function test_eraser_nulls_name_and_email_and_sets_status_unsubscribed(): void {
+	public function test_eraser_anonymizes_row_and_sets_status_unsubscribed(): void {
 		$row = $this->seed_row( array(
-			'customer_name'  => 'Alice',
-			'customer_email' => 'alice@example.test',
-			'status'         => 'waiting',
+			'id'                => 42,
+			'customer_name'     => 'Alice',
+			'customer_email'    => 'alice@example.test',
+			'status'            => 'waiting',
+			'unsubscribe_token' => 'tok-abcdef',
 		) );
 
 		( new Privacy() )->eraser( 'alice@example.test' );
 
 		$this->assertSame( '', $row->customer_name );
-		$this->assertSame( '', $row->customer_email );
+		$this->assertSame( 'erased-42@freeman.invalid', $row->customer_email );
 		$this->assertSame( 'unsubscribed', $row->status );
+		$this->assertSame( 'erased-42', $row->unsubscribe_token );
 	}
 
 	public function test_eraser_returns_items_removed_count(): void {
-		$this->seed_row( array( 'customer_email' => 'alice@example.test' ) );
-		$this->seed_row( array( 'customer_email' => 'alice@example.test' ) );
+		$this->seed_row( array( 'customer_email' => 'alice@example.test', 'product_id' => 100 ) );
+		$this->seed_row( array( 'customer_email' => 'alice@example.test', 'product_id' => 200 ) );
 		$this->seed_row( array( 'customer_email' => 'bob@example.test' ) );
 
 		$result = ( new Privacy() )->eraser( 'alice@example.test' );
 
 		$this->assertSame( 2, $result['items_removed'] );
 		$this->assertSame( 0, $result['items_retained'] );
+		$this->assertTrue( $result['done'] );
+	}
+
+	public function test_eraser_uses_unique_tombstone_emails_for_same_product_history(): void {
+		$waiting  = $this->seed_row( array(
+			'id'             => 50,
+			'customer_email' => 'alice@example.test',
+			'product_id'     => 100,
+			'variation_id'   => 0,
+			'status'         => 'waiting',
+		) );
+		$notified = $this->seed_row( array(
+			'id'             => 51,
+			'customer_email' => 'alice@example.test',
+			'product_id'     => 100,
+			'variation_id'   => 0,
+			'status'         => 'notified',
+		) );
+
+		$result = ( new Privacy() )->eraser( 'alice@example.test' );
+
+		$this->assertSame( 2, $result['items_removed'] );
+		$this->assertSame( 'erased-50@freeman.invalid', $waiting->customer_email );
+		$this->assertSame( 'erased-51@freeman.invalid', $notified->customer_email );
+		$this->assertSame( 'unsubscribed', $waiting->status );
+		$this->assertSame( 'unsubscribed', $notified->status );
+	}
+
+	public function test_eraser_reports_database_failure_as_retained_item(): void {
+		$this->seed_row( array( 'customer_email' => 'alice@example.test' ) );
+		$GLOBALS['wpdb']->fail_next_update = true;
+
+		$result = ( new Privacy() )->eraser( 'alice@example.test' );
+
+		$this->assertSame( 0, $result['items_removed'] );
+		$this->assertSame( 1, $result['items_retained'] );
+		$this->assertNotEmpty( $result['messages'] );
 		$this->assertTrue( $result['done'] );
 	}
 

@@ -94,8 +94,7 @@ final class Subscribers {
 	 * blocks extending the legacy class.
 	 *
 	 * Empty-string guard: returns `[]` early when `$email === ''` so that
-	 * a stray empty input cannot match the population of erased rows
-	 * (whose `customer_email` was set to '' by `erase_pii_by_email`).
+	 * a stray empty input cannot match erased rows.
 	 *
 	 * @since 1.11.37
 	 *
@@ -119,15 +118,16 @@ final class Subscribers {
 	}
 
 	/**
-	 * Erase PII for all subscriptions matching an exact email address.
-	 * Used by the Wave 4.1a Privacy eraser.
+	 * Erase PII for all subscriptions matching an exact email address. Used
+	 * by the Wave 4.1a Privacy eraser.
 	 *
-	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
-	 * via a single `UPDATE`. The legacy schema declares these columns as
-	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 * The legacy schema declares `customer_email` and `unsubscribe_token` as
+	 * NOT NULL, so each row receives a non-PII tombstone value keyed by its
+	 * row id instead of SQL NULL. Updating row-by-row avoids collapsing two
+	 * rows for the same product/variation into the legacy `unique_sub` key.
 	 *
 	 * The row is preserved (not DELETEd) so the stock monitor's audit
-	 * trail stays intact; the empty `customer_email` prevents future
+	 * trail stays intact; the tombstone `customer_email` prevents future
 	 * email matches.
 	 *
 	 * Empty-string guard: returns `0` early when `$email === ''` so a
@@ -136,7 +136,7 @@ final class Subscribers {
 	 * @since 1.11.37
 	 *
 	 * @param string $email Customer email (exact match).
-	 * @return int Rows affected.
+	 * @return int|false Rows affected, or false on database error.
 	 */
 	public static function erase_pii_by_email( $email ) {
 		$email = (string) $email;
@@ -144,19 +144,40 @@ final class Subscribers {
 			return 0;
 		}
 		global $wpdb;
-		$table   = $wpdb->prefix . 'rsn_subscribers';
-		$updated = $wpdb->update(
-			$table,
-			array(
-				'customer_name'  => '',
-				'customer_email' => '',
-				'status'         => 'unsubscribed',
-			),
-			array( 'customer_email' => $email ),
-			array( '%s', '%s', '%s' ),
-			array( '%s' )
-		);
-		return (int) $updated;
+		$table = $wpdb->prefix . 'rsn_subscribers';
+		$rows  = self::find_by_email( $email );
+		$count = 0;
+
+		foreach ( $rows as $row ) {
+			$id = (int) ( $row->id ?? 0 );
+			if ( $id <= 0 ) {
+				continue;
+			}
+
+			$updated = $wpdb->update(
+				$table,
+				array(
+					'customer_name'     => '',
+					'customer_email'    => 'erased-' . $id . '@freeman.invalid',
+					'status'            => 'unsubscribed',
+					'unsubscribe_token' => 'erased-' . $id,
+				),
+				array(
+					'id'             => $id,
+					'customer_email' => $email,
+				),
+				array( '%s', '%s', '%s', '%s' ),
+				array( '%d', '%s' )
+			);
+
+			if ( false === $updated ) {
+				return false;
+			}
+
+			$count += (int) $updated;
+		}
+
+		return $count;
 	}
 
 	/**

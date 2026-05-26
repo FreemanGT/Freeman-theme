@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use Freeman\Core\Modules\RestockNotify\Privacy;
 use Freeman\Core\Modules\RestockNotify\Subscribers;
+use Freeman\Core\Core\Plugin;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -129,6 +130,18 @@ final class RestockNotifyPrivacyTest extends TestCase {
 
 		$this->assertArrayHasKey( 'wp_privacy_personal_data_erasers', $GLOBALS['fr_hooks'] );
 		$this->assertNotEmpty( $GLOBALS['fr_hooks']['wp_privacy_personal_data_erasers'] );
+	}
+
+	public function test_core_boot_registers_privacy_hooks_when_restock_module_disabled(): void {
+		$GLOBALS['fr_opts']['freeman_core_db_version'] = FREEMAN_CORE_VERSION;
+		$GLOBALS['fr_opts']['freeman_core_modules']    = array( 'restock_notify' => false );
+
+		$reflection = new \ReflectionClass( Plugin::class );
+		$plugin     = $reflection->newInstanceWithoutConstructor();
+		$plugin->boot();
+
+		$this->assertArrayHasKey( 'wp_privacy_personal_data_exporters', $GLOBALS['fr_hooks'] );
+		$this->assertArrayHasKey( 'wp_privacy_personal_data_erasers', $GLOBALS['fr_hooks'] );
 	}
 
 	public function test_exporter_registration_adds_callback_under_freeman_key(): void {

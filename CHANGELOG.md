@@ -4,7 +4,7 @@ This is the aggregated changelog across both packages. See each package's own `C
 
 ## [1.11.42] — 2026-05-26
 
-- Fix RestockNotify privacy erasure to avoid unique-key collisions and clear unsubscribe tokens
+- Fix RestockNotify privacy erasure to avoid unique-key collisions, clear unsubscribe tokens, and keep exporter/eraser hooks registered even when the module is disabled
 
 ## [1.11.41] — 2026-05-11
 

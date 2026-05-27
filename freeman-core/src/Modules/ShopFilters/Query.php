@@ -363,9 +363,33 @@ final class Query {
 	}
 
 	/**
-	 * Join wc_product_meta_lookup and apply the selected price bands to the main
-	 * product query (shop / category / attribute archives + product search). Uses
-	 * the lookup table (decisions §5.2) so price is never duplicated.
+	 * SQL WHERE fragment for the on-sale / in-stock flags, read from the
+	 * wc_product_meta_lookup row aliased as $alias (decisions §5.2 — never
+	 * duplicated). The two flags AND together. Numbers / fixed strings only —
+	 * no user input reaches the SQL. Pure.
+	 *
+	 * @param bool   $onsale   Restrict to on-sale products.
+	 * @param bool   $in_stock Restrict to in-stock products.
+	 * @param string $alias    wc_product_meta_lookup table alias.
+	 * @return string SQL fragment (empty when neither flag is active).
+	 */
+	public static function flags_where_sql( $onsale, $in_stock, $alias ) {
+		$alias   = preg_replace( '/[^a-z0-9_]/i', '', (string) $alias );
+		$clauses = array();
+		if ( $onsale ) {
+			$clauses[] = sprintf( '%s.onsale = 1', $alias );
+		}
+		if ( $in_stock ) {
+			$clauses[] = sprintf( "%s.stock_status = 'instock'", $alias );
+		}
+		return empty( $clauses ) ? '' : implode( ' AND ', $clauses );
+	}
+
+	/**
+	 * Join wc_product_meta_lookup and apply the selected price bands + on-sale /
+	 * in-stock flags to the main product query (shop / category / attribute
+	 * archives + product search). Uses the lookup table (decisions §5.2) so
+	 * price/stock/on-sale are never duplicated.
 	 *
 	 * @param array     $clauses Posts clauses (join/where/…).
 	 * @param \WP_Query $query   Query.
@@ -379,7 +403,18 @@ final class Query {
 			return $clauses;
 		}
 		$bands = $this->current_price_bands();
-		if ( empty( $bands ) ) {
+		$flags = $this->current_flags();
+		$where = array();
+
+		$price_where = self::price_where_sql( $bands, 'fsf_price' );
+		if ( '' !== $price_where ) {
+			$where[] = $price_where;
+		}
+		$flags_where = self::flags_where_sql( $flags['onsale'], $flags['in_stock'], 'fsf_price' );
+		if ( '' !== $flags_where ) {
+			$where[] = $flags_where;
+		}
+		if ( empty( $where ) ) {
 			return $clauses;
 		}
 
@@ -389,10 +424,7 @@ final class Query {
 		if ( false === strpos( (string) $clauses['join'], $alias ) ) {
 			$clauses['join'] .= " LEFT JOIN {$lookup} {$alias} ON {$wpdb->posts}.ID = {$alias}.product_id ";
 		}
-		$where = self::price_where_sql( $bands, $alias );
-		if ( '' !== $where ) {
-			$clauses['where'] .= ' AND ' . $where;
-		}
+		$clauses['where'] .= ' AND ' . implode( ' AND ', $where );
 		return $clauses;
 	}
 
@@ -446,5 +478,19 @@ final class Query {
 		$params = is_array( $_GET ) ? wp_unslash( $_GET ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$state  = Url_State::parse( $params );
 		return isset( $state['price_bands'] ) && is_array( $state['price_bands'] ) ? $state['price_bands'] : array();
+	}
+
+	/**
+	 * Parse the current request's on-sale / in-stock flag selection.
+	 *
+	 * @return array{onsale:bool,in_stock:bool}
+	 */
+	private function current_flags() {
+		$params = is_array( $_GET ) ? wp_unslash( $_GET ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$state  = Url_State::parse( $params );
+		return array(
+			'onsale'   => ! empty( $state['onsale'] ),
+			'in_stock' => ! empty( $state['in_stock'] ),
+		);
 	}
 }

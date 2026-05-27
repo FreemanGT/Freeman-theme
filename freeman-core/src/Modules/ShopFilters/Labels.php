@@ -63,6 +63,18 @@ final class Labels {
 				'label'   => __( 'Sort heading', 'freeman-core' ),
 				'default' => __( 'Sort by', 'freeman-core' ),
 			),
+			'flags_heading'  => array(
+				'label'   => __( 'Availability heading', 'freeman-core' ),
+				'default' => __( 'Availability', 'freeman-core' ),
+			),
+			'onsale'         => array(
+				'label'   => __( 'On-sale filter label', 'freeman-core' ),
+				'default' => __( 'On sale', 'freeman-core' ),
+			),
+			'in_stock'       => array(
+				'label'   => __( 'In-stock filter label', 'freeman-core' ),
+				'default' => __( 'In stock', 'freeman-core' ),
+			),
 			'categories_aria' => array(
 				'label'   => __( 'Categories accessible name', 'freeman-core' ),
 				'default' => __( 'Product categories', 'freeman-core' ),

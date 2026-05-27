@@ -76,6 +76,14 @@
 			if (slugs && slugs.length) { url.searchParams.set(FILTER_PREFIX + tax, slugs.join(',')); }
 		});
 
+		// On-sale / in-stock flags use top-level params (onsale=1, in_stock=1),
+		// not the filter_ prefix — Url_State parses them as flags, not taxonomies.
+		['onsale', 'in_stock'].forEach(function (p) { url.searchParams.delete(p); });
+		panel.querySelectorAll('.freeman-sf__flag:checked').forEach(function (box) {
+			var p = box.getAttribute('data-freeman-sf-flag');
+			if (p) { url.searchParams.set(p, '1'); }
+		});
+
 		// Sort: carry the dropdown's current value (WooCommerce honours ?orderby).
 		if (sortSelect) {
 			var ob = sortSelect.value;

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.23] — 2026-05-20
+
+- Shop Filters 6.5c on-sale/in-stock facets: On sale (and In stock when the store shows out-of-stock items) checkboxes in the panel, read from wc_product_meta_lookup, filtering the grid via onsale/in_stock URL params. Reuses the storefront flag.
+
 ## [1.12.22] — 2026-05-20
 
 - Shop Filters 6.5a SEO policy: filtered shop/category/search URLs get noindex,follow plus a canonical to the clean archive, routed through RankMath/SEOPress/Yoast or core. New flag freeman_core_shop_filters_seo_policy_enabled (default off).

@@ -359,6 +359,65 @@ final class Query_Builder {
 	}
 
 	/**
+	 * Shape the on-sale / in-stock flags into the wire facet. A flag appears when
+	 * it has a non-zero count (hide-zero) or is already selected (so it can be
+	 * unticked). The in-stock flag is omitted entirely unless $show_in_stock
+	 * (i.e. the store shows out-of-stock products). Pure.
+	 *
+	 * @param int  $onsale_count    On-sale product count in the candidate set.
+	 * @param int  $instock_count   In-stock product count in the candidate set.
+	 * @param bool $onsale_selected On-sale currently selected.
+	 * @param bool $instock_selected In-stock currently selected.
+	 * @param bool $show_in_stock   Whether to offer the in-stock flag at all.
+	 * @return array<string,array{count:int,selected:bool}>
+	 */
+	public static function shape_flag_facet( $onsale_count, $instock_count, $onsale_selected, $instock_selected, $show_in_stock ) {
+		$facet = array();
+		if ( (int) $onsale_count > 0 || $onsale_selected ) {
+			$facet['onsale'] = array(
+				'count'    => (int) $onsale_count,
+				'selected' => (bool) $onsale_selected,
+			);
+		}
+		if ( $show_in_stock && ( (int) $instock_count > 0 || $instock_selected ) ) {
+			$facet['in_stock'] = array(
+				'count'    => (int) $instock_count,
+				'selected' => (bool) $instock_selected,
+			);
+		}
+		return $facet;
+	}
+
+	/**
+	 * Restrict a product-id list to those matching the active flags (AND across
+	 * on-sale and in-stock). Pure.
+	 *
+	 * @param array $products Candidate product ids.
+	 * @param array $flag_map product_id => ['onsale'=>bool,'in_stock'=>bool].
+	 * @param bool  $onsale   Require on-sale.
+	 * @param bool  $in_stock Require in-stock.
+	 * @return int[]
+	 */
+	public static function filter_by_flags( array $products, array $flag_map, $onsale, $in_stock ) {
+		if ( ! $onsale && ! $in_stock ) {
+			return array_values( array_map( 'intval', $products ) );
+		}
+		$out = array();
+		foreach ( $products as $id ) {
+			$id   = (int) $id;
+			$flag = isset( $flag_map[ $id ] ) ? $flag_map[ $id ] : array();
+			if ( $onsale && empty( $flag['onsale'] ) ) {
+				continue;
+			}
+			if ( $in_stock && empty( $flag['in_stock'] ) ) {
+				continue;
+			}
+			$out[] = $id;
+		}
+		return $out;
+	}
+
+	/**
 	 * Stable signature for a band, used to match selected against candidate bands.
 	 *
 	 * @param array $band Band.
@@ -490,6 +549,28 @@ final class Query_Builder {
 			}
 		}
 
+		// On-sale / in-stock flags (numeric, read from wc_product_meta_lookup —
+		// §5.2, never duplicated). Counts are over the term-filtered set (like
+		// price). The in-stock facet is meaningless when the store hides
+		// out-of-stock items (the base is already in-stock-only), so it's only
+		// offered when out-of-stock products are shown.
+		$onsale_selected  = ! empty( $state['onsale'] );
+		$instock_selected = ! empty( $state['in_stock'] );
+		$show_instock     = ! $hide_oos;
+		$flag_map         = $this->product_flags( $computed['products'] );
+		$onsale_count     = 0;
+		$instock_count    = 0;
+		foreach ( $flag_map as $flag ) {
+			if ( ! empty( $flag['onsale'] ) ) {
+				++$onsale_count;
+			}
+			if ( ! empty( $flag['in_stock'] ) ) {
+				++$instock_count;
+			}
+		}
+		$flags_facet   = self::shape_flag_facet( $onsale_count, $instock_count, $onsale_selected, $instock_selected, $show_instock );
+		$grid_products = self::filter_by_flags( $grid_products, $flag_map, $onsale_selected, $instock_selected );
+
 		$count    = count( $grid_products );
 		$per_page = $this->products_per_page();
 		$paged    = max( 1, (int) $state['paged'] );
@@ -498,6 +579,7 @@ final class Query_Builder {
 			'facets'        => $facets,
 			'category_tree' => $category_tree,
 			'price'         => $price_facet,
+			'flags'         => $flags_facet,
 			'count'         => $count,
 			'pagination'    => array(
 				'current'     => $paged,
@@ -697,6 +779,41 @@ final class Query_Builder {
 			);
 		}
 		return $prices;
+	}
+
+	/**
+	 * Read the on-sale + stock-status flags for a set of products from
+	 * wc_product_meta_lookup (§5.2 — never duplicated in the index).
+	 *
+	 * @param int[] $product_ids Product ids.
+	 * @return array<int,array{onsale:bool,in_stock:bool}>
+	 */
+	private function product_flags( array $product_ids ) {
+		$product_ids = array_values( array_unique( array_map( 'intval', $product_ids ) ) );
+		if ( empty( $product_ids ) ) {
+			return array();
+		}
+
+		global $wpdb;
+		$lookup       = $wpdb->prefix . 'wc_product_meta_lookup';
+		$placeholders = implode( ', ', array_fill( 0, count( $product_ids ), '%d' ) );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT product_id, onsale, stock_status FROM {$lookup} WHERE product_id IN ({$placeholders})",
+				$product_ids
+			)
+		);
+		// phpcs:enable
+
+		$flags = array();
+		foreach ( (array) $rows as $row ) {
+			$flags[ (int) $row->product_id ] = array(
+				'onsale'   => ( 1 === (int) $row->onsale ),
+				'in_stock' => ( 'instock' === (string) $row->stock_status ),
+			);
+		}
+		return $flags;
 	}
 
 	/**

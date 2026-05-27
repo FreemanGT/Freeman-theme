@@ -84,6 +84,8 @@ $sf_current_sort = '' !== (string) $orderby ? (string) $orderby : (string) get_o
 
 		<?php include __DIR__ . '/facet-price.php'; ?>
 
+		<?php include __DIR__ . '/facet-flags.php'; ?>
+
 		<?php include __DIR__ . '/facet-category-tree.php'; ?>
 
 		<form class="freeman-sf__facets" data-freeman-sf-facets>

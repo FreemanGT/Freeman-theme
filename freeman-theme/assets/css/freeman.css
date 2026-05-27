@@ -147,6 +147,20 @@ body {
     gap: var(--fm-card-gap);
 }
 
+/* Elementor's `.elementor-grid` archive grid declares
+   `grid-template-columns: repeat(N, 1fr)`, and `1fr` is `minmax(auto, 1fr)`
+   — the `auto` floor is each track's min-content. So one grid item whose
+   min-content is wide (e.g. an un-shrinkable product image left behind by a
+   third-party plugin that re-renders the loop) inflates its track and
+   squeezes the rest of the row, blowing cards out past the page edge.
+   Pinning the floor to 0 keeps the columns even regardless of item content.
+   Column count still comes from Elementor's `--e-grid-columns` (which
+   Elementor itself overrides per breakpoint), so responsiveness is intact;
+   the `3` is only a fallback if the variable is somehow absent. */
+.freeman-theme .woocommerce ul.products.elementor-grid {
+    grid-template-columns: repeat(var(--e-grid-columns, 3), minmax(0, 1fr));
+}
+
 /* Hide the "View cart" link WooCommerce auto-injects next to the add-to-cart
    button after a successful AJAX add. The cart is reachable from the header
    utilities — the inline link clutters the loop card and confuses the eye. */

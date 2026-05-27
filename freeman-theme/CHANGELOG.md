@@ -1,5 +1,13 @@
 # Freeman Theme — Changelog
 
+## [1.11.25] — 2026-05-13
+
+- Customizer → WooCommerce → Product Catalog: new "Mobile columns" select (1/2/3/4, defaults to "Don't override"). When set, prints an inline `@media (max-width:767px)` rule on product archive pages (shop, product category/tag, product search) that pins `.woocommerce ul.products` `grid-template-columns` to the chosen count with `!important` and forces `display: grid` so the rule lands regardless of whether the underlying loop renders as grid/flex/block. Opt-in: with the sentinel "default" value (the shipped default), nothing is emitted and existing behaviour is preserved.
+
+## [1.11.24] — 2026-05-12
+
+- freeman-theme: defensive grid-template-columns floor (minmax(0,1fr)) on Elementor archive product grid so a wide grid item cannot inflate one column and push cards off-page
+
 ## [1.11.23] — 2026-05-11
 
 - Typography: `--fm-font-body` and `--fm-font-display` now resolve from Elementor's global typography (`var(--e-global-typography-sk_type_12-font-family, …)` / `…sk_type_2…`, which the Style Kits for Elementor addon writes), with the previous hardcoded `'Heebo'` / `'Assistant'` stacks as fallback. The theme no longer overrides Style Kits' fonts; `--fm-font-mono` (used for `<code>` / `<pre>`) is unchanged. Since `freeman.css`'s `body` / heading rules read those tokens — and `freeman-core`'s My Account reads `--fm-font-body` — they all follow automatically.

@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'FREEMAN_THEME_VERSION',   '1.11.23' );
+define( 'FREEMAN_THEME_VERSION',   '1.11.25' );
 define( 'FREEMAN_THEME_PATH',      get_stylesheet_directory() );
 define( 'FREEMAN_THEME_URL',       get_stylesheet_directory_uri() );
 define( 'FREEMAN_THEME_ASSETS',    FREEMAN_THEME_URL . '/assets' );
@@ -17,6 +17,7 @@ require_once FREEMAN_THEME_PATH . '/inc/class-freeman-theme.php';
 require_once FREEMAN_THEME_PATH . '/inc/plugin-dependencies.php';
 require_once FREEMAN_THEME_PATH . '/inc/hooks.php';
 require_once FREEMAN_THEME_PATH . '/inc/woocommerce.php';
+require_once FREEMAN_THEME_PATH . '/inc/customizer.php';
 
 Freeman_Theme::instance();
 Freeman_Theme_Plugin_Dependencies::instance();

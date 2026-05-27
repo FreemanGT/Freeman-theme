@@ -16,6 +16,8 @@
 
 namespace Freeman\Core\Modules\ShopFilters;
 
+use Freeman\Core\Core\Feature_Flags;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -125,11 +127,70 @@ final class Facet_Config {
 	}
 
 	/**
+	 * Full merged facet definitions (defaults + saved overrides), including
+	 * disabled ones — the data source for the admin editing matrix. Unlike
+	 * resolve(), this does NOT drop disabled/hidden facets, so the editor can
+	 * show and re-enable a facet that's currently turned off.
+	 *
+	 * @param string[] $available_taxonomies Taxonomies present on the catalogue.
+	 * @return array
+	 */
+	public static function all_defs( array $available_taxonomies ) {
+		return self::merge( self::saved(), self::defaults( $available_taxonomies ) );
+	}
+
+	/**
+	 * Normalise a raw admin-matrix submission into the saved-config shape.
+	 * Only known taxonomies survive; everything else is coerced to the expected
+	 * type. Pure — no I/O, fully unit-testable.
+	 *
+	 * Expected $raw shape (from the matrix form):
+	 *   [ '<taxonomy>' => [ 'enabled' => '1', 'order' => '2',
+	 *                       'hide_on_categories' => [ '42', '7' ] ], ... ]
+	 *
+	 * @param array    $raw              Raw submission (typically $_POST['facets']).
+	 * @param string[] $valid_taxonomies Taxonomies allowed to be configured.
+	 * @return array Sanitised facet definitions.
+	 */
+	public static function sanitize( array $raw, array $valid_taxonomies ) {
+		$config         = array();
+		$order_fallback = 0;
+		foreach ( $valid_taxonomies as $taxonomy ) {
+			$taxonomy = (string) $taxonomy;
+			if ( '' === $taxonomy ) {
+				continue;
+			}
+			$row  = ( isset( $raw[ $taxonomy ] ) && is_array( $raw[ $taxonomy ] ) ) ? $raw[ $taxonomy ] : array();
+			$hide = array();
+			if ( ! empty( $row['hide_on_categories'] ) && is_array( $row['hide_on_categories'] ) ) {
+				$hide = array_values( array_unique( array_filter( array_map( 'intval', $row['hide_on_categories'] ) ) ) );
+			}
+			$config[] = array(
+				'taxonomy'           => $taxonomy,
+				'type'               => self::default_type_for( $taxonomy ),
+				'enabled'            => ! empty( $row['enabled'] ),
+				'order'              => isset( $row['order'] ) ? (int) $row['order'] : $order_fallback,
+				'hide_on_categories' => $hide,
+			);
+			++$order_fallback;
+		}
+		return $config;
+	}
+
+	/**
 	 * Saved (admin-configured) facet definitions, or empty.
+	 *
+	 * Gated by the `admin_config` flag: when the facet-configuration surface is
+	 * off, the saved option is ignored so the storefront falls back to the
+	 * auto-derived defaults. This makes flipping the flag off a complete,
+	 * one-switch rollback of any saved configuration.
 	 *
 	 * @return array
 	 */
 	private static function saved() {
+		if ( ! Feature_Flags::is_enabled( 'shop_filters', 'admin_config' ) ) {
+			return array();
+		}
 		$config = get_option( self::OPTION, array() );
 		return is_array( $config ) ? $config : array();
 	}

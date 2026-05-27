@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.21] — 2026-05-20
+
+- Shop Filters 6.4 admin facet config: per-attribute matrix (show/order/hide-on-categories) on Freeman to Shop Filters, gated by the new freeman_core_shop_filters_admin_config_enabled flag (default off; off reverts to auto-derived defaults).
+
 ## [1.12.20] — 2026-05-20
 
 - Shop Filters: run the search-results filter enforcement last (priority 99999) so it wins against Advanced Woo Search re-asserting its own result list after us

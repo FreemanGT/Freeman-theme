@@ -189,6 +189,14 @@ final class Feature_Flags {
 				'since'       => '1.12.6',
 				'shared'      => true,
 			),
+			array(
+				'module'      => 'shop_filters',
+				'feature'     => 'admin_config',
+				'label'       => __( 'Shop Filters — facet configuration', 'freeman-core' ),
+				'description' => __( 'Enables the per-attribute facet matrix on Freeman → Shop Filters (turn a filter on/off, reorder, hide on chosen categories) and makes the storefront honour the saved configuration. Off: the matrix is hidden and filters fall back to the automatic defaults (every attribute as a checkbox, categories as a tree), so turning this off fully reverts any saved configuration.', 'freeman-core' ),
+				'since'       => '1.12.21',
+				'shared'      => false,
+			),
 		);
 	}
 }

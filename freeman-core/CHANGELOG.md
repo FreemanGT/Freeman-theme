@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.24] — 2026-05-28
+
+- RestockNotify privacy fix: register the WP privacy exporter/eraser at core boot for every module (new Module_Base::register_persistent_hooks seam) so persisted subscriber PII is still covered by GDPR export/erase when the module is disabled or WooCommerce is absent. Previously registered only inside Module::boot (enabled-only). No flag (platform-contract bugfix), no schema change.
+
 ## [1.12.23] — 2026-05-20
 
 - Shop Filters 6.5c on-sale/in-stock facets: On sale (and In stock when the store shows out-of-stock items) checkboxes in the panel, read from wc_product_meta_lookup, filtering the grid via onsale/in_stock URL params. Reuses the storefront flag.

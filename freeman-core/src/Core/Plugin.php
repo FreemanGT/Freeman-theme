@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Plugin {
 
-	const VERSION = '1.12.23';
+	const VERSION = '1.12.24';
 
 	/**
 	 * Singleton instance.
@@ -133,6 +133,15 @@ final class Plugin {
 		// otherwise a broken module silently disappears.
 		$failures = array();
 		foreach ( $this->registry->discover() as $module ) {
+			// Platform-contract hooks (e.g. WP privacy export/erase) must
+			// register even when the module is disabled, so already-persisted
+			// data stays covered. Runs for every discovered module.
+			try {
+				$module->register_persistent_hooks();
+			} catch ( \Throwable $e ) {
+				Logger::log( 'Module persistent-hooks failed: ' . $module->id() . ' — ' . $e->getMessage() );
+			}
+
 			if ( $module->is_enabled() && $module->dependencies_met() ) {
 				try {
 					$module->boot();

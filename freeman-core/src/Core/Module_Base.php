@@ -103,6 +103,14 @@ abstract class Module_Base implements Module_Interface {
 	public function on_deactivate() {}
 
 	/**
+	 * Register hooks that must stay active even when the module is disabled —
+	 * platform contracts (e.g. WP privacy export/erase) that must keep covering
+	 * already-persisted data. No-op by default. Called for every discovered
+	 * module from Plugin::boot(), regardless of is_enabled().
+	 */
+	public function register_persistent_hooks() {}
+
+	/**
 	 * Uninstall default: delete all of this module's options.
 	 */
 	public function on_uninstall() {

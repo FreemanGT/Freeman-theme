@@ -2,7 +2,7 @@ freeman-core/src/Core/Feature_Flags.php:60:		return (bool) apply_filters( "freem
 freeman-core/src/Core/Logger.php:47:		$filtered = apply_filters( 'freeman_core/logger/entry', $entry, (string) $message, $level );
 freeman-core/src/Core/Logger.php:72:		do_action( 'freeman_core/logger/written', $entry, $log );
 freeman-core/src/Core/Module_Registry.php:81:		$this->modules = apply_filters( 'freeman_core/modules', $this->modules );
-freeman-core/src/Core/Plugin.php:164:		do_action( 'freeman_core/booted', $this );
+freeman-core/src/Core/Plugin.php:173:		do_action( 'freeman_core/booted', $this );
 freeman-core/src/Core/Settings_Hub.php:321:		do_action( 'freeman_core/module_page/' . $module->id(), $module );
 freeman-core/src/Core/Settings_Tools.php:154:		$skip_backup = (bool) apply_filters( 'freeman_core/tools/import/skip_backup', false, $envelope );
 freeman-core/src/Core/Settings_Tools.php:161:		do_action( 'freeman_core/tools/import/before_write', $envelope );

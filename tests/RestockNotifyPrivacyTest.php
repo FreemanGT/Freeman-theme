@@ -16,6 +16,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Freeman\Core\Modules\RestockNotify\Privacy
  * @covers \Freeman\Core\Modules\RestockNotify\Subscribers::find_by_email
  * @covers \Freeman\Core\Modules\RestockNotify\Subscribers::erase_pii_by_email
+ * @covers \Freeman\Core\Modules\RestockNotify\Module::register_persistent_hooks
  */
 final class RestockNotifyPrivacyTest extends TestCase {
 
@@ -123,6 +124,18 @@ final class RestockNotifyPrivacyTest extends TestCase {
 
 		$this->assertArrayHasKey( 'wp_privacy_personal_data_erasers', $GLOBALS['fr_hooks'] );
 		$this->assertNotEmpty( $GLOBALS['fr_hooks']['wp_privacy_personal_data_erasers'] );
+	}
+
+	public function test_persistent_hooks_register_privacy_even_when_module_disabled(): void {
+		// The always-on seam Plugin::boot() calls for every discovered module
+		// regardless of is_enabled(). It must attach the WP privacy export/erase
+		// filters so persisted subscriber PII stays covered when the module is
+		// disabled (the bug: registration used to live in boot(), which only
+		// runs when enabled and bails when WooCommerce is absent).
+		( new \Freeman\Core\Modules\RestockNotify\Module() )->register_persistent_hooks();
+
+		$this->assertArrayHasKey( 'wp_privacy_personal_data_exporters', $GLOBALS['fr_hooks'] );
+		$this->assertArrayHasKey( 'wp_privacy_personal_data_erasers', $GLOBALS['fr_hooks'] );
 	}
 
 	public function test_exporter_registration_adds_callback_under_freeman_key(): void {

@@ -166,6 +166,18 @@ final class Module extends Module_Base {
 	}
 
 	/**
+	 * Register the WP_Privacy exporter + eraser unconditionally — even when this
+	 * module is disabled (or WooCommerce is absent), so a privacy admin can
+	 * still export/erase subscriber PII that persists in the `rsn_subscribers`
+	 * table. Privacy hooks are a platform contract (OS-5(a)), not a feature to
+	 * gate behind module-enabled state. Called from Plugin::boot() for every
+	 * discovered module regardless of is_enabled().
+	 */
+	public function register_persistent_hooks() {
+		( new Privacy() )->register();
+	}
+
+	/**
 	 * Boot — load legacy classes and instantiate their components.
 	 *
 	 * If any of the legacy global classes already exist — because the
@@ -236,10 +248,10 @@ final class Module extends Module_Base {
 		new \RSN_Ajax();
 		new \Freeman\Core\Modules\RestockNotify\Stock_Monitor();
 
-		// Wave 4.1a — register WP_Privacy exporter + eraser. Unconditional
-		// per OS-5(a): privacy hooks are a platform contract, not a feature
-		// to flag-gate off by default.
-		( new \Freeman\Core\Modules\RestockNotify\Privacy() )->register();
+		// WP_Privacy exporter + eraser are now registered unconditionally via
+		// register_persistent_hooks() (called from Plugin::boot() regardless of
+		// module-enabled state), so persisted subscriber PII stays covered even
+		// when this module is disabled.
 
 		if ( is_admin() ) {
 			require_once $dir . 'class-rsn-admin.php';

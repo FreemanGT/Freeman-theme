@@ -157,6 +157,12 @@ final class Module extends Module_Base {
 			( new Ajax() )->register();
 		}
 
+		// Filtered-URL SEO policy is independent of the storefront panel: it acts
+		// on filter params in the URL whether or not the panel is rendered.
+		if ( Feature_Flags::is_enabled( 'shop_filters', 'seo_policy' ) ) {
+			( new Seo() )->register();
+		}
+
 		if ( is_admin() ) {
 			( new Admin_Page( $indexer ) )->boot();
 			if ( Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) ) {

@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.22] — 2026-05-20
+
+- Shop Filters 6.5a SEO policy: filtered shop/category/search URLs get noindex,follow plus a canonical to the clean archive, routed through RankMath/SEOPress/Yoast or core. New flag freeman_core_shop_filters_seo_policy_enabled (default off).
+
 ## [1.12.21] — 2026-05-20
 
 - Shop Filters 6.4 admin facet config: per-attribute matrix (show/order/hide-on-categories) on Freeman to Shop Filters, gated by the new freeman_core_shop_filters_admin_config_enabled flag (default off; off reverts to auto-derived defaults).

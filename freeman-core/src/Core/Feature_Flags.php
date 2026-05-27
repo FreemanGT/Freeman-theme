@@ -197,6 +197,14 @@ final class Feature_Flags {
 				'since'       => '1.12.21',
 				'shared'      => false,
 			),
+			array(
+				'module'      => 'shop_filters',
+				'feature'     => 'seo_policy',
+				'label'       => __( 'Shop Filters — filtered-URL SEO policy', 'freeman-core' ),
+				'description' => __( 'Adds noindex,follow and a canonical to the clean archive on filtered shop / category / search URLs, so search engines do not index thin filter permutations (the clean archive stays indexable). Routes through the active SEO plugin (RankMath / SEOPress / Yoast) or WordPress core. Off: filtered URLs are left to the SEO plugin / core defaults.', 'freeman-core' ),
+				'since'       => '1.12.22',
+				'shared'      => false,
+			),
 		);
 	}
 }

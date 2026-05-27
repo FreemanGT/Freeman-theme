@@ -122,13 +122,14 @@ final class Subscribers {
 	 * Erase PII for all subscriptions matching an exact email address.
 	 * Used by the Wave 4.1a Privacy eraser.
 	 *
-	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
-	 * via a single `UPDATE`. The legacy schema declares these columns as
-	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 * Sets `customer_name=''`, `customer_email='erased-<id>@freeman.invalid'`,
+	 * `status='unsubscribed'` one row at a time. The legacy unique key includes
+	 * status, product and variation, so a shared erased email can collide when
+	 * the same customer has history rows for the same product in multiple statuses.
 	 *
 	 * The row is preserved (not DELETEd) so the stock monitor's audit
-	 * trail stays intact; the empty `customer_email` prevents future
-	 * email matches.
+	 * trail stays intact; the per-row tombstone prevents future email matches
+	 * without retaining PII.
 	 *
 	 * Empty-string guard: returns `0` early when `$email === ''` so a
 	 * stray empty input cannot "erase" rows that were already erased.
@@ -144,19 +145,44 @@ final class Subscribers {
 			return 0;
 		}
 		global $wpdb;
-		$table   = $wpdb->prefix . 'rsn_subscribers';
-		$updated = $wpdb->update(
-			$table,
-			array(
-				'customer_name'  => '',
-				'customer_email' => '',
-				'status'         => 'unsubscribed',
-			),
-			array( 'customer_email' => $email ),
-			array( '%s', '%s', '%s' ),
-			array( '%s' )
-		);
-		return (int) $updated;
+		$table = $wpdb->prefix . 'rsn_subscribers';
+		$rows  = self::find_by_email( $email );
+		$count = 0;
+
+		foreach ( $rows as $row ) {
+			$id = isset( $row->id ) ? (int) $row->id : 0;
+			if ( $id <= 0 ) {
+				continue;
+			}
+			$updated = $wpdb->update(
+				$table,
+				array(
+					'customer_name'  => '',
+					'customer_email' => self::erased_email_for_id( $id ),
+					'status'         => 'unsubscribed',
+				),
+				array( 'id' => $id ),
+				array( '%s', '%s', '%s' ),
+				array( '%d' )
+			);
+			if ( false !== $updated ) {
+				$count++;
+			}
+		}
+
+		return $count;
+	}
+
+	/**
+	 * Build a non-PII email-shaped tombstone that is unique per retained row.
+	 *
+	 * @since 1.11.42
+	 *
+	 * @param int $id Subscription row id.
+	 * @return string
+	 */
+	private static function erased_email_for_id( $id ) {
+		return 'erased-' . (int) $id . '@freeman.invalid';
 	}
 
 	/**

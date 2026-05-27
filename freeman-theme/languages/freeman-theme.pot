@@ -1,21 +1,57 @@
-# Copyright (C) 2026 Freeman
-# This POT file is distributed under the GPLv2 license.
+# Copyright (C) 2026 Freeman Digital
+# This file is distributed under the GNU General Public License v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Freeman Theme 1.0.0\n"
-"Report-Msgid-Bugs-To: https://freeman.example/support\n"
-"POT-Creation-Date: 2026-04-22 00:00+0000\n"
-"PO-Revision-Date: 2026-04-22 00:00+0000\n"
-"Last-Translator: Freeman <hello@freeman.example>\n"
-"Language-Team: Freeman <hello@freeman.example>\n"
-"Language: \n"
+"Project-Id-Version: Freeman Theme 1.11.25\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/theme/freeman-theme\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"POT-Creation-Date: 2026-05-27T22:54:41+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: freeman-theme\n"
 
+#. Theme Name of the theme
+#: style.css
+msgid "Freeman Theme"
+msgstr ""
 
+#. Theme URI of the theme
+#: style.css
+msgid "https://freemandigital.com/freeman-theme"
+msgstr ""
+
+#. Description of the theme
+#: style.css
+msgid "Freeman is a WooCommerce-first child theme of Hello Elementor. It provides the design tokens, typography, RTL/Hebrew support, and WooCommerce template refinements. All business logic lives in the companion Freeman Core plugin — the theme handles presentation only."
+msgstr ""
+
+#. Author of the theme
+#: style.css
+msgid "Freeman Digital"
+msgstr ""
+
+#. Author URI of the theme
+#: style.css
+msgid "https://freemandigital.com"
+msgstr ""
+
+#: inc/customizer.php:43
+msgid "Mobile columns"
+msgstr ""
+
+#: inc/customizer.php:44
+msgid "Products per row on phones (≤767px) on shop, product category / tag, and product search archives. \"Default\" leaves theme + WooCommerce defaults untouched."
+msgstr ""
+
+#: inc/customizer.php:48
+msgid "Default (don't override)"
+msgstr ""
+
+#. translators: %s: plugin name.
 #: inc/plugin-dependencies.php:107
 #, php-format
 msgid "Freeman Theme requires the %s plugin. Please install and activate it."
@@ -25,6 +61,7 @@ msgstr ""
 msgid "Install Freeman Core"
 msgstr ""
 
+#. translators: %s: plugin name.
 #: inc/plugin-dependencies.php:118
 #, php-format
 msgid "Freeman Theme needs the %s plugin to be active."
@@ -34,6 +71,7 @@ msgstr ""
 msgid "Activate Freeman Core"
 msgstr ""
 
+#. translators: 1: required version, 2: installed version.
 #: inc/plugin-dependencies.php:133
 #, php-format
 msgid "Freeman Theme requires Freeman Core %1$s or later. You have %2$s."
@@ -45,4 +83,169 @@ msgstr ""
 
 #: inc/plugin-dependencies.php:156
 msgid "Insufficient permissions."
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Accent"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Accent Soft"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Accent Text"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Ink"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Ink Soft"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Ink Muted"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Paper"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Paper Soft"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Paper Dim"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Hairline"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Danger"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Success"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Warning"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Info"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Gold"
+msgstr ""
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Body"
+msgstr ""
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Display"
+msgstr ""
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Mono"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Extra Small"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Small"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Medium"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Extra Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Huge"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Hero"
+msgstr ""
+
+#: theme.json
+msgctxt "Space size name"
+msgid "2XS"
+msgstr ""
+
+#: theme.json
+msgctxt "Space size name"
+msgid "XS"
+msgstr ""
+
+#: theme.json
+msgctxt "Space size name"
+msgid "SM"
+msgstr ""
+
+#: theme.json
+msgctxt "Space size name"
+msgid "MD"
+msgstr ""
+
+#: theme.json
+msgctxt "Space size name"
+msgid "LG"
+msgstr ""
+
+#: theme.json
+msgctxt "Space size name"
+msgid "XL"
+msgstr ""
+
+#: theme.json
+msgctxt "Space size name"
+msgid "XXL"
+msgstr ""
+
+#: theme.json
+msgctxt "Space size name"
+msgid "3XL"
 msgstr ""

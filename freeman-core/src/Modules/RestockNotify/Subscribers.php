@@ -122,13 +122,15 @@ final class Subscribers {
 	 * Erase PII for all subscriptions matching an exact email address.
 	 * Used by the Wave 4.1a Privacy eraser.
 	 *
-	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
-	 * via a single `UPDATE`. The legacy schema declares these columns as
-	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 * Sets `customer_name=''`, a per-row non-PII `customer_email` tombstone,
+	 * `status='unsubscribed'`, and clears the unsubscribe token. The legacy
+	 * schema declares these columns as NOT NULL, so empty strings/tombstones are
+	 * used instead of SQL NULL.
 	 *
 	 * The row is preserved (not DELETEd) so the stock monitor's audit
-	 * trail stays intact; the empty `customer_email` prevents future
-	 * email matches.
+	 * trail stays intact; the tombstone `customer_email` prevents future
+	 * email matches without colliding with the legacy unique key when multiple
+	 * rows exist for the same product/variation/status.
 	 *
 	 * Empty-string guard: returns `0` early when `$email === ''` so a
 	 * stray empty input cannot "erase" rows that were already erased.
@@ -145,18 +147,30 @@ final class Subscribers {
 		}
 		global $wpdb;
 		$table   = $wpdb->prefix . 'rsn_subscribers';
-		$updated = $wpdb->update(
-			$table,
-			array(
-				'customer_name'  => '',
-				'customer_email' => '',
-				'status'         => 'unsubscribed',
-			),
-			array( 'customer_email' => $email ),
-			array( '%s', '%s', '%s' ),
-			array( '%s' )
-		);
-		return (int) $updated;
+		$rows    = self::find_by_email( $email );
+		$updated = 0;
+		foreach ( $rows as $row ) {
+			$id = (int) ( $row->id ?? 0 );
+			if ( $id <= 0 ) {
+				continue;
+			}
+			$result = $wpdb->update(
+				$table,
+				array(
+					'customer_name'      => '',
+					'customer_email'     => sprintf( 'erased-%d@freeman.invalid', $id ),
+					'status'             => 'unsubscribed',
+					'unsubscribe_token'  => '',
+				),
+				array( 'id' => $id ),
+				array( '%s', '%s', '%s', '%s' ),
+				array( '%d' )
+			);
+			if ( false !== $result ) {
+				$updated += (int) $result;
+			}
+		}
+		return $updated;
 	}
 
 	/**

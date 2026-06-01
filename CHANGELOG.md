@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.25] — 2026-06-01
+
+- RestockNotify privacy eraser now uses per-row non-PII tombstones so multiple subscriptions cannot collide and retain PII during GDPR erasure.
+
 ## [1.12.24] — 2026-05-28
 
 - RestockNotify privacy fix: register the WP privacy exporter/eraser at core boot for every module (new Module_Base::register_persistent_hooks seam) so persisted subscriber PII is still covered by GDPR export/erase when the module is disabled or WooCommerce is absent. Previously registered only inside Module::boot (enabled-only). No flag (platform-contract bugfix), no schema change.

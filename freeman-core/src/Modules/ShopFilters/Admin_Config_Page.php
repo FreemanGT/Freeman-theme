@@ -6,11 +6,10 @@
  * on chosen categories. Writes the `freeman_core_shop_filters_facet_config`
  * option that Facet_Config reads.
  *
- * Only wired (and only able to save) when the `admin_config` feature flag is
- * on — flag-off hides the matrix and Facet_Config ignores the saved option, so
- * the storefront falls back to the automatic defaults. The "type" of each
- * facet is auto-derived (categories = tree, attributes = checkbox/swatch), so
- * the matrix exposes only the controls that change real storefront output.
+ * When no configuration has been saved, Facet_Config falls back to the
+ * automatic defaults. The "type" of each facet is auto-derived (categories =
+ * tree, attributes = checkbox/swatch), so the matrix exposes only the controls
+ * that change real storefront output.
  *
  * The render echoes (live-QA); the sanitisation lives in the pure, unit-tested
  * Facet_Config::sanitize().

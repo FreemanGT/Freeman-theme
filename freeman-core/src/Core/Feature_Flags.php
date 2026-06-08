@@ -173,38 +173,6 @@ final class Feature_Flags {
 				'since'       => '1.11.40',
 				'shared'      => false,
 			),
-			array(
-				'module'      => 'shop_filters',
-				'feature'     => 'indexer',
-				'label'       => __( 'Shop Filters — background indexer', 'freeman-core' ),
-				'description' => __( 'Builds and keeps fresh the product attribute / category index that powers Shop Filters (event-driven dirty queue + a 5-minute reconcile sweep) and enables the admin "Reindex now" tool. Off: no index is written and no scheduling occurs. The storefront filter UI is gated separately in a later phase.', 'freeman-core' ),
-				'since'       => '1.12.0',
-				'shared'      => false,
-			),
-			array(
-				'module'      => 'shop_filters',
-				'feature'     => 'frontend',
-				'label'       => __( 'Shop Filters — storefront filters', 'freeman-core' ),
-				'description' => __( 'Activates the [freeman_shop_filters] shortcode and its public AJAX query endpoint — the faceted, context-aware filter panel on shop / category pages. Off: the shortcode renders nothing and no public endpoint is registered. Requires the module and the background indexer to be on.', 'freeman-core' ),
-				'since'       => '1.12.6',
-				'shared'      => true,
-			),
-			array(
-				'module'      => 'shop_filters',
-				'feature'     => 'admin_config',
-				'label'       => __( 'Shop Filters — facet configuration', 'freeman-core' ),
-				'description' => __( 'Enables the per-attribute facet matrix on Freeman → Shop Filters (turn a filter on/off, reorder, hide on chosen categories) and makes the storefront honour the saved configuration. Off: the matrix is hidden and filters fall back to the automatic defaults (every attribute as a checkbox, categories as a tree), so turning this off fully reverts any saved configuration.', 'freeman-core' ),
-				'since'       => '1.12.21',
-				'shared'      => false,
-			),
-			array(
-				'module'      => 'shop_filters',
-				'feature'     => 'seo_policy',
-				'label'       => __( 'Shop Filters — filtered-URL SEO policy', 'freeman-core' ),
-				'description' => __( 'Adds noindex,follow and a canonical to the clean archive on filtered shop / category / search URLs, so search engines do not index thin filter permutations (the clean archive stays indexable). Routes through the active SEO plugin (RankMath / SEOPress / Yoast) or WordPress core. Off: filtered URLs are left to the SEO plugin / core defaults.', 'freeman-core' ),
-				'since'       => '1.12.22',
-				'shared'      => false,
-			),
 		);
 	}
 }

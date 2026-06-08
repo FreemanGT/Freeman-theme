@@ -12,7 +12,6 @@
 
 namespace Freeman\Core\Modules\ShopFilters;
 
-use Freeman\Core\Core\Feature_Flags;
 use Freeman\Core\Core\Security;
 
 defined( 'ABSPATH' ) || exit;
@@ -58,7 +57,6 @@ final class Admin_Page {
 	public function ajax_get_total() {
 		Security::verify_ajax_nonce( self::NONCE, '_ajax_nonce' );
 		Security::require_cap_ajax( 'manage_woocommerce' );
-		$this->require_indexing_on();
 
 		wp_send_json_success(
 			array(
@@ -75,7 +73,6 @@ final class Admin_Page {
 	public function ajax_run_batch() {
 		Security::verify_ajax_nonce( self::NONCE, '_ajax_nonce' );
 		Security::require_cap_ajax( 'manage_woocommerce' );
-		$this->require_indexing_on();
 
 		$offset    = isset( $_POST['offset'] ) ? absint( $_POST['offset'] ) : 0;
 		$processed = $this->indexer->reindex_batch( $offset, self::BATCH_SIZE );
@@ -84,25 +81,9 @@ final class Admin_Page {
 	}
 
 	/**
-	 * Bail out of an AJAX request with an error when background indexing is off
-	 * (defence in depth — the UI also hides the button in that state).
-	 */
-	private function require_indexing_on() {
-		if ( ! Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Background indexing is off.', 'freeman-core' ) ), 400 );
-		}
-	}
-
-	/**
 	 * Render the tool on the module settings page.
 	 */
 	public function render() {
-		if ( ! Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) ) {
-			echo '<h2>' . esc_html__( 'Search index', 'freeman-core' ) . '</h2>';
-			echo '<p>' . esc_html__( 'Background indexing is off. Tick "Background indexing" above and save to build and keep the product index that powers the filters.', 'freeman-core' ) . '</p>';
-			return;
-		}
-
 		$repo      = $this->indexer->repository();
 		$last_run  = (string) get_option( Indexer::LAST_RUN_OPTION, '' );
 		$scheduled = function_exists( 'as_next_scheduled_action' )

@@ -1,5 +1,12 @@
 # Shop Filters — Changelog
 
+## [1.12.26] — 2026-06-08
+
+- **Graduated to always-on — all feature flags removed.** Shop Filters now runs by default whenever the module is enabled; there are no more per-surface flags. The four `shop_filters` flags (`indexer`, `frontend`, `seo_policy`, `admin_config`) and their entries on Freeman → Feature Flags have been removed, along with the redundant **Background indexing** toggle on the Freeman → Shop Filters page (it was the same switch as the indexer flag). The filter-builder (facet-configuration matrix) and the storefront filters are therefore visible/active out of the box.
+- Filtered-URL SEO policy (`noindex,follow` + clean-archive canonical) is now always on.
+- Removed the **Index diagnostic** table from the Freeman → Shop Filters admin page.
+- **No option-based rollback:** disable the whole module from the modules registry, or revert the release.
+
 ## [1.12.25] — 2026-06-08
 
 - Fix: non-Latin (Hebrew) attribute term slugs no longer blank the shop grid. WordPress stores such slugs percent-encoded (e.g. "0-3 חודשים" → 0-3-%d7%97%d7%95%d7%93%d7%a9%d7%99%d7%9d); `Url_State::sanitize_slug()` was stripping the `%`, so the slug matched no term, the in-stock id-set came back empty, and the query forced `post__in=[0]`. The sanitiser now preserves `%`.

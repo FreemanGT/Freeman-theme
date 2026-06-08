@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.26] — 2026-06-08
+
+- Shop Filters graduated to always-on; all four shop_filters feature flags hard-removed, Background indexing toggle and Index diagnostic removed
+
 ## [1.12.25] — 2026-06-08
 
 - Shop Filters: preserve percent-encoded non-Latin (Hebrew) attribute term slugs in URL parsing so faceted filtering no longer returns a blank product grid

@@ -45,18 +45,7 @@ final class ShopFiltersIndexerTest extends TestCase {
 		$this->assertArrayNotHasKey( Indexer::DRAIN_HOOK, $GLOBALS['fr_cron'] );
 	}
 
-	public function test_drain_is_noop_when_flag_off(): void {
-		$indexer = new Indexer();
-		$indexer->mark_dirty( 5 );
-
-		$indexer->drain_queue(); // Flag unset → off → bails before clearing.
-
-		$this->assertSame( array( 5 ), array_keys( $indexer->get_dirty_queue() ) );
-	}
-
-	public function test_drain_clears_queue_when_flag_on(): void {
-		$GLOBALS['fr_opts']['freeman_core_shop_filters_indexer_enabled'] = '1';
-
+	public function test_drain_clears_queue(): void {
 		$indexer = new Indexer();
 		$indexer->mark_dirty( 5 );
 		// No \WooCommerce class in the test env, so the reindex loop is skipped,

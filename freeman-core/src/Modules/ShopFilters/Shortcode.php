@@ -16,7 +16,6 @@
 
 namespace Freeman\Core\Modules\ShopFilters;
 
-use Freeman\Core\Core\Feature_Flags;
 use Freeman\Core\Core\Module_Base;
 
 defined( 'ABSPATH' ) || exit;
@@ -38,17 +37,12 @@ final class Shortcode {
 	}
 
 	/**
-	 * Render the filter panel. Returns an empty string when the frontend flag is
-	 * off so the shortcode is inert until explicitly enabled.
+	 * Render the filter panel.
 	 *
 	 * @param array|string $atts Shortcode attributes.
 	 * @return string
 	 */
 	public function render( $atts = array() ) {
-		if ( ! Feature_Flags::is_enabled( 'shop_filters', 'frontend' ) ) {
-			return '';
-		}
-
 		$context_id = $this->context_category_id();
 		$response   = ( new Query_Builder() )->query( $this->initial_request( $context_id ) );
 

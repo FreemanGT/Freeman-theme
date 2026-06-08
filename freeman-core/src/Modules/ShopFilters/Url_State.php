@@ -197,14 +197,18 @@ final class Url_State {
 	}
 
 	/**
-	 * Lowercase, hyphen/underscore + alphanumeric slug.
+	 * Lowercase, hyphen/underscore + alphanumeric slug. The `%` is preserved
+	 * because WordPress stores non-Latin term slugs percent-encoded (e.g. the
+	 * Hebrew "0-3 חודשים" => 0-3-%d7%97%d7%95%d7%93%d7%a9%d7%99%d7%9d); stripping
+	 * it would mangle the slug so get_term_by( 'slug', … ) finds nothing and the
+	 * storefront query forces post__in=[0] — a blank grid.
 	 *
 	 * @param string $raw Raw value.
 	 * @return string
 	 */
 	private static function sanitize_slug( $raw ) {
 		$slug = strtolower( trim( (string) $raw ) );
-		return (string) preg_replace( '/[^a-z0-9_-]/', '', $slug );
+		return (string) preg_replace( '/[^a-z0-9_%-]/', '', $slug );
 	}
 
 	/**

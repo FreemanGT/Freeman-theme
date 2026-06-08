@@ -2,6 +2,10 @@
 
 This is the aggregated changelog across both packages. See each package's own `CHANGELOG.md` for package-scoped history.
 
+## [1.12.30] — 2026-06-09
+
+- Shop Filters + VariationSwatches frontend fixes (consolidated onto the 1.12.26 graduation): mobile Apply closes the drawer instantly (no frozen-panel jank); app-feel motion — drawer-content cascade, checkbox-tick feedback, amplified press and chip entrance, all reduced-motion aware; and WPC Product Image Swap compatibility so tapping a swatch on the shop grid no longer makes the card image jump. Replaces local 1.12.27-1.12.29 QA builds.
+
 ## [1.12.26] — 2026-06-08
 
 - Shop Filters graduated to always-on; all four shop_filters feature flags hard-removed, Background indexing toggle and Index diagnostic removed

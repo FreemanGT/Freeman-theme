@@ -1,5 +1,9 @@
 # Freeman Core — Changelog
 
+## [1.12.30] — 2026-06-09
+
+- Shop Filters + VariationSwatches frontend fixes (consolidated onto the 1.12.26 graduation): mobile Apply closes the drawer instantly (no frozen-panel jank); app-feel motion — drawer-content cascade, checkbox-tick feedback, amplified press and chip entrance, all reduced-motion aware; and WPC Product Image Swap compatibility so tapping a swatch on the shop grid no longer makes the card image jump. Replaces local 1.12.27-1.12.29 QA builds.
+
 ## [1.12.26] — 2026-06-08
 
 - **Shop Filters graduated to always-on.** The module (background index, storefront filter panel, filtered-URL SEO policy, and the facet-configuration "filter builder") now runs by default whenever the module is enabled. All four `shop_filters` feature flags — `indexer`, `frontend`, `seo_policy`, `admin_config` — and their entries on Freeman → Feature Flags have been removed, along with the redundant **Background indexing** toggle on the Freeman → Shop Filters page.

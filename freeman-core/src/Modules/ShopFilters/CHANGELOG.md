@@ -1,5 +1,9 @@
 # Shop Filters — Changelog
 
+## [1.12.25] — 2026-06-08
+
+- Fix: non-Latin (Hebrew) attribute term slugs no longer blank the shop grid. WordPress stores such slugs percent-encoded (e.g. "0-3 חודשים" → 0-3-%d7%97%d7%95%d7%93%d7%a9%d7%99%d7%9d); `Url_State::sanitize_slug()` was stripping the `%`, so the slug matched no term, the in-stock id-set came back empty, and the query forced `post__in=[0]`. The sanitiser now preserves `%`.
+
 ## [1.12.5] — 2026-05-20
 
 - Indexer status & sweep refinements (from QA feedback):

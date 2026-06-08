@@ -83,4 +83,17 @@ final class ShopFiltersUrlStateTest extends TestCase {
 		$params = Url_State::serialize( array( 'filters' => array( 'pa_shoe-size' => array( '1-3-37' ) ) ) );
 		$this->assertSame( '1-3-37', $params['filter_pa_shoe-size'] );
 	}
+
+	public function test_preserves_percent_encoded_nonlatin_slug(): void {
+		// Regression: WordPress stores non-Latin (e.g. Hebrew) term slugs
+		// percent-encoded — "0-3 חודשים" => 0-3-%d7%97%d7%95%d7%93%d7%a9%d7%99%d7%9d.
+		// The % must survive parse + serialize or get_term_by( 'slug', … ) finds
+		// nothing and the storefront query forces post__in=[0] → blank grid.
+		$slug  = '0-3-%d7%97%d7%95%d7%93%d7%a9%d7%99%d7%9d';
+		$state = Url_State::parse( array( 'filter_pa_clothing-size' => $slug ) );
+		$this->assertSame( array( $slug ), $state['filters']['pa_clothing-size'] );
+
+		$params = Url_State::serialize( array( 'filters' => array( 'pa_clothing-size' => array( $slug ) ) ) );
+		$this->assertSame( $slug, $params['filter_pa_clothing-size'] );
+	}
 }

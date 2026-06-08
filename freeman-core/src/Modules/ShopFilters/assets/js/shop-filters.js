@@ -143,10 +143,18 @@
 	if (toggle) { toggle.addEventListener('click', openDrawer); }
 	if (closeBtn) { closeBtn.addEventListener('click', closeDrawer); }
 	if (overlay) { overlay.addEventListener('click', closeDrawer); }
-	if (applyBtn) { applyBtn.addEventListener('click', navigate); }
+	if (applyBtn) {
+		applyBtn.addEventListener('click', function () {
+			// Close the drawer first so it slides down immediately — the reload
+			// round-trip is then masked by the close motion, not a frozen panel.
+			if (isMobile()) { closeDrawer(); }
+			navigate();
+		});
+	}
 	if (clearMobileBtn) {
 		clearMobileBtn.addEventListener('click', function () {
 			panel.querySelectorAll('.freeman-sf__checkbox:checked').forEach(function (b) { b.checked = false; });
+			if (isMobile()) { closeDrawer(); }
 			navigate();
 		});
 	}

@@ -826,3 +826,17 @@
 	outline-offset: 2px !important;
 	box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.12) !important;
 }
+
+/* ---------------------------------------------------------------------------
+   WPC Product Image Swap (premium) compatibility.
+   That plugin reveals its overlay image via `.wpcis-swap:hover .wpcis-swap-image`.
+   On touch devices the first tap maps to :hover, so tapping a swatch on the
+   shop grid made the card image swap/"jump". Pin the overlay hidden where
+   there is no true hover — same touch-gating idea ProductSlider uses with
+   @media (hover: hover). If WPC ever renames .wpcis-swap-image this is inert.
+   --------------------------------------------------------------------------- */
+@media (hover: none) {
+	.wpcis-swap .wpcis-swap-image {
+		opacity: 0 !important;
+	}
+}

@@ -53,6 +53,16 @@
 	font-size: 0.85em;
 }
 
+/* Checkbox facets: branded fill + a quick pop on the label when ticked — the
+   visible selection feedback for plain (non-swatch) attribute terms. */
+.freeman-sf__checkbox {
+	accent-color: #111;
+}
+
+.freeman-sf__checkbox:checked + .freeman-sf__term-label {
+	animation: freeman-sf-pop 0.22s ease;
+}
+
 /* ---- chips + count ---- */
 .freeman-sf__chips {
 	display: flex;
@@ -86,6 +96,22 @@
 
 .freeman-sf__clear:hover {
 	opacity: 1;
+}
+
+/* Active-filter chips fade/slide in on load — a subtle confirmation of the
+   applied selection. Re-rendered server-side each load, so it replays per filter. */
+.freeman-sf__chip {
+	animation: freeman-sf-chip-in 0.32s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes freeman-sf-chip-in {
+	from { opacity: 0; transform: translateY(10px) scale(0.92); }
+	to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes freeman-sf-rise {
+	from { opacity: 0; transform: translateY(12px); }
+	to { opacity: 1; transform: translateY(0); }
 }
 
 .freeman-sf__count {
@@ -162,6 +188,7 @@
 	border: 1px solid rgba(0, 0, 0, 0.15);
 	background-size: cover;
 	background-position: center;
+	transition: box-shadow 0.15s ease;
 }
 
 .freeman-sf__swatch-chip--text {
@@ -177,6 +204,13 @@
 
 .freeman-sf__swatch-input:checked + .freeman-sf__swatch-chip {
 	box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111;
+	animation: freeman-sf-pop 0.2s ease;
+}
+
+@keyframes freeman-sf-pop {
+	0% { transform: scale(1); }
+	50% { transform: scale(1.18); }
+	100% { transform: scale(1); }
 }
 
 .freeman-sf__swatch-input:focus-visible + .freeman-sf__swatch-chip {
@@ -229,6 +263,11 @@
 		color: inherit;
 		border-radius: var(--fm-radius-pill, 999px);
 		cursor: pointer;
+		transition: transform 0.08s ease;
+	}
+
+	.freeman-sf__toggle:active {
+		transform: scale(0.94);
 	}
 
 	.freeman-sf__overlay {
@@ -253,13 +292,29 @@
 		border-radius: 12px 12px 0 0;
 		box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
 		transform: translateY(100%);
-		transition: transform 0.25s ease;
+		transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 		z-index: 99999;
 	}
 
 	.freeman-sf--open .freeman-sf__panel {
 		transform: translateY(0);
 	}
+
+	/* Content cascade: as the sheet rises, its sections fade/rise in sequence —
+	   the app-sheet feel. Actions bar is excluded so the sticky Apply stays put
+	   and tappable immediately. Delays are mapped to the panel's section order. */
+	.freeman-sf--open .freeman-sf__panel > *:not(.freeman-sf__actions) {
+		animation: freeman-sf-rise 0.3s cubic-bezier(0.32, 0.72, 0, 1) both;
+	}
+
+	.freeman-sf--open .freeman-sf__panel > *:nth-child(1) { animation-delay: 0.04s; }
+	.freeman-sf--open .freeman-sf__panel > *:nth-child(2) { animation-delay: 0.08s; }
+	.freeman-sf--open .freeman-sf__panel > *:nth-child(3) { animation-delay: 0.12s; }
+	.freeman-sf--open .freeman-sf__panel > *:nth-child(4) { animation-delay: 0.16s; }
+	.freeman-sf--open .freeman-sf__panel > *:nth-child(5) { animation-delay: 0.20s; }
+	.freeman-sf--open .freeman-sf__panel > *:nth-child(6) { animation-delay: 0.24s; }
+	.freeman-sf--open .freeman-sf__panel > *:nth-child(7) { animation-delay: 0.28s; }
+	.freeman-sf--open .freeman-sf__panel > *:nth-child(8) { animation-delay: 0.32s; }
 
 	.freeman-sf--open .freeman-sf__overlay {
 		opacity: 1;
@@ -311,6 +366,11 @@
 		background: #111;
 		color: #fff;
 		cursor: pointer;
+		transition: transform 0.08s ease;
+	}
+
+	.freeman-sf__apply:active {
+		transform: scale(0.94);
 	}
 
 	.freeman-sf__clear-mobile {
@@ -321,6 +381,11 @@
 		background: transparent;
 		color: inherit;
 		cursor: pointer;
+		transition: transform 0.08s ease;
+	}
+
+	.freeman-sf__clear-mobile:active {
+		transform: scale(0.94);
 	}
 }
 
@@ -328,5 +393,18 @@
 	.freeman-sf__overlay,
 	.freeman-sf__panel {
 		transition: none;
+	}
+
+	.freeman-sf__chip,
+	.freeman-sf__swatch-input:checked + .freeman-sf__swatch-chip,
+	.freeman-sf__checkbox:checked + .freeman-sf__term-label,
+	.freeman-sf--open .freeman-sf__panel > * {
+		animation: none;
+	}
+
+	.freeman-sf__toggle:active,
+	.freeman-sf__apply:active,
+	.freeman-sf__clear-mobile:active {
+		transform: none;
 	}
 }

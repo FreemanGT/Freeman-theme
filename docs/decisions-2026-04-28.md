@@ -146,3 +146,14 @@ A net-new module replacing the third-party "Filter Everything Pro" plugin (facet
 - **§5.7 Cross-module decoupling.** ShopFilters does NOT call VariationSwatches' `Etucart_VS_Plugin` (loaded only when that module is enabled); it duplicates the two pure helpers it needs and reads swatch term-meta directly — per §4.6's "duplicate, don't extract" leaning.
 
 These are scoped to the new module and change nothing about existing modules or prior decisions.
+
+### §5.8 Module graduated to always-on — all flags hard-removed (added 2026-06-07)
+
+After the Wave 6 epic completed, the owner directed that Shop Filters ship **on by default with no feature flags**. All four `shop_filters` flags (`indexer`, `frontend`, `seo_policy`, `admin_config`) are **hard-removed**: the `is_enabled()` gates, the `Feature_Flags::registry()` entries, and the module's `indexer_enabled` settings toggle are deleted, so the module (background index, storefront panel, filtered-URL SEO policy, and the facet-configuration matrix) is unconditionally active whenever the module itself is enabled. The Index diagnostic surface (`Diagnostics`) was also removed from the admin page.
+
+This is a **deliberate owner-approved override** of:
+- **Hard Rule #1** (ship behind a flag) — the module graduates from flagged to default-on.
+- **Hard Rule #2** (deprecate option keys with a 2-minor sunset) — the flag option keys (`freeman_core_shop_filters_*_enabled`) are no longer read; existing rows in `wp_options` become inert/orphaned (not deleted — no migration). Supersedes **§5.6**'s "default-off SEO flag so a site can opt out": the filtered-URL `noindex,follow` policy is now always-on; opt-out is only via the SEO-plugin layer or disabling the module.
+- **Hard Rule #4** (one item per PR) and the **>12-file ceiling** — graduation + diagnostic removal shipped together in one oversized PR.
+
+**Consequence — no option-based rollback.** There is no `wp option update … 0` kill-switch; rolling the module back means disabling it via the modules registry, or reverting the release. The module-registry enable/disable remains the only coarse switch.

@@ -16,8 +16,6 @@
 
 namespace Freeman\Core\Modules\ShopFilters;
 
-use Freeman\Core\Core\Feature_Flags;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -180,17 +178,12 @@ final class Facet_Config {
 	/**
 	 * Saved (admin-configured) facet definitions, or empty.
 	 *
-	 * Gated by the `admin_config` flag: when the facet-configuration surface is
-	 * off, the saved option is ignored so the storefront falls back to the
-	 * auto-derived defaults. This makes flipping the flag off a complete,
-	 * one-switch rollback of any saved configuration.
+	 * When no configuration has been saved the option is absent, so the
+	 * storefront falls back to the auto-derived defaults.
 	 *
 	 * @return array
 	 */
 	private static function saved() {
-		if ( ! Feature_Flags::is_enabled( 'shop_filters', 'admin_config' ) ) {
-			return array();
-		}
 		$config = get_option( self::OPTION, array() );
 		return is_array( $config ) ? $config : array();
 	}

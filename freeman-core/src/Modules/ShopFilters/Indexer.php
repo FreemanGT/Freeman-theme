@@ -18,8 +18,6 @@
 
 namespace Freeman\Core\Modules\ShopFilters;
 
-use Freeman\Core\Core\Feature_Flags;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -160,9 +158,6 @@ final class Indexer {
 	 * Drain the queue — reindex each queued product, then clear it.
 	 */
 	public function drain_queue() {
-		if ( ! Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) ) {
-			return;
-		}
 		$queue = $this->get_dirty_queue();
 		delete_option( self::QUEUE_OPTION );
 		if ( empty( $queue ) || ! class_exists( '\\WooCommerce' ) ) {
@@ -185,7 +180,7 @@ final class Indexer {
 	 * progress without ever running long.
 	 */
 	public function run_reconcile() {
-		if ( ! Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) || ! class_exists( '\\WooCommerce' ) ) {
+		if ( ! class_exists( '\\WooCommerce' ) ) {
 			return;
 		}
 

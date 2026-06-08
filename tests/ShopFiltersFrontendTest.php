@@ -8,8 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Frontend read-path wiring (Phase 6.3a): the shortcode and public AJAX
- * endpoint register only behind the `frontend` flag, and the shortcode renders
- * nothing when the flag is off.
+ * endpoint register on boot.
  *
  * @covers \Freeman\Core\Modules\ShopFilters\Ajax
  * @covers \Freeman\Core\Modules\ShopFilters\Shortcode
@@ -38,21 +37,7 @@ final class ShopFiltersFrontendTest extends TestCase {
 		$this->assertArrayHasKey( Shortcode::TAG, $GLOBALS['fr_shortcodes'] );
 	}
 
-	public function test_shortcode_renders_empty_when_frontend_flag_off(): void {
-		$this->assertSame( '', ( new Shortcode() )->render( array() ) );
-	}
-
-	public function test_boot_wires_frontend_only_when_flag_on(): void {
-		// Flag off: no shortcode, no public endpoint.
-		( new Module() )->boot();
-		$this->assertArrayNotHasKey( Shortcode::TAG, $GLOBALS['fr_shortcodes'] );
-		$this->assertFalse( has_action( 'wp_ajax_' . Ajax::ACTION ) );
-
-		// Flag on: both wired.
-		$GLOBALS['fr_shortcodes'] = array();
-		$GLOBALS['fr_hooks']      = array();
-		$GLOBALS['fr_opts']['freeman_core_shop_filters_frontend_enabled'] = '1';
-
+	public function test_boot_wires_frontend(): void {
 		( new Module() )->boot();
 		$this->assertArrayHasKey( Shortcode::TAG, $GLOBALS['fr_shortcodes'] );
 		$this->assertNotFalse( has_action( 'wp_ajax_' . Ajax::ACTION ) );

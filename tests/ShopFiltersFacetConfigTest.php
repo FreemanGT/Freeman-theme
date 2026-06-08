@@ -5,8 +5,8 @@ use Freeman\Core\Modules\ShopFilters\Facet_Config;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Facet config resolution: auto-derived defaults, per-category hiding, enabled
- * flag, and the visibility filter override.
+ * Facet config resolution: auto-derived defaults, per-category hiding, and the
+ * visibility filter override.
  *
  * @covers \Freeman\Core\Modules\ShopFilters\Facet_Config
  */
@@ -16,9 +16,6 @@ final class ShopFiltersFacetConfigTest extends TestCase {
 		parent::setUp();
 		$GLOBALS['fr_opts']  = array();
 		$GLOBALS['fr_hooks'] = array();
-		// saved() is gated by the admin_config flag (1.12.21); turn it on so the
-		// saved-config cases below exercise the merge path.
-		$GLOBALS['fr_opts']['freeman_core_shop_filters_admin_config_enabled'] = 1;
 	}
 
 	public function test_auto_derives_defaults_all_visible_in_order(): void {

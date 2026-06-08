@@ -1,5 +1,11 @@
 # Freeman Core — Changelog
 
+## [1.12.26] — 2026-06-08
+
+- **Shop Filters graduated to always-on.** The module (background index, storefront filter panel, filtered-URL SEO policy, and the facet-configuration "filter builder") now runs by default whenever the module is enabled. All four `shop_filters` feature flags — `indexer`, `frontend`, `seo_policy`, `admin_config` — and their entries on Freeman → Feature Flags have been removed, along with the redundant **Background indexing** toggle on the Freeman → Shop Filters page.
+- Removed the **Index diagnostic** table from the Freeman → Shop Filters admin page.
+- **No option-based rollback:** there is no flag to switch off; disable the whole module from the modules registry, or revert the release. (Pre-existing `freeman_core_shop_filters_*_enabled` option rows become inert and are left in place — not deleted.)
+
 ## [1.12.25] — 2026-06-08
 
 - Shop Filters: preserve percent-encoded non-Latin (Hebrew) attribute term slugs in URL parsing so faceted filtering no longer returns a blank product grid

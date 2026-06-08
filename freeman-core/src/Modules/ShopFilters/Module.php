@@ -3,11 +3,10 @@
  * Shop Filters module.
  *
  * Faceted AJAX product filters for shop / category pages, built on a background
- * index. The foundation (index table, background indexer, "Reindex now" tool)
- * is gated by the `indexer` flag; the storefront read path (Phase 6.3a — the
- * [freeman_shop_filters] shortcode + public query endpoint) is gated separately
- * by the `frontend` flag. The module is disabled by default and each surface
- * stays inert until its flag is turned on.
+ * index. Covers the background index + "Reindex now" tool, the storefront read
+ * path (the [freeman_shop_filters] shortcode + public query endpoint), the
+ * filtered-URL SEO policy, and the admin facet-configuration matrix. Graduated
+ * to always-on in 1.12.25 (previously gated by per-surface feature flags).
  *
  * @package FreemanCore
  */
@@ -15,7 +14,6 @@
 namespace Freeman\Core\Modules\ShopFilters;
 
 use Freeman\Core\Core\Module_Base;
-use Freeman\Core\Core\Feature_Flags;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -48,28 +46,17 @@ final class Module extends Module_Base {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Faceted, context-aware product filters for shop and category pages, backed by a lightweight background index. Foundation only in this version (index + indexer); the storefront UI ships in later phases.', 'freeman-core' );
+		return __( 'Faceted, context-aware product filters for shop and category pages, backed by a lightweight background index.', 'freeman-core' );
 	}
 
 	/**
-	 * Settings schema. Exposes the background-indexing toggle on the
-	 * Freeman → Shop Filters page so it can be managed from wp-admin without
-	 * WP-CLI. The key `indexer_enabled` resolves to the very option the feature
-	 * flag reads (freeman_core_shop_filters_indexer_enabled), so this checkbox
-	 * and the Freeman → Feature Flags entry are the same switch.
+	 * Settings schema. Exposes the storefront label overrides, price bands and
+	 * default sort on the Freeman → Shop Filters page.
 	 *
 	 * @return array
 	 */
 	public function settings_schema() {
-		$schema = array(
-			'indexer_enabled' => array(
-				'label'          => __( 'Background indexing', 'freeman-core' ),
-				'type'           => 'checkbox',
-				'checkbox_label' => __( 'Build and keep a fresh product index (required for the filters). Indexes incrementally as products change, plus a sweep every few minutes.', 'freeman-core' ),
-				'description'    => __( 'Same switch as the "Shop Filters — background indexer" entry under Freeman → Feature Flags. Requires the module to be enabled.', 'freeman-core' ),
-				'default'        => 0,
-			),
-		);
+		$schema = array();
 
 		// Storefront label overrides: one text field per panel string. Blank = the
 		// English default (Labels::get() falls back), so leaving these empty keeps
@@ -131,46 +118,33 @@ final class Module extends Module_Base {
 	}
 
 	/**
-	 * Boot. Always registers the wp-cron fallback recurrence and (in wp-admin)
-	 * the control surface — toggle, index status and the reindex tool — so the
-	 * module is fully manageable from Freeman → Shop Filters. The actual
-	 * auto-indexer (lifecycle hooks + reconcile sweep) only attaches when the
-	 * indexer toggle is on, so flag-off stays inert / reversible.
+	 * Boot. Registers the background indexer (lifecycle hooks + reconcile sweep),
+	 * the storefront read path (shortcode + public query endpoint), the
+	 * filtered-URL SEO policy, and — in wp-admin — the index status / reindex
+	 * tool and the facet-configuration matrix.
 	 */
 	public function boot() {
 		add_filter( 'cron_schedules', array( $this, 'register_cron_schedule' ) );
 
 		$indexer = new Indexer();
+		$indexer->register_hooks();
+		// Defer scheduling to `init`: Action Scheduler's store isn't ready at
+		// plugins_loaded, so as_schedule_recurring_action() there silently
+		// no-ops. Running at `init` (after AS initialises) makes both the
+		// schedule call and the status check use the same, ready scheduler.
+		add_action( 'init', array( $indexer, 'ensure_scheduled' ) );
 
-		if ( Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) ) {
-			$indexer->register_hooks();
-			// Defer scheduling to `init`: Action Scheduler's store isn't ready at
-			// plugins_loaded, so as_schedule_recurring_action() there silently
-			// no-ops. Running at `init` (after AS initialises) makes both the
-			// schedule call and the status check use the same, ready scheduler.
-			add_action( 'init', array( $indexer, 'ensure_scheduled' ) );
-		}
+		( new Query() )->register();
+		( new Shortcode() )->register();
+		( new Ajax() )->register();
 
-		if ( Feature_Flags::is_enabled( 'shop_filters', 'frontend' ) ) {
-			( new Query() )->register();
-			( new Shortcode() )->register();
-			( new Ajax() )->register();
-		}
-
-		// Filtered-URL SEO policy is independent of the storefront panel: it acts
-		// on filter params in the URL whether or not the panel is rendered.
-		if ( Feature_Flags::is_enabled( 'shop_filters', 'seo_policy' ) ) {
-			( new Seo() )->register();
-		}
+		// Filtered-URL SEO policy acts on filter params in the URL whether or not
+		// the storefront panel is rendered.
+		( new Seo() )->register();
 
 		if ( is_admin() ) {
 			( new Admin_Page( $indexer ) )->boot();
-			if ( Feature_Flags::is_enabled( 'shop_filters', 'indexer' ) ) {
-				( new Diagnostics() )->boot();
-			}
-			if ( Feature_Flags::is_enabled( 'shop_filters', 'admin_config' ) ) {
-				( new Admin_Config_Page() )->boot();
-			}
+			( new Admin_Config_Page() )->boot();
 		}
 	}
 

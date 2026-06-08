@@ -94,8 +94,7 @@ final class Subscribers {
 	 * blocks extending the legacy class.
 	 *
 	 * Empty-string guard: returns `[]` early when `$email === ''` so that
-	 * a stray empty input cannot match the population of erased rows
-	 * (whose `customer_email` was set to '' by `erase_pii_by_email`).
+	 * a stray empty input cannot match an unintended population of rows.
 	 *
 	 * @since 1.11.37
 	 *
@@ -122,13 +121,16 @@ final class Subscribers {
 	 * Erase PII for all subscriptions matching an exact email address.
 	 * Used by the Wave 4.1a Privacy eraser.
 	 *
-	 * Sets `customer_name=''`, `customer_email=''`, `status='unsubscribed'`
-	 * via a single `UPDATE`. The legacy schema declares these columns as
-	 * NOT NULL, so empty string is used instead of SQL NULL.
+	 * Sets `customer_name=''`, `customer_email='erased-<id>@freeman.invalid`,
+	 * `status='unsubscribed'`, and clears `unsubscribe_token` per row. The
+	 * legacy schema declares these columns as NOT NULL, so tombstone values
+	 * are used instead of SQL NULL.
 	 *
 	 * The row is preserved (not DELETEd) so the stock monitor's audit
-	 * trail stays intact; the empty `customer_email` prevents future
-	 * email matches.
+	 * trail stays intact; the tombstone `customer_email` prevents future
+	 * email matches while avoiding collisions with the legacy unique key
+	 * (`customer_email`, `product_id`, `variation_id`, `status`) when a
+	 * customer has several historical rows for the same product/variation.
 	 *
 	 * Empty-string guard: returns `0` early when `$email === ''` so a
 	 * stray empty input cannot "erase" rows that were already erased.
@@ -143,20 +145,51 @@ final class Subscribers {
 		if ( '' === $email ) {
 			return 0;
 		}
+		$rows = self::find_by_email( $email );
+		if ( empty( $rows ) ) {
+			return 0;
+		}
+
 		global $wpdb;
 		$table   = $wpdb->prefix . 'rsn_subscribers';
-		$updated = $wpdb->update(
-			$table,
-			array(
-				'customer_name'  => '',
-				'customer_email' => '',
-				'status'         => 'unsubscribed',
-			),
-			array( 'customer_email' => $email ),
-			array( '%s', '%s', '%s' ),
-			array( '%s' )
-		);
-		return (int) $updated;
+		$updated = 0;
+
+		foreach ( $rows as $row ) {
+			$id = (int) ( $row->id ?? 0 );
+			if ( $id <= 0 ) {
+				continue;
+			}
+
+			$result = $wpdb->update(
+				$table,
+				array(
+					'customer_name'      => '',
+					'customer_email'     => self::erased_email_for_id( $id ),
+					'status'             => 'unsubscribed',
+					'unsubscribe_token'  => '',
+				),
+				array( 'id' => $id ),
+				array( '%s', '%s', '%s', '%s' ),
+				array( '%d' )
+			);
+
+			if ( false !== $result ) {
+				$updated += (int) $result;
+			}
+		}
+
+		return $updated;
+	}
+
+	/**
+	 * Build a non-PII, per-row tombstone email that satisfies NOT NULL and
+	 * the legacy unique key without retaining the customer's address.
+	 *
+	 * @param int $id Subscription row id.
+	 * @return string
+	 */
+	private static function erased_email_for_id( $id ) {
+		return 'erased-' . (int) $id . '@freeman.invalid';
 	}
 
 	/**

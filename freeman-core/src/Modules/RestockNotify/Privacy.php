@@ -8,10 +8,11 @@
  * WP Tools → Export/Erase Personal Data flow.
  *
  * Erasure semantics (OS-4 / decision call 2026-05-11): the eraser does NOT
- * hard-delete rows. It NULLs PII columns (`customer_name`, `customer_email`
- * → empty string, since the legacy schema declares them NOT NULL) and sets
- * `status='unsubscribed'`. The row stays as an audit trail and the stock
- * monitor can no longer match the email on future restocks.
+ * hard-delete rows. It anonymizes PII columns (`customer_name` → empty string,
+ * `customer_email` → a per-row tombstone because the legacy schema declares it
+ * NOT NULL), clears the unsubscribe token, and sets `status='unsubscribed'`.
+ * The row stays as an audit trail and the stock monitor can no longer match the
+ * email on future restocks.
  *
  * Flag-state (OS-5 / decision call 2026-05-11): registered unconditionally.
  * Privacy hooks are a platform contract — flag-gating them off by default

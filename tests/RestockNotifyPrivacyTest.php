@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
  * Wave 4.1a — RestockNotify WP_Privacy exporter + eraser.
  *
  * Verifies filter attachment, exporter payload shape, eraser semantics
- * (NULL PII columns via empty-string + flip status to 'unsubscribed'),
+ * (anonymize PII columns + flip status to 'unsubscribed'),
  * the no-match paths, and the empty-string guards on the two new
  * Subscribers methods.
  *
@@ -33,7 +33,7 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		// Self-contained — does not leak into other tests (tearDown restores
 		// the prior global). Only supports the methods Wave 4.1a needs:
 		// prefix, prepare (best-effort %s/%d substitution), get_results,
-		// update (matches by 'customer_email' WHERE and mutates the store).
+		// update (matches WHERE columns and enforces the legacy unique_sub key).
 		$GLOBALS['wpdb'] = new class {
 			public $prefix = 'wp_';
 			public array $rows = array();
@@ -62,8 +62,8 @@ final class RestockNotifyPrivacyTest extends TestCase {
 			}
 
 			public function update( $table, $data, $where, $format = null, $where_format = null ) {
-				$matched = 0;
-				foreach ( $this->rows as $row ) {
+				$matched = array();
+				foreach ( $this->rows as $i => $row ) {
 					$ok = true;
 					foreach ( $where as $k => $v ) {
 						if ( ( $row->$k ?? null ) !== $v ) {
@@ -74,12 +74,54 @@ final class RestockNotifyPrivacyTest extends TestCase {
 					if ( ! $ok ) {
 						continue;
 					}
-					foreach ( $data as $k => $v ) {
-						$row->$k = $v;
-					}
-					$matched++;
+					$matched[] = $i;
 				}
-				return $matched;
+				if ( empty( $matched ) ) {
+					return 0;
+				}
+
+				$proposed = array_map( static fn( $row ) => clone $row, $this->rows );
+				foreach ( $matched as $i ) {
+					foreach ( $data as $k => $v ) {
+						$proposed[ $i ]->$k = $v;
+					}
+				}
+				if ( $this->has_duplicate_unique_sub( $proposed ) ) {
+					return false;
+				}
+
+				$changed = 0;
+				foreach ( $matched as $i ) {
+					$row         = $this->rows[ $i ];
+					$row_changed = false;
+					foreach ( $data as $k => $v ) {
+						if ( ( $row->$k ?? null ) !== $v ) {
+							$row->$k      = $v;
+							$row_changed = true;
+						}
+					}
+					if ( $row_changed ) {
+						$changed++;
+					}
+				}
+				return $changed;
+			}
+
+			private function has_duplicate_unique_sub( array $rows ): bool {
+				$seen = array();
+				foreach ( $rows as $row ) {
+					$key = implode( '|', array(
+						(string) $row->customer_email,
+						(string) $row->product_id,
+						(string) $row->variation_id,
+						(string) $row->status,
+					) );
+					if ( isset( $seen[ $key ] ) ) {
+						return true;
+					}
+					$seen[ $key ] = true;
+				}
+				return false;
 			}
 		};
 	}
@@ -196,23 +238,25 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		$this->assertTrue( $result['done'] );
 	}
 
-	public function test_eraser_nulls_name_and_email_and_sets_status_unsubscribed(): void {
+	public function test_eraser_anonymizes_name_email_token_and_sets_status_unsubscribed(): void {
 		$row = $this->seed_row( array(
-			'customer_name'  => 'Alice',
-			'customer_email' => 'alice@example.test',
-			'status'         => 'waiting',
+			'customer_name'     => 'Alice',
+			'customer_email'    => 'alice@example.test',
+			'status'            => 'waiting',
+			'unsubscribe_token' => 'tok-alice',
 		) );
 
 		( new Privacy() )->eraser( 'alice@example.test' );
 
 		$this->assertSame( '', $row->customer_name );
-		$this->assertSame( '', $row->customer_email );
+		$this->assertSame( 'erased-' . $row->id . '@freeman.invalid', $row->customer_email );
 		$this->assertSame( 'unsubscribed', $row->status );
+		$this->assertSame( '', $row->unsubscribe_token );
 	}
 
 	public function test_eraser_returns_items_removed_count(): void {
-		$this->seed_row( array( 'customer_email' => 'alice@example.test' ) );
-		$this->seed_row( array( 'customer_email' => 'alice@example.test' ) );
+		$this->seed_row( array( 'customer_email' => 'alice@example.test', 'product_id' => 100 ) );
+		$this->seed_row( array( 'customer_email' => 'alice@example.test', 'product_id' => 200 ) );
 		$this->seed_row( array( 'customer_email' => 'bob@example.test' ) );
 
 		$result = ( new Privacy() )->eraser( 'alice@example.test' );
@@ -220,6 +264,33 @@ final class RestockNotifyPrivacyTest extends TestCase {
 		$this->assertSame( 2, $result['items_removed'] );
 		$this->assertSame( 0, $result['items_retained'] );
 		$this->assertTrue( $result['done'] );
+	}
+
+	public function test_eraser_anonymizes_status_variants_without_unique_key_collision(): void {
+		$waiting = $this->seed_row( array(
+			'customer_email'    => 'alice@example.test',
+			'product_id'        => 100,
+			'variation_id'      => 7,
+			'status'            => 'waiting',
+			'unsubscribe_token' => 'tok-waiting',
+		) );
+		$notified = $this->seed_row( array(
+			'customer_email'    => 'alice@example.test',
+			'product_id'        => 100,
+			'variation_id'      => 7,
+			'status'            => 'notified',
+			'unsubscribe_token' => 'tok-notified',
+		) );
+
+		$result = ( new Privacy() )->eraser( 'alice@example.test' );
+
+		$this->assertSame( 2, $result['items_removed'] );
+		$this->assertSame( 'erased-' . $waiting->id . '@freeman.invalid', $waiting->customer_email );
+		$this->assertSame( 'erased-' . $notified->id . '@freeman.invalid', $notified->customer_email );
+		$this->assertSame( 'unsubscribed', $waiting->status );
+		$this->assertSame( 'unsubscribed', $notified->status );
+		$this->assertSame( '', $waiting->unsubscribe_token );
+		$this->assertSame( '', $notified->unsubscribe_token );
 	}
 
 	public function test_eraser_no_match_returns_zero_removed_done_true(): void {
@@ -232,9 +303,8 @@ final class RestockNotifyPrivacyTest extends TestCase {
 	}
 
 	public function test_find_by_email_returns_empty_for_empty_input(): void {
-		// Seed an already-erased row (customer_email='') and verify that
-		// the empty-string guard prevents '' from matching the universe of
-		// erased rows. Without the guard this would return $row.
+		// The empty-string guard prevents a malformed privacy request from
+		// matching rows directly.
 		$this->seed_row( array( 'customer_email' => '' ) );
 
 		$this->assertSame( array(), Subscribers::find_by_email( '' ) );
